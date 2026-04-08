@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -9,18 +9,18 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0d14;
-    --surface: rgba(19,24,35,0.94);
-    --surface2: #202637;
-    --border: rgba(139,157,196,0.16);
-    --accent: #5a95ff;
-    --accent2: #76b7ff;
+    --bg: #0b1220;
+    --surface: rgba(18,27,43,0.94);
+    --surface2: #23324d;
+    --border: rgba(144,165,197,0.18);
+    --accent: #4d8dff;
+    --accent2: #7db6ff;
     --danger: #f74f6a;
-    --warning: #f7a34f;
-    --success: #50d6a0;
-    --text: #edf3ff;
-    --muted: #8b97b6;
-    --card-shadow: 0 24px 80px rgba(3,8,20,0.38);
+    --warning: #e8a54a;
+    --success: #4fb889;
+    --text: #edf4ff;
+    --muted: #9ba9c3;
+    --card-shadow: 0 24px 80px rgba(6,12,24,0.34);
   }
 
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -28,9 +28,9 @@
   body {
     font-family: 'DM Sans', sans-serif;
     background:
-      radial-gradient(circle at top left, rgba(90,149,255,0.16), transparent 24%),
-      radial-gradient(circle at top right, rgba(118,183,255,0.10), transparent 22%),
-      linear-gradient(180deg, #0f1628 0%, var(--bg) 24%, #080b12 100%);
+      radial-gradient(circle at top left, rgba(77,141,255,0.14), transparent 24%),
+      radial-gradient(circle at top right, rgba(125,182,255,0.08), transparent 22%),
+      linear-gradient(180deg, #10203a 0%, var(--bg) 28%, #08111d 100%);
     color: var(--text);
     min-height: 100vh;
     overflow-x: hidden;
@@ -44,8 +44,8 @@
     min-height: 100vh;
     padding: 24px 16px;
     background:
-      radial-gradient(circle at top left, rgba(79,142,247,0.18), transparent 28%),
-      radial-gradient(ellipse 80% 60% at 50% 0%, #1a2040 0%, var(--bg) 70%);
+      radial-gradient(circle at top left, rgba(77,141,255,0.18), transparent 28%),
+      radial-gradient(ellipse 80% 60% at 50% 0%, #17345f 0%, var(--bg) 72%);
   }
 
   .login-box {
@@ -64,17 +64,51 @@
     top: 0; left: 0; right: 0; height: 2px;
     background: linear-gradient(90deg, var(--accent), var(--accent2));
   }
+  .login-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(77,141,255,0.10);
+    border: 1px solid rgba(125,182,255,0.18);
+    color: #cfe0ff;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  .login-eyebrow::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--accent2);
+    box-shadow: 0 0 0 6px rgba(125,182,255,0.12);
+  }
   .login-logo {
     font-family: 'Syne', sans-serif;
-    font-size: 22px;
+    font-size: 28px;
     font-weight: 800;
-    letter-spacing: -0.5px;
-    margin-bottom: 8px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    letter-spacing: -0.6px;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, #dce9ff, var(--accent));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
-  .login-sub { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+  .login-sub {
+    color: #d6e3fa;
+    font-size: 19px;
+    line-height: 1.35;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .login-help {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.55;
+    margin-bottom: 24px;
+  }
   .login-status {
     display: flex;
     align-items: center;
@@ -117,7 +151,7 @@
     font-size: 12px;
     margin-bottom: 2px;
   }
-  .field-label { font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; }
+  .field-label { font-size: 12px; font-weight: 600; color: #bfd0ef; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 6px; }
   .field-group { margin-bottom: 18px; }
   input, select, textarea {
     width: 100%;
@@ -132,6 +166,7 @@
     transition: border-color 0.2s;
   }
   input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  input::placeholder, textarea::placeholder { color: #91a1bd; }
   select option { background: var(--surface2); }
 
   .btn {
@@ -140,8 +175,8 @@
     font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
     transition: all 0.2s; text-decoration: none;
   }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: #3a7de8; transform: translateY(-1px); }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), #6a9fff); color: #fff; box-shadow: 0 14px 30px rgba(77,141,255,0.22); }
+  .btn-primary:hover { background: linear-gradient(135deg, #3f82f8, #5f9bff); transform: translateY(-1px); }
   .btn-danger { background: var(--danger); color: #fff; }
   .btn-success { background: var(--success); color: #0d1a10; }
   .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
@@ -163,7 +198,7 @@
 
   .sidebar {
     position: fixed; top: 18px; left: 18px; bottom: 18px; width: 258px;
-    background: linear-gradient(180deg, rgba(20,25,37,0.96), rgba(14,18,27,0.98));
+    background: linear-gradient(180deg, rgba(18,27,43,0.96), rgba(13,20,33,0.98));
     border: 1px solid var(--border);
     border-radius: 24px;
     display: flex; flex-direction: column; padding: 24px 0; z-index: 100;
@@ -173,7 +208,7 @@
   .sidebar-logo {
     font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 800;
     padding: 0 22px 24px;
-    background: linear-gradient(135deg, #9bc1ff, var(--accent));
+    background: linear-gradient(135deg, #dce9ff, var(--accent));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     border-bottom: 1px solid var(--border);
   }
@@ -185,7 +220,7 @@
     transition: all 0.15s; user-select: none;
   }
   .nav-item:hover { background: rgba(90,149,255,0.10); color: var(--text); }
-  .nav-item.active { background: linear-gradient(135deg, rgba(90,149,255,0.18), rgba(118,183,255,0.08)); color: #dbe9ff; border: 1px solid rgba(90,149,255,0.14); }
+  .nav-item.active { background: linear-gradient(135deg, rgba(77,141,255,0.18), rgba(125,182,255,0.08)); color: #e4efff; border: 1px solid rgba(77,141,255,0.14); }
   .nav-icon { width: 18px; text-align: center; font-size: 16px; }
   .sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border); }
   .user-chip {
@@ -209,7 +244,7 @@
 
   .page-header { margin-bottom: 24px; padding-top: 10px; }
   .page-title { font-family: 'Syne', sans-serif; font-size: clamp(24px, 4vw, 34px); font-weight: 800; }
-  .page-sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
+  .page-sub { color: var(--muted); font-size: 14px; margin-top: 6px; line-height: 1.5; }
 
   /* ─── CARDS KPI ──────────────────────── */
   .kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 28px; }
@@ -536,8 +571,10 @@
 <!-- ══ LOGIN ══════════════════════════════════════════════════════ -->
 <div id="login-screen">
   <div class="login-box">
+    <div class="login-eyebrow">Plateforme de suivi des interventions</div>
     <div class="login-logo">⚡ InterventionPro</div>
-    <div class="login-sub">Connexion à votre espace</div>
+    <div class="login-sub">Accédez à votre espace de gestion</div>
+    <div class="login-help">Consultez, suivez et traitez les demandes d'intervention dans un environnement clair, sécurisé et simple d'usage.</div>
     <div class="login-status hidden">
       <span class="login-status-dot"></span>
       <span id="login-status-text">Connexion prête.</span>
@@ -553,14 +590,14 @@
     <div class="field-group">
       <div class="field-label">Profil</div>
       <select id="login-role">
-        <option value="">Détection automatique</option>
+        <option value="">Choix automatique</option>
         <option value="agent">Agent</option>
-        <option value="admin">Directeur</option>
+        <option value="admin">Responsable</option>
         <option value="superadmin">Super Admin</option>
       </select>
     </div>
     <button id="login-btn" class="btn btn-primary btn-full" onclick="doLogin(this)">
-      Se connecter
+      Accéder à l'application
     </button>
     <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--muted)">
       <a href="#" style="color:var(--accent);text-decoration:none">Mot de passe oublié ?</a>
@@ -1183,6 +1220,476 @@ const state = {
 };
 
 const SESSION_STORAGE_KEY = 'cfalog_session_v1';
+const LOCAL_DB_STORAGE_KEY = 'cfalog_local_db_v1';
+const APP_RUNTIME_MODE = 'remote';
+const bridgeState = {
+  frame: null,
+  ready: false,
+  pending: new Map(),
+  counter: 0
+};
+
+function isStandaloneMode() {
+  return APP_RUNTIME_MODE === 'standalone';
+}
+
+function localNowIso() {
+  return new Date().toISOString();
+}
+
+function createLocalSeedData() {
+  const now = localNowIso();
+  const sites = [
+    { id: 'STE-001', nom: 'Siège administratif', description: 'Direction et support', actif: true },
+    { id: 'STE-002', nom: 'Cuisine centrale', description: 'Production et maintenance', actif: true },
+    { id: 'STE-003', nom: 'Atelier technique', description: 'Interventions terrain', actif: true }
+  ];
+
+  const categories = [
+    { id: 'CAT-001', nom: 'Electricité', description: 'Pannes et anomalies électriques', couleur: '#4f8ef7', actif: true },
+    { id: 'CAT-002', nom: 'Plomberie', description: 'Fuites, évacuations, sanitaires', couleur: '#4fb889', actif: true },
+    { id: 'CAT-003', nom: 'Sécurité', description: 'Issues, alarmes, protections', couleur: '#e8a54a', actif: true }
+  ];
+
+  const users = [
+    { id: 'USR-001', prenom: 'Sophie', nom: 'Martin', email: 'agent@cfalog.local', role: 'agent', site: 'Cuisine centrale', actif: true, last_login: '', password: 'agent123' },
+    { id: 'USR-002', prenom: 'Nadia', nom: 'Bernard', email: 'admin@cfalog.local', role: 'admin', site: 'Tous', actif: true, last_login: '', password: 'admin123' },
+    { id: 'USR-003', prenom: 'Louis', nom: 'Durand', email: 'superadmin@cfalog.local', role: 'superadmin', site: 'Tous', actif: true, last_login: '', password: 'super123' }
+  ];
+
+  const demandes = [
+    {
+      id: 'INT-20260408-001',
+      site: 'Cuisine centrale',
+      categorie: 'Electricité',
+      description: 'Eclairage défaillant dans la chambre froide principale.',
+      urgence: 'haute',
+      montant_estime: 850,
+      materiel: 'Rampe LED',
+      date_souhaitee: now.slice(0, 10),
+      commentaire: '',
+      commentaire_decision: '',
+      statut: 'En attente',
+      photo_url: '',
+      created_at: now,
+      updated_at: now,
+      agent_id: 'USR-001',
+      agent_nom: 'Sophie Martin',
+      agent_email: 'agent@cfalog.local'
+    },
+    {
+      id: 'INT-20260406-002',
+      site: 'Atelier technique',
+      categorie: 'Plomberie',
+      description: 'Fuite légère sous l’évier de la zone de nettoyage.',
+      urgence: 'normale',
+      montant_estime: 320,
+      materiel: 'Joint et siphon',
+      date_souhaitee: now.slice(0, 10),
+      commentaire: '',
+      commentaire_decision: 'Prise en charge validée.',
+      statut: 'Validée',
+      photo_url: '',
+      created_at: new Date(Date.now() - 2 * 86400000).toISOString(),
+      updated_at: now,
+      agent_id: 'USR-001',
+      agent_nom: 'Sophie Martin',
+      agent_email: 'agent@cfalog.local'
+    }
+  ];
+
+  return {
+    users,
+    sites,
+    categories,
+    demandes,
+    settings: {
+      budget_annuel: 25000,
+      alerte_seuil_pct: 80,
+      retention_months: 24,
+      admin_email: 'direction@cfalog.local'
+    },
+    logs: [
+      { timestamp: now, email: 'system@cfalog.local', action: 'BOOTSTRAP_LOCAL_DB', ip: 'local', hash: 'LOCALDB001' }
+    ]
+  };
+}
+
+function readLocalDb() {
+  try {
+    const raw = localStorage.getItem(LOCAL_DB_STORAGE_KEY);
+    if (!raw) {
+      const seed = createLocalSeedData();
+      writeLocalDb(seed);
+      return seed;
+    }
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') throw new Error('Invalid local DB');
+    return parsed;
+  } catch (error) {
+    console.warn('Local DB read failed, reinitializing', error);
+    const seed = createLocalSeedData();
+    writeLocalDb(seed);
+    return seed;
+  }
+}
+
+function writeLocalDb(db) {
+  localStorage.setItem(LOCAL_DB_STORAGE_KEY, JSON.stringify(db));
+}
+
+function logLocalAudit(db, email, action, detail) {
+  db.logs = db.logs || [];
+  db.logs.unshift({
+    timestamp: localNowIso(),
+    email: email || 'inconnu',
+    action,
+    ip: 'local',
+    hash: btoa(unescape(encodeURIComponent(`${email || ''}|${action}|${detail || ''}|${Date.now()}`))).slice(0, 24)
+  });
+  db.logs = db.logs.slice(0, 200);
+}
+
+function cloneData(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function getLocalSessionUser() {
+  return state.currentUser || null;
+}
+
+function requireLocalUser() {
+  const user = getLocalSessionUser();
+  if (!user) throw new Error('Session locale invalide.');
+  return user;
+}
+
+function requireLocalRole(user, roles) {
+  if (!roles.includes(user.role)) throw new Error('Action non autorisee dans le mode autonome.');
+}
+
+function buildBudgetSummary(db) {
+  const annual = toNumber(db.settings?.budget_annuel);
+  const engaged = (db.demandes || [])
+    .filter(item => item.statut === 'Validée')
+    .reduce((sum, item) => sum + toNumber(item.montant_estime), 0);
+  const remaining = annual - engaged;
+  const pct = annual > 0 ? Math.round((engaged / annual) * 100) : 0;
+  return { annuel: annual, engage: engaged, restant: remaining, pct };
+}
+
+function buildAnalytics(db) {
+  const demandes = db.demandes || [];
+  const total = demandes.length;
+  const counts = {};
+  const byCategory = {};
+  const bySite = {};
+  let refusal = 0;
+  let delayTotal = 0;
+  let delayCount = 0;
+
+  demandes.forEach(item => {
+    counts[item.statut] = (counts[item.statut] || 0) + 1;
+    if (item.statut === 'Refusée') refusal += 1;
+    if (item.statut === 'Validée') {
+      byCategory[item.categorie || 'Sans catégorie'] = (byCategory[item.categorie || 'Sans catégorie'] || 0) + toNumber(item.montant_estime);
+      bySite[item.site || 'Sans site'] = (bySite[item.site || 'Sans site'] || 0) + toNumber(item.montant_estime);
+      const created = new Date(item.created_at || item.date_souhaitee || Date.now());
+      const updated = new Date(item.updated_at || item.created_at || Date.now());
+      const diff = Math.max(0, Math.round((updated - created) / 86400000));
+      delayTotal += diff;
+      delayCount += 1;
+    }
+  });
+
+  return {
+    total,
+    par_statut: counts,
+    par_categorie: byCategory,
+    par_site: bySite,
+    taux_refus: total ? Math.round((refusal / total) * 100) : 0,
+    delai_moyen: delayCount ? Math.round(delayTotal / delayCount) : 0
+  };
+}
+
+function sanitizeLocalUser(user) {
+  const copy = { ...user };
+  delete copy.password;
+  return copy;
+}
+
+async function localLoginRequest(email, password, role) {
+  const db = readLocalDb();
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  const requestedRole = String(role || '').trim().toLowerCase();
+  const user = (db.users || []).find(item =>
+    item.email.toLowerCase() === normalizedEmail &&
+    item.actif !== false &&
+    (!requestedRole || item.role === requestedRole) &&
+    String(item.password || '') === String(password || '')
+  );
+
+  if (!user) {
+    logLocalAudit(db, normalizedEmail, 'LOGIN_FAILED', requestedRole || 'auto');
+    writeLocalDb(db);
+    return { success: false, error: 'Email, mot de passe ou profil incorrect.' };
+  }
+
+  user.last_login = localNowIso();
+  logLocalAudit(db, user.email, 'LOGIN_SUCCESS', user.role);
+  writeLocalDb(db);
+
+  return {
+    success: true,
+    token: `local-${user.id}-${Date.now()}`,
+    user: sanitizeLocalUser(user)
+  };
+}
+
+async function localApiRequest(action, payload = {}) {
+  const db = readLocalDb();
+  const currentUser = requireLocalUser();
+
+  if (action === 'getMyDemandes') {
+    return cloneData((db.demandes || []).filter(item => item.agent_email === currentUser.email));
+  }
+
+  if (action === 'getCategories') {
+    if (payload && payload.includeInactive) return cloneData(db.categories || []);
+    return cloneData((db.categories || []).filter(item => item.actif !== false));
+  }
+
+  if (action === 'getSites') {
+    if (payload && payload.includeInactive) return cloneData(db.sites || []);
+    return cloneData((db.sites || []).filter(item => item.actif !== false));
+  }
+
+  if (action === 'createDemande' || action === 'saveDraft') {
+    requireLocalRole(currentUser, ['agent', 'admin', 'superadmin']);
+    const statut = action === 'saveDraft' ? 'Brouillon' : 'En attente';
+    const demande = {
+      id: createTempId(action === 'saveDraft' ? 'DRF' : 'INT'),
+      site: payload.site || '',
+      categorie: payload.categorie || '',
+      description: payload.description || '',
+      urgence: payload.urgence || 'normale',
+      montant_estime: toNumber(payload.montant),
+      materiel: payload.materiel || '',
+      date_souhaitee: payload.date_souhaitee || '',
+      commentaire: payload.commentaire || '',
+      commentaire_decision: '',
+      statut,
+      photo_url: payload.photo_url || '',
+      created_at: localNowIso(),
+      updated_at: localNowIso(),
+      agent_id: currentUser.id,
+      agent_nom: currentUser.name,
+      agent_email: currentUser.email
+    };
+    db.demandes.unshift(demande);
+    logLocalAudit(db, currentUser.email, action === 'saveDraft' ? 'SAVE_DRAFT' : 'CREATE_DEMANDE', demande.id);
+    writeLocalDb(db);
+    return { id: demande.id };
+  }
+
+  if (action === 'uploadPhoto') {
+    return { file_id: `data:${payload.mimeType || 'image/png'};base64,${payload.base64 || ''}` };
+  }
+
+  if (action === 'getAllDemandes') {
+    requireLocalRole(currentUser, ['admin', 'superadmin']);
+    return cloneData(db.demandes || []);
+  }
+
+  if (action === 'getBudget') {
+    requireLocalRole(currentUser, ['admin', 'superadmin']);
+    return buildBudgetSummary(db);
+  }
+
+  if (action === 'getAnalytics') {
+    requireLocalRole(currentUser, ['admin', 'superadmin']);
+    return buildAnalytics(db);
+  }
+
+  if (action === 'simulateBudget') {
+    requireLocalRole(currentUser, ['admin', 'superadmin']);
+    const budget = buildBudgetSummary(db);
+    const amount = toNumber(payload.montant);
+    const afterEngaged = budget.engage + amount;
+    const annual = toNumber(budget.annuel);
+    return {
+      avant: { restant: budget.restant },
+      apres_validation: {
+        restant: annual - afterEngaged,
+        pct_consomme: annual > 0 ? Math.round((afterEngaged / annual) * 100) : 0
+      }
+    };
+  }
+
+  if (action === 'updateStatut') {
+    requireLocalRole(currentUser, ['admin', 'superadmin']);
+    const demande = (db.demandes || []).find(item => item.id === payload.id);
+    if (!demande) throw new Error('Demande introuvable.');
+    demande.statut = payload.action === 'validate' ? 'Validée' : payload.action === 'refuse' ? 'Refusée' : 'Complément demandé';
+    demande.commentaire_decision = payload.commentaire || '';
+    demande.updated_at = localNowIso();
+    logLocalAudit(db, currentUser.email, 'UPDATE_STATUT', `${demande.id}:${demande.statut}`);
+    writeLocalDb(db);
+    return { ok: true };
+  }
+
+  if (action === 'getUsers') {
+    requireLocalRole(currentUser, ['superadmin']);
+    return cloneData((db.users || []).map(sanitizeLocalUser));
+  }
+
+  if (action === 'createUser') {
+    requireLocalRole(currentUser, ['superadmin']);
+    if ((db.users || []).some(item => item.email.toLowerCase() === String(payload.email || '').toLowerCase())) {
+      throw new Error('Cet email existe deja.');
+    }
+    const user = {
+      id: createTempId('USR'),
+      prenom: payload.prenom || '',
+      nom: payload.nom || '',
+      email: String(payload.email || '').trim().toLowerCase(),
+      role: payload.role || 'agent',
+      site: payload.site || 'Tous',
+      actif: true,
+      last_login: '',
+      password: payload.password || generateTemporaryPassword()
+    };
+    db.users.unshift(user);
+    logLocalAudit(db, currentUser.email, 'CREATE_USER', user.email);
+    writeLocalDb(db);
+    return { id: user.id };
+  }
+
+  if (action === 'updateUser') {
+    requireLocalRole(currentUser, ['superadmin']);
+    const user = (db.users || []).find(item => item.id === payload.id);
+    if (!user) throw new Error('Utilisateur introuvable.');
+    if (payload.actif !== undefined) user.actif = !!payload.actif;
+    logLocalAudit(db, currentUser.email, 'UPDATE_USER', user.email);
+    writeLocalDb(db);
+    return { ok: true };
+  }
+
+  if (action === 'getSettings') {
+    requireLocalRole(currentUser, ['superadmin']);
+    return cloneData(db.settings || {});
+  }
+
+  if (action === 'saveSettings') {
+    requireLocalRole(currentUser, ['superadmin']);
+    db.settings = {
+      ...db.settings,
+      budget_annuel: toNumber(payload.budget_annuel),
+      alerte_seuil_pct: toNumber(payload.alerte_seuil_pct) || 80,
+      retention_months: toNumber(payload.retention_months) || 24,
+      admin_email: payload.admin_email || ''
+    };
+    logLocalAudit(db, currentUser.email, 'SAVE_SETTINGS', 'settings');
+    writeLocalDb(db);
+    return cloneData(db.settings);
+  }
+
+  if (action === 'createCategory') {
+    requireLocalRole(currentUser, ['superadmin']);
+    const category = {
+      id: createTempId('CAT'),
+      nom: payload.nom || '',
+      description: payload.description || '',
+      couleur: payload.couleur || '#4f8ef7',
+      actif: true
+    };
+    db.categories.push(category);
+    logLocalAudit(db, currentUser.email, 'CREATE_CATEGORY', category.nom);
+    writeLocalDb(db);
+    return { id: category.id };
+  }
+
+  if (action === 'updateCategory') {
+    requireLocalRole(currentUser, ['superadmin']);
+    const category = (db.categories || []).find(item => item.id === payload.id);
+    if (!category) throw new Error('Categorie introuvable.');
+    if (payload.nom !== undefined) category.nom = payload.nom;
+    if (payload.description !== undefined) category.description = payload.description;
+    if (payload.couleur !== undefined) category.couleur = payload.couleur;
+    if (payload.actif !== undefined) category.actif = !!payload.actif;
+    logLocalAudit(db, currentUser.email, 'UPDATE_CATEGORY', category.nom);
+    writeLocalDb(db);
+    return { ok: true };
+  }
+
+  if (action === 'deleteCategory') {
+    requireLocalRole(currentUser, ['superadmin']);
+    db.categories = (db.categories || []).filter(item => item.id !== payload.id);
+    logLocalAudit(db, currentUser.email, 'DELETE_CATEGORY', payload.id);
+    writeLocalDb(db);
+    return { ok: true };
+  }
+
+  if (action === 'createSite') {
+    requireLocalRole(currentUser, ['superadmin']);
+    const site = {
+      id: createTempId('STE'),
+      nom: payload.nom || '',
+      description: payload.description || '',
+      actif: true
+    };
+    db.sites.push(site);
+    logLocalAudit(db, currentUser.email, 'CREATE_SITE', site.nom);
+    writeLocalDb(db);
+    return { id: site.id };
+  }
+
+  if (action === 'updateSite') {
+    requireLocalRole(currentUser, ['superadmin']);
+    const site = (db.sites || []).find(item => item.id === payload.id);
+    if (!site) throw new Error('Site introuvable.');
+    if (payload.nom !== undefined) site.nom = payload.nom;
+    if (payload.description !== undefined) site.description = payload.description;
+    if (payload.actif !== undefined) site.actif = !!payload.actif;
+    logLocalAudit(db, currentUser.email, 'UPDATE_SITE', site.nom);
+    writeLocalDb(db);
+    return { ok: true };
+  }
+
+  if (action === 'deleteSite') {
+    requireLocalRole(currentUser, ['superadmin']);
+    db.sites = (db.sites || []).filter(item => item.id !== payload.id);
+    logLocalAudit(db, currentUser.email, 'DELETE_SITE', payload.id);
+    writeLocalDb(db);
+    return { ok: true };
+  }
+
+  if (action === 'getLogs') {
+    requireLocalRole(currentUser, ['superadmin']);
+    const limit = Math.max(1, toNumber(payload.limit) || 30);
+    return cloneData((db.logs || []).slice(0, limit));
+  }
+
+  if (action === 'exportAuditSecurity') {
+    requireLocalRole(currentUser, ['superadmin']);
+    const rows = [['timestamp', 'email', 'action', 'ip', 'hash']]
+      .concat((db.logs || []).map(item => [item.timestamp, item.email, item.action, item.ip, item.hash]));
+    return {
+      filename: 'audit_security_local.csv',
+      csv: rows.map(row => row.map(value => `"${String(value || '').replace(/"/g, '""')}"`).join(',')).join('\n')
+    };
+  }
+
+  if (action === 'purgeAuditSecurity') {
+    requireLocalRole(currentUser, ['superadmin']);
+    db.logs = [];
+    logLocalAudit(db, currentUser.email, 'PURGE_AUDIT', 'all');
+    writeLocalDb(db);
+    return { message: 'Journal local purgé.' };
+  }
+
+  throw new Error(`Action non prise en charge en mode autonome : ${action}`);
+}
 
 function getActiveCategories() {
   return state.categories.filter(category => category.actif !== false && String(category.actif).toLowerCase() !== 'false');
@@ -1271,7 +1778,7 @@ async function withButtonLoading(button, loadingText, task) {
 function renderTableSkeleton(tbodyId, columns, lines = 4) {
   const tbody = document.getElementById(tbodyId);
   if (!tbody) return;
-  tbody.innerHTML = Array.from({ length: lines }).map(() => `
+  tbody.innerHTML = Array.from({ lengfzth: lines }).map(() => `
     <tr>
       ${Array.from({ length: columns }).map(() => `<td><div class="skeleton-line ${Math.random() > 0.5 ? 'medium' : 'short'}"></div></td>`).join('')}
     </tr>
@@ -1325,7 +1832,8 @@ function downloadCsv(filename, csv) {
 }
 
 function isApiConfigured() {
-  return !APPS_SCRIPT_WEBAPP_URL.includes('REPLACE_WITH_YOUR_DEPLOYMENT_ID');
+  const url = String(APPS_SCRIPT_WEBAPP_URL || '').trim();
+  return /^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/i.test(url);
 }
 
 function isGitHubPagesHost() {
@@ -1341,6 +1849,105 @@ function shouldUseJsonp(action) {
     isLocalFileHost() ||
     isGitHubPagesHost()
   );
+}
+
+function getBridgeUrl() {
+  const params = new URLSearchParams({
+    action: 'bridge',
+    origin: window.location.origin || 'null'
+  });
+  return `${APPS_SCRIPT_WEBAPP_URL}?${params.toString()}`;
+}
+
+function ensureBridgeFrame() {
+  if (bridgeState.frame && document.body.contains(bridgeState.frame)) {
+    return bridgeState.frame;
+  }
+
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.width = '1px';
+  iframe.style.height = '1px';
+  iframe.style.opacity = '0';
+  iframe.style.pointerEvents = 'none';
+  iframe.style.border = '0';
+  iframe.setAttribute('aria-hidden', 'true');
+  iframe.src = getBridgeUrl();
+  document.body.appendChild(iframe);
+  bridgeState.frame = iframe;
+  bridgeState.ready = false;
+  return iframe;
+}
+
+window.addEventListener('message', event => {
+  const data = event && event.data ? event.data : {};
+  if (!data || typeof data !== 'object') return;
+
+  if (data.type === 'cfalog-bridge-ready') {
+    bridgeState.ready = true;
+    return;
+  }
+
+  if (data.type !== 'cfalog-bridge-response' || !data.id) return;
+  const entry = bridgeState.pending.get(data.id);
+  if (!entry) return;
+  bridgeState.pending.delete(data.id);
+  if (entry.timeoutId) clearTimeout(entry.timeoutId);
+
+  if (data.success) entry.resolve(data.data);
+  else entry.reject(new Error(data.error || 'Erreur bridge Apps Script'));
+});
+
+function apiRequestBridge(action, payload = {}, options = {}) {
+  return new Promise((resolve, reject) => {
+    const iframe = ensureBridgeFrame();
+    const requestId = `bridge_${Date.now()}_${++bridgeState.counter}`;
+    const timeoutMs = options.timeoutMs || 12000;
+
+    const send = () => {
+      try {
+        bridgeState.pending.set(requestId, {
+          resolve,
+          reject,
+          timeoutId: setTimeout(() => {
+            bridgeState.pending.delete(requestId);
+            reject(new Error("La passerelle Apps Script n'a pas repondu."));
+          }, timeoutMs)
+        });
+
+        iframe.contentWindow.postMessage({
+          type: 'cfalog-bridge-request',
+          id: requestId,
+          body: {
+            action,
+            payload,
+            token: options.skipAuth ? undefined : state.authToken
+          }
+        }, '*');
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    if (bridgeState.ready) {
+      send();
+      return;
+    }
+
+    const startedAt = Date.now();
+    const waitReady = () => {
+      if (bridgeState.ready) {
+        send();
+        return;
+      }
+      if (Date.now() - startedAt > timeoutMs) {
+        reject(new Error("La passerelle Apps Script n'a pas pu s'initialiser."));
+        return;
+      }
+      setTimeout(waitReady, 120);
+    };
+    waitReady();
+  });
 }
 
 function setLoginStatus(message, tone = 'info') {
@@ -1459,8 +2066,16 @@ function explainLoginFailure(data) {
 }
 
 async function apiRequest(action, payload = {}, options = {}) {
+  if (isStandaloneMode()) {
+    return localApiRequest(action, payload, options);
+  }
+
   if (!isApiConfigured()) {
     throw new Error("Renseignez l'URL Apps Script dans APPS_SCRIPT_WEBAPP_URL.");
+  }
+
+  if (isLocalFileHost()) {
+    return apiRequestBridge(action, payload, options);
   }
 
   if (shouldUseJsonp(action)) {
@@ -1549,11 +2164,15 @@ async function doLogin(button) {
 
   try {
     let data = null;
-    try {
-      data = await fetchLoginRequest(email, password, role, 10000);
-    } catch (fetchErr) {
-      console.warn('Login fetch failed, fallback JSONP', fetchErr);
-      data = await jsonpLoginRequest(email, password, role, 12000);
+    if (isStandaloneMode()) {
+      data = await localLoginRequest(email, password, role);
+    } else {
+      try {
+        data = await fetchLoginRequest(email, password, role, 10000);
+      } catch (fetchErr) {
+        console.warn('Login fetch failed, fallback JSONP', fetchErr);
+        data = await jsonpLoginRequest(email, password, role, 12000);
+      }
     }
 
     if (!applyLoginResult(data)) {
@@ -2807,6 +3426,9 @@ document.addEventListener('keydown', e => {
 
 document.addEventListener('DOMContentLoaded', () => {
   hideLoginStatus();
+  if (isStandaloneMode()) {
+    setLoginStatus('Mode autonome local actif. Comptes: agent@cfalog.local / agent123, admin@cfalog.local / admin123, superadmin@cfalog.local / super123.', 'success');
+  }
   resumePersistedSession().catch(error => {
     console.warn('Persisted session restore failed', error);
   });
