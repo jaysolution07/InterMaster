@@ -1142,8 +1142,15 @@ function isApiConfigured() {
   return !APPS_SCRIPT_WEBAPP_URL.includes('REPLACE_WITH_YOUR_DEPLOYMENT_ID');
 }
 
+function isGitHubPagesHost() {
+  return /\.github\.io$/i.test(window.location.hostname || '');
+}
+
 function shouldUseJsonp(action) {
-  return window.location.protocol === 'file:' && action !== 'uploadPhoto';
+  return action !== 'uploadPhoto' && (
+    window.location.protocol === 'file:' ||
+    isGitHubPagesHost()
+  );
 }
 
 async function apiRequest(action, payload = {}, options = {}) {
