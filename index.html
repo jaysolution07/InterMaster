@@ -1,0 +1,2507 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InterventionPro — Gestion des demandes</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161921;
+    --surface2: #1e2230;
+    --border: #2a2f3d;
+    --accent: #4f8ef7;
+    --accent2: #7c5cf6;
+    --danger: #f74f6a;
+    --warning: #f7a34f;
+    --success: #4ff7a3;
+    --text: #e8eaf2;
+    --muted: #6b7394;
+    --card-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── LOGIN ─────────────────────────── */
+  #login-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, #1a2040 0%, var(--bg) 70%);
+  }
+
+  .login-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px 40px;
+    width: 380px;
+    box-shadow: var(--card-shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .login-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .login-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .login-sub { color: var(--muted); font-size: 13px; margin-bottom: 32px; }
+  .field-label { font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; }
+  .field-group { margin-bottom: 18px; }
+  input, select, textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  select option { background: var(--surface2); }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 11px 20px; border-radius: 10px; border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+    transition: all 0.2s; text-decoration: none;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #3a7de8; transform: translateY(-1px); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-success { background: var(--success); color: #0d1a10; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+  .btn-full { width: 100%; }
+  .btn-sm { padding: 7px 14px; font-size: 12px; }
+  .btn[disabled] { opacity: 0.65; cursor: wait; transform: none; }
+  .btn.is-loading::after {
+    content: '';
+    width: 12px; height: 12px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.35);
+    border-top-color: currentColor;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ─── APP SHELL ─────────────────────── */
+  #app { display: none; min-height: 100vh; }
+
+  .sidebar {
+    position: fixed; top: 0; left: 0; bottom: 0; width: 240px;
+    background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; padding: 24px 0; z-index: 100;
+  }
+  .sidebar-logo {
+    font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 800;
+    padding: 0 20px 24px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-section { padding: 16px 12px 4px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 20px; margin: 2px 8px; border-radius: 8px;
+    cursor: pointer; font-size: 14px; color: var(--muted);
+    transition: all 0.15s; user-select: none;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: rgba(79,142,247,0.12); color: var(--accent); }
+  .nav-icon { width: 18px; text-align: center; font-size: 16px; }
+  .sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border); }
+  .user-chip {
+    display: flex; align-items: center; gap: 10px; padding: 10px;
+    background: var(--surface2); border-radius: 10px;
+  }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 12px; color: #fff; flex-shrink: 0;
+  }
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-role { font-size: 11px; color: var(--muted); }
+
+  .main { margin-left: 240px; padding: 32px; min-height: 100vh; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-header { margin-bottom: 28px; }
+  .page-title { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; }
+  .page-sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
+
+  /* ─── CARDS KPI ──────────────────────── */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .kpi-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px;
+    position: relative; overflow: hidden;
+  }
+  .kpi-card::after {
+    content: ''; position: absolute; top: 0; right: 0; width: 60px; height: 60px;
+    border-radius: 0 14px 0 60px; opacity: 0.08;
+  }
+  .kpi-card.blue::after { background: var(--accent); }
+  .kpi-card.purple::after { background: var(--accent2); }
+  .kpi-card.green::after { background: var(--success); }
+  .kpi-card.orange::after { background: var(--warning); }
+  .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 8px; }
+  .kpi-value { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; }
+  .kpi-value.blue { color: var(--accent); }
+  .kpi-value.purple { color: var(--accent2); }
+  .kpi-value.green { color: var(--success); }
+  .kpi-value.orange { color: var(--warning); }
+  .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* ─── BUDGET BAR ─────────────────────── */
+  .budget-bar-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 28px; }
+  .budget-bar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .budget-bar-title { font-weight: 600; }
+  .budget-bar-pct { font-family: 'Syne', sans-serif; font-size: 18px; color: var(--accent); }
+  .budget-track { background: var(--surface2); border-radius: 99px; height: 8px; overflow: hidden; }
+  .budget-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 1s ease; }
+  .budget-fill.warning { background: linear-gradient(90deg, var(--warning), var(--danger)); }
+  .budget-meta { display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: var(--muted); }
+
+  /* ─── TABLE ──────────────────────────── */
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .table-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+  .table-title { font-weight: 600; }
+  .search-bar {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 12px; font-family: 'DM Sans', sans-serif; color: var(--text);
+    font-size: 13px; outline: none; width: 220px;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { padding: 12px 16px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); text-align: left; border-bottom: 1px solid var(--border); }
+  tbody td { padding: 14px 16px; font-size: 13px; border-bottom: 1px solid rgba(42,47,61,0.5); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* ─── BADGES ─────────────────────────── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 99px; font-size: 11px; font-weight: 500; white-space: nowrap;
+  }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .badge-pending { background: rgba(247,163,79,0.15); color: var(--warning); }
+  .badge-pending .badge-dot { background: var(--warning); }
+  .badge-validated { background: rgba(79,247,163,0.12); color: var(--success); }
+  .badge-validated .badge-dot { background: var(--success); }
+  .badge-refused { background: rgba(247,79,106,0.12); color: var(--danger); }
+  .badge-refused .badge-dot { background: var(--danger); }
+  .badge-draft { background: rgba(107,115,148,0.15); color: var(--muted); }
+  .badge-draft .badge-dot { background: var(--muted); }
+  .urgency-high { background: rgba(247,79,106,0.12); color: var(--danger); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+  .urgency-med { background: rgba(247,163,79,0.12); color: var(--warning); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+  .urgency-low { background: rgba(79,247,163,0.08); color: var(--success); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+
+  /* ─── MODAL ──────────────────────────── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+    width: 560px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    animation: modalIn 0.2s ease;
+  }
+  @keyframes modalIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: var(--surface); z-index: 1;
+  }
+  .modal-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+  .modal-close { background: var(--surface2); border: none; border-radius: 8px; padding: 6px 10px; color: var(--muted); cursor: pointer; font-size: 16px; transition: color 0.15s; }
+  .modal-close:hover { color: var(--text); }
+  .modal-body { padding: 24px; }
+  .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .form-row-1 { margin-bottom: 16px; }
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* ─── UPLOAD ZONE ────────────────────── */
+  .upload-zone {
+    border: 2px dashed var(--border); border-radius: 12px; padding: 28px;
+    text-align: center; cursor: pointer; transition: all 0.2s;
+    color: var(--muted); font-size: 13px;
+  }
+  .upload-zone:hover { border-color: var(--accent); color: var(--accent); background: rgba(79,142,247,0.04); }
+  .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  #preview-img { max-width: 100%; border-radius: 10px; display: none; margin-top: 12px; border: 1px solid var(--border); }
+
+  /* ─── VALIDATION PANEL ───────────────── */
+  .validation-panel {
+    background: var(--surface2); border-radius: 12px; padding: 16px; margin-bottom: 16px;
+    border-left: 3px solid var(--accent);
+  }
+  .simulation-box {
+    background: rgba(247,163,79,0.08); border: 1px solid rgba(247,163,79,0.3);
+    border-radius: 10px; padding: 14px; margin-bottom: 16px;
+  }
+  .simulation-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--warning); margin-bottom: 8px; }
+  .sim-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+  .sim-result { font-weight: 600; color: var(--warning); }
+  .sim-result.danger { color: var(--danger); }
+
+  /* ─── TIMELINE ───────────────────────── */
+  .timeline { padding: 0; list-style: none; }
+  .timeline-item { display: flex; gap: 14px; margin-bottom: 16px; position: relative; }
+  .timeline-item::before {
+    content: ''; position: absolute; left: 14px; top: 30px; bottom: -16px;
+    width: 1px; background: var(--border);
+  }
+  .timeline-item:last-child::before { display: none; }
+  .timeline-dot {
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 12px;
+    background: var(--surface2); border: 2px solid var(--border);
+  }
+  .timeline-dot.blue { background: rgba(79,142,247,0.15); border-color: var(--accent); }
+  .timeline-dot.green { background: rgba(79,247,163,0.1); border-color: var(--success); }
+  .timeline-content { flex: 1; padding-top: 4px; }
+  .timeline-text { font-size: 13px; }
+  .timeline-time { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* ─── CHART PLACEHOLDERS ─────────────── */
+  .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-top: 24px; }
+  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+  .chart-title { font-weight: 600; margin-bottom: 16px; }
+  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 120px; }
+  .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .bar {
+    width: 100%; border-radius: 4px 4px 0 0;
+    background: linear-gradient(180deg, var(--accent), rgba(79,142,247,0.3));
+    transition: height 0.5s ease; min-height: 4px;
+  }
+  .bar-label { font-size: 10px; color: var(--muted); text-align: center; }
+  .donut-placeholder {
+    width: 100px; height: 100px; border-radius: 50%;
+    background: conic-gradient(var(--accent) 0 60%, var(--accent2) 60% 80%, var(--warning) 80% 100%);
+    margin: 0 auto 16px;
+    position: relative;
+  }
+  .donut-hole {
+    position: absolute; inset: 20px; background: var(--surface); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
+  }
+  .donut-legend { display: flex; flex-direction: column; gap: 8px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+  /* ─── TOAST ──────────────────────────── */
+  #toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 999;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 18px; font-size: 13px;
+    display: flex; align-items: center; gap: 10px;
+    transform: translateY(80px); opacity: 0; transition: all 0.3s ease;
+    box-shadow: var(--card-shadow); max-width: 320px;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast.success { border-left: 3px solid var(--success); }
+  #toast.error { border-left: 3px solid var(--danger); }
+
+  /* ─── TABS ───────────────────────────── */
+  .tabs { display: flex; gap: 4px; background: var(--surface2); border-radius: 10px; padding: 4px; margin-bottom: 20px; width: fit-content; }
+  .tab { padding: 8px 18px; border-radius: 7px; font-size: 13px; cursor: pointer; color: var(--muted); transition: all 0.15s; }
+  .tab.active { background: var(--surface); color: var(--text); font-weight: 500; }
+
+  .divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+  /* ─── RESPONSIVE ──────────────────────── */
+  @media (max-width: 900px) {
+    .sidebar { width: 60px; }
+    .sidebar-logo, .nav-item span, .user-info, .sidebar-section { display: none; }
+    .nav-item { justify-content: center; padding: 12px; margin: 2px; }
+    .main { margin-left: 60px; padding: 20px; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    .charts-grid { grid-template-columns: 1fr; }
+  }
+
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--muted); }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-text { font-size: 14px; }
+  .skeleton-block, .skeleton-line {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255,255,255,0.06);
+  }
+  .skeleton-block::after, .skeleton-line::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.09), transparent);
+    animation: shimmer 1.2s infinite;
+  }
+  .skeleton-line { height: 12px; border-radius: 999px; }
+  .skeleton-line + .skeleton-line { margin-top: 8px; }
+  .skeleton-line.short { width: 36%; }
+  .skeleton-line.medium { width: 58%; }
+  .skeleton-chip {
+    width: 84px; height: 24px; border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    position: relative; overflow: hidden;
+  }
+  .skeleton-chip::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.09), transparent);
+    animation: shimmer 1.2s infinite;
+  }
+  @keyframes shimmer { 100% { transform: translateX(100%); } }
+  .pending-row { opacity: 0.7; }
+  .admin-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .settings-card { max-width:560px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px; }
+
+  .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
+  .filter-select { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══════════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">⚡ InterventionPro</div>
+    <div class="login-sub">Plateforme de gestion des demandes d'intervention</div>
+    <div class="field-group">
+      <div class="field-label">Adresse email</div>
+      <input type="email" id="login-email" placeholder="prenom.nom@organisme.fr">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Mot de passe</div>
+      <input type="password" id="login-pwd" placeholder="••••••••">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Profil</div>
+      <select id="login-role">
+        <option value="">Détection automatique</option>
+        <option value="agent">Agent</option>
+        <option value="admin">Directeur</option>
+        <option value="superadmin">Super Admin</option>
+      </select>
+    </div>
+    <button id="login-btn" class="btn btn-primary btn-full" onclick="doLogin(this)">
+  Se connecter
+</button>
+    <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--muted)">
+      <a href="#" style="color:var(--accent);text-decoration:none">Mot de passe oublié ?</a>
+    </div>
+    <div style="margin-top:20px;padding:12px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--muted)">
+      Connexion sécurisée reliée à votre base Google Sheets via Google Apps Script.
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP ═════════════════════════════════════════════════════════ -->
+<div id="app">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">⚡ InterventionPro</div>
+
+    <!-- AGENT nav -->
+    <div id="nav-agent">
+      <div class="sidebar-section">Espace agent</div>
+      <div class="nav-item active" onclick="showPage('agent-dashboard')">
+        <span class="nav-icon">🏠</span><span>Tableau de bord</span>
+      </div>
+      <div class="nav-item" onclick="showPage('agent-new')">
+        <span class="nav-icon">?</span><span>Nouvelle demande</span>
+      </div>
+      <div class="nav-item" onclick="showPage('agent-list')">
+        <span class="nav-icon">🗂️</span><span>Mes demandes</span>
+      </div>
+    </div>
+
+    <!-- ADMIN nav -->
+    <div id="nav-admin" style="display:none">
+      <div class="sidebar-section">Administration</div>
+      <div class="nav-item active" onclick="showPage('admin-dashboard')">
+        <span class="nav-icon">📊</span><span>Dashboard</span>
+      </div>
+      <div class="nav-item" onclick="showPage('admin-demandes')">
+        <span class="nav-icon">📋</span><span>Demandes</span>
+      </div>
+      <div class="nav-item" onclick="showPage('admin-budget')">
+        <span class="nav-icon">💶</span><span>Budget</span>
+      </div>
+      <div class="nav-item" onclick="showPage('admin-analytics')">
+        <span class="nav-icon">📈</span><span>Analytics</span>
+      </div>
+    </div>
+
+    <!-- SUPER ADMIN nav -->
+    <div id="nav-superadmin" style="display:none">
+      <div class="sidebar-section">Super Admin</div>
+      <div class="nav-item" onclick="showPage('sa-users')">
+        <span class="nav-icon">👥</span><span>Utilisateurs</span>
+      </div>
+      <div class="nav-item" onclick="showPage('sa-settings')">
+        <span class="nav-icon">⚙️</span><span>Paramètres</span>
+      </div>
+      <div class="nav-item" onclick="showPage('sa-rgpd')">
+        <span class="nav-icon">🔐</span><span>RGPD / Logs</span>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="avatar" id="sidebar-avatar">AG</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebar-name">Agent</div>
+          <div class="user-role" id="sidebar-role">agent</div>
+        </div>
+        <span style="cursor:pointer;color:var(--muted);font-size:14px" onclick="doLogout()">↩</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main">
+
+    <!-- ── AGENT DASHBOARD ───────────────────── -->
+    <div class="page active" id="page-agent-dashboard">
+      <div class="page-header">
+        <div class="page-title">Bonjour, <span id="agent-firstname">Agent</span> 👋</div>
+        <div class="page-sub">Voici un aperçu de vos demandes en cours</div>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi-card blue">
+          <div class="kpi-label">Total demandes</div>
+          <div class="kpi-value blue" id="kpi-total">0</div>
+          <div class="kpi-sub">Toutes périodes</div>
+        </div>
+        <div class="kpi-card orange">
+          <div class="kpi-label">En attente</div>
+          <div class="kpi-value orange" id="kpi-pending">0</div>
+          <div class="kpi-sub">Validation direction</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">Validées</div>
+          <div class="kpi-value green" id="kpi-valid">0</div>
+          <div class="kpi-sub">Ce mois</div>
+        </div>
+        <div class="kpi-card purple">
+          <div class="kpi-label">Montant engagé</div>
+          <div class="kpi-value purple" id="kpi-amount">0 €</div>
+          <div class="kpi-sub">Demandes validées</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="table-title">Dernières demandes</div>
+          <button class="btn btn-primary btn-sm" onclick="showPage('agent-new')">+ Nouvelle</button>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Référence</th><th>Description</th><th>Site</th><th>Urgence</th><th>Montant</th><th>Statut</th><th></th></tr>
+          </thead>
+          <tbody id="agent-demandes-table">
+            <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted)">Aucune demande pour l'instant</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── NOUVELLE DEMANDE ──────────────────── -->
+    <div class="page" id="page-agent-new">
+      <div class="page-header">
+        <div class="page-title">Nouvelle demande</div>
+        <div class="page-sub">Remplissez le formulaire d'intervention</div>
+      </div>
+
+      <div style="max-width:640px">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px">
+
+          <div class="form-row">
+            <div>
+              <div class="field-label">Site / Bâtiment *</div>
+              <select id="f-site">
+                <option value="">Sélectionner...</option>
+              </select>
+            </div>
+            <div>
+              <div class="field-label">Catégorie *</div>
+              <select id="f-cat">
+                <option value="">Sélectionner...</option>
+                <option>Maintenance bâtiment</option>
+                <option>Matériel pédagogique</option>
+                <option>Informatique</option>
+                <option>Sécurité incendie</option>
+                <option>Espaces verts</option>
+                <option>Plomberie</option>
+                <option>Électricité</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row-1">
+            <div class="field-label">Description du problème *</div>
+            <textarea id="f-desc" placeholder="Décrivez précisément la situation, la localisation exacte dans le bâtiment, et les risques éventuels..."></textarea>
+          </div>
+
+          <div class="form-row">
+            <div>
+              <div class="field-label">Niveau d'urgence *</div>
+              <select id="f-urgence">
+                <option value="">Sélectionner...</option>
+                <option value="critique">🔴 Critique — Danger immédiat</option>
+                <option value="haute">🟠 Haute — Cette semaine</option>
+                <option value="normale">🟡 Normale — Ce mois</option>
+                <option value="basse">🟢 Basse — Sans urgence</option>
+              </select>
+            </div>
+            <div>
+              <div class="field-label">Date souhaitée</div>
+              <input type="date" id="f-date">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div>
+              <div class="field-label">Montant estimé (€)</div>
+              <input type="number" id="f-montant" placeholder="0.00" step="0.01">
+            </div>
+            <div>
+              <div class="field-label">Matériel nécessaire</div>
+              <input type="text" id="f-materiel" placeholder="Ex: peinture, vis, câble...">
+            </div>
+          </div>
+
+          <div class="form-row-1">
+            <div class="field-label">Photo(s) justificative(s)</div>
+            <div class="upload-zone" onclick="document.getElementById('f-photo').click()">
+              <div class="upload-icon">📷</div>
+              <div>Cliquez ou glissez une photo ici</div>
+              <div style="font-size:11px;margin-top:4px">JPG, PNG — max 5 Mo</div>
+            </div>
+            <input type="file" id="f-photo" accept="image/*" style="display:none" onchange="previewPhoto(this)">
+            <img id="preview-img">
+          </div>
+
+          <div class="form-row-1">
+            <div class="field-label">Commentaire libre</div>
+            <input type="text" id="f-comment" placeholder="Informations complémentaires...">
+          </div>
+
+          <div class="divider"></div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-ghost" onclick="saveDraft(this)">💾 Enregistrer brouillon</button>
+            <button class="btn btn-primary" onclick="submitDemande(this)">📤 Envoyer la demande</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MES DEMANDES ──────────────────────── -->
+    <div class="page" id="page-agent-list">
+      <div class="page-header">
+        <div class="page-title">Mes demandes</div>
+        <div class="page-sub">Historique et suivi</div>
+      </div>
+      <div class="filter-bar">
+        <input class="search-bar" placeholder="🔍 Rechercher..." oninput="filterDemandes(this.value)">
+        <select class="filter-select" onchange="filterByStatus(this.value)">
+          <option value="">Tous les statuts</option>
+          <option>En attente</option><option>Validée</option><option>Refusée</option><option>Brouillon</option>
+        </select>
+        <select class="filter-select" onchange="filterByUrgency(this.value)">
+          <option value="">Toutes urgences</option>
+          <option>Critique</option><option>Haute</option><option>Normale</option><option>Basse</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Réf.</th><th>Description</th><th>Site</th><th>Urgence</th><th>Montant</th><th>Date</th><th>Statut</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="all-demandes-table">
+            <tr><td colspan="8" class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Aucune demande</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── ADMIN DASHBOARD ───────────────────── -->
+    <div class="page" id="page-admin-dashboard">
+      <div class="page-header">
+        <div class="page-title">Dashboard Direction</div>
+        <div class="page-sub">Vue d'ensemble budgétaire et opérationnelle</div>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi-card blue">
+          <div class="kpi-label">Demandes en attente</div>
+          <div class="kpi-value blue" id="admin-kpi-pending">0</div>
+          <div class="kpi-sub">À traiter</div>
+        </div>
+        <div class="kpi-card orange">
+          <div class="kpi-label">Budget engagé</div>
+          <div class="kpi-value orange" id="admin-kpi-engaged">0 €</div>
+          <div class="kpi-sub">Sur budget annuel</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">Budget restant</div>
+          <div class="kpi-value green" id="admin-kpi-remaining">0 €</div>
+          <div class="kpi-sub">Disponible</div>
+        </div>
+        <div class="kpi-card purple">
+          <div class="kpi-label">Taux de validation</div>
+          <div class="kpi-value purple" id="admin-kpi-validation-rate">0%</div>
+          <div class="kpi-sub">Ce mois</div>
+        </div>
+      </div>
+
+      <div class="budget-bar-wrap">
+        <div class="budget-bar-header">
+          <div class="budget-bar-title">Consommation budgétaire annuelle</div>
+          <div class="budget-bar-pct" id="admin-budget-pct">0%</div>
+        </div>
+        <div class="budget-track"><div class="budget-fill" id="admin-budget-fill" style="width:0%"></div></div>
+        <div class="budget-meta">
+          <span id="admin-budget-engaged-label">0 € engagés</span>
+          <span id="admin-budget-total-label">Budget total : 0 €</span>
+          <span id="admin-budget-remaining-label">0 € restants</span>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">Dépenses par mois (€)</div>
+          <div class="bar-chart">
+            <div class="bar-group"><div class="bar" style="height:40%"></div><div class="bar-label">Jan</div></div>
+            <div class="bar-group"><div class="bar" style="height:65%"></div><div class="bar-label">Fév</div></div>
+            <div class="bar-group"><div class="bar" style="height:30%"></div><div class="bar-label">Mar</div></div>
+            <div class="bar-group"><div class="bar" style="height:80%"></div><div class="bar-label">Avr</div></div>
+            <div class="bar-group"><div class="bar" style="height:55%"></div><div class="bar-label">Mai</div></div>
+            <div class="bar-group"><div class="bar" style="height:45%"></div><div class="bar-label">Jun</div></div>
+            <div class="bar-group"><div class="bar" style="height:20%"></div><div class="bar-label">Jul</div></div>
+            <div class="bar-group"><div class="bar" style="height:10%"></div><div class="bar-label">Aoû</div></div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Par catégorie</div>
+          <div class="donut-placeholder"><div class="donut-hole">0 €</div></div>
+          <div class="donut-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div><span>Maintenance (0%)</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--accent2)"></div><span>Matériel (0%)</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--warning)"></div><span>Informatique (0%)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ADMIN DEMANDES ────────────────────── -->
+    <div class="page" id="page-admin-demandes">
+      <div class="page-header">
+        <div class="page-title">Toutes les demandes</div>
+        <div class="page-sub">Validation et gestion</div>
+      </div>
+      <div class="filter-bar">
+        <input class="search-bar" placeholder="🔍 Rechercher...">
+        <select class="filter-select"><option>Toutes</option><option>En attente</option><option>Validée</option><option>Refusée</option></select>
+        <select class="filter-select"><option>Tous les sites</option><option>Bât. A</option><option>Bât. B</option></select>
+        <button class="btn btn-ghost btn-sm">📥 Exporter CSV</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Réf.</th><th>Agent</th><th>Description</th><th>Site</th><th>Urgence</th><th>Montant</th><th>Date</th><th>Statut</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="admin-demandes-table">
+            <tr><td colspan="9" class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Chargement des demandes...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── ADMIN BUDGET ───────────────────────── -->
+    <div class="page" id="page-admin-budget">
+      <div class="page-header">
+        <div class="page-title">Gestion budgétaire</div>
+        <div class="page-sub">Suivi et paramétrage des enveloppes</div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab(this,'tab-annuel')">Annuel</div>
+        <div class="tab" onclick="switchTab(this,'tab-cat')">Par catégorie</div>
+        <div class="tab" onclick="switchTab(this,'tab-site')">Par site</div>
+      </div>
+
+      <div id="tab-annuel">
+        <div class="kpi-grid">
+          <div class="kpi-card blue"><div class="kpi-label">Budget alloué</div><div class="kpi-value blue" id="budget-kpi-annual">0 €</div></div>
+          <div class="kpi-card orange"><div class="kpi-label">Engagé</div><div class="kpi-value orange" id="budget-kpi-engaged">0 €</div></div>
+          <div class="kpi-card green"><div class="kpi-label">Disponible</div><div class="kpi-value green" id="budget-kpi-remaining">0 €</div></div>
+          <div class="kpi-card purple"><div class="kpi-label">En cours validation</div><div class="kpi-value purple" id="budget-kpi-pending">0 €</div></div>
+        </div>
+        <div class="budget-bar-wrap">
+          <div class="budget-bar-header"><div class="budget-bar-title">Avancement annuel</div><div class="budget-bar-pct" id="budget-page-pct">0%</div></div>
+          <div class="budget-track"><div class="budget-fill" id="budget-page-fill" style="width:0%"></div></div>
+          <div class="budget-meta"><span id="budget-page-meta">0 € / 0 €</span><span>Exercice en cours</span></div>
+        </div>
+      </div>
+
+      <div id="tab-cat" style="display:none">
+        <div class="table-wrap">
+          <div class="table-header"><div class="table-title">Répartition par catégorie</div></div>
+          <div id="budget-cat-list" style="padding:20px"></div>
+        </div>
+      </div>
+
+      <div id="tab-site" style="display:none">
+        <div class="table-wrap">
+          <div class="table-header"><div class="table-title">Répartition par site</div></div>
+          <div id="budget-site-list" style="padding:20px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ADMIN ANALYTICS ──────────────────── -->
+    <div class="page" id="page-admin-analytics">
+      <div class="page-header">
+        <div class="page-title">Analytics</div>
+        <div class="page-sub">Reporting et indicateurs de performance</div>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi-card blue"><div class="kpi-label">Délai moyen validation</div><div class="kpi-value blue" id="analytics-kpi-delay">0j</div></div>
+        <div class="kpi-card orange"><div class="kpi-label">Taux de refus</div><div class="kpi-value orange" id="analytics-kpi-refusal">0%</div></div>
+        <div class="kpi-card green"><div class="kpi-label">Demandes totales</div><div class="kpi-value green" id="analytics-kpi-total">0</div></div>
+        <div class="kpi-card purple"><div class="kpi-label">Prévision dépassement</div><div class="kpi-value purple" id="analytics-kpi-overrun">Non</div></div>
+      </div>
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">Dépenses par site</div>
+          <div class="bar-chart">
+            <div class="bar-group"><div class="bar" style="height:0%;background:linear-gradient(var(--accent),rgba(79,142,247,0.2))"></div><div class="bar-label">Site 1</div></div>
+            <div class="bar-group"><div class="bar" style="height:0%;background:linear-gradient(var(--accent2),rgba(124,92,246,0.2))"></div><div class="bar-label">Site 2</div></div>
+            <div class="bar-group"><div class="bar" style="height:0%;background:linear-gradient(var(--warning),rgba(247,163,79,0.2))"></div><div class="bar-label">Site 3</div></div>
+            <div class="bar-group"><div class="bar" style="height:0%;background:linear-gradient(var(--success),rgba(79,247,163,0.2))"></div><div class="bar-label">Site 4</div></div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Répartition statuts</div>
+          <div class="donut-placeholder"><div class="donut-hole">0%</div></div>
+          <div class="donut-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--success)"></div><span>Validées (0%)</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--warning)"></div><span>En attente (0%)</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--danger)"></div><span>Refusées (0%)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SUPER ADMIN USERS ─────────────────── -->
+    <div class="page" id="page-sa-users">
+      <div class="page-header">
+        <div class="page-title">Gestion utilisateurs</div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+        <button class="btn btn-primary" onclick="openModal('modal-add-user')">+ Ajouter un utilisateur</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nom</th><th>Email</th><th>Rôle</th><th>Site</th><th>Statut</th><th>Dernière connexion</th><th>Actions</th></tr></thead>
+          <tbody id="sa-users-table">
+            <tr><td colspan="7" class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">Chargement des utilisateurs...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── RGPD ──────────────────────────────── -->
+    <div class="page" id="page-sa-rgpd">
+      <div class="page-header">
+        <div class="page-title">RGPD & Journaux d'audit</div>
+      </div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="kpi-card blue"><div class="kpi-label">Logs (30j)</div><div class="kpi-value blue" id="rgpd-kpi-logs">0</div></div>
+        <div class="kpi-card green"><div class="kpi-label">Rétention configurée</div><div class="kpi-value green" id="rgpd-kpi-retention">24 mois</div></div>
+        <div class="kpi-card orange"><div class="kpi-label">Dernière activité</div><div class="kpi-value orange" id="rgpd-kpi-last">-</div></div>
+      </div>
+      <div class="table-wrap" style="margin-top:20px">
+        <div class="table-header">
+          <div class="table-title">Journal d'audit récent</div>
+          <div class="admin-actions">
+            <button class="btn btn-ghost btn-sm" onclick="exportAuditSecurity(this)">📥 Exporter audit</button>
+            <button class="btn btn-danger btn-sm" onclick="purgeAuditSecurity(this)">🗑 Purger audit</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Timestamp</th><th>Utilisateur</th><th>Action</th><th>IP</th><th>Hash intégrité</th></tr></thead>
+          <tbody id="rgpd-logs-table">
+            <tr><td colspan="5" class="empty-state"><div class="empty-icon">🔐</div><div class="empty-text">Chargement des journaux...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ──────────────────────────── -->
+    <div class="page" id="page-sa-settings">
+      <div class="page-header"><div class="page-title">Paramètres système</div></div>
+      <div class="settings-card">
+        <div class="field-group">
+          <div class="field-label">Intégration API</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.6">
+            L'URL de la Web App Google Apps Script est intégrée en dur dans le fichier HTML de livraison.
+          </div>
+        </div>
+        <div class="field-group"><div class="field-label">Budget annuel (€)</div><input type="number" id="cfg-budget" value=""></div>
+        <div class="field-group"><div class="field-label">Seuil d'alerte (%)</div><input type="number" id="cfg-seuil" value="80"></div>
+        <div class="field-group"><div class="field-label">Rétention des données (mois)</div><input type="number" id="cfg-retention" value="24"></div>
+        <div class="field-group"><div class="field-label">Email notifications</div><input type="email" id="cfg-email" placeholder="direction@organisme.fr"></div>
+        <button class="btn btn-primary" onclick="saveAppSettings(this)">💾 Enregistrer</button>
+        <div class="divider"></div>
+        <div class="field-group">
+          <div class="field-label">Sites</div>
+          <div id="site-admin-list" style="display:grid;gap:10px"></div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Ajouter un site</div>
+          <input type="text" id="new-site-name" placeholder="Nom du site">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Description</div>
+          <input type="text" id="new-site-description" placeholder="Description courte">
+        </div>
+        <button class="btn btn-ghost" onclick="addSite(this)">+ Ajouter le site</button>
+        <div class="divider"></div>
+        <div class="field-group">
+          <div class="field-label">Catégories</div>
+          <div id="category-admin-list" style="display:grid;gap:10px"></div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Ajouter une catégorie</div>
+          <input type="text" id="new-category-name" placeholder="Nom de la catégorie">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Description</div>
+          <input type="text" id="new-category-description" placeholder="Description courte">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Couleur</div>
+          <input type="color" id="new-category-color" value="#4f8ef7" style="height:44px;padding:6px">
+        </div>
+        <button class="btn btn-ghost" onclick="addCategory(this)">+ Ajouter la catégorie</button>
+      </div>
+    </div>
+
+  </main><!-- /main -->
+</div><!-- /app -->
+
+<!-- ══ MODAL VALIDATION ════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-validation">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Traiter la demande</div>
+      <button class="modal-close" onclick="closeModal('modal-validation')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="validation-panel">
+        <strong>Aucune demande sélectionnée</strong>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Les informations détaillées s'afficheront ici.</div>
+        <div style="margin-top:10px;font-size:13px">Sélectionnez une demande depuis la liste pour consulter son contenu et prendre une décision.</div>
+        <div style="margin-top:10px;background:var(--surface2);border-radius:8px;padding:10px;font-size:13px">
+          📭 <span style="color:var(--muted)">Aucune pièce jointe</span>
+        </div>
+      </div>
+
+      <div class="simulation-box">
+        <div class="simulation-title">⚡ Simulation impact budgétaire</div>
+        <div class="sim-row"><span>Budget disponible actuel</span><span>0 €</span></div>
+        <div class="sim-row"><span>Montant demande</span><span>0 €</span></div>
+        <div class="divider" style="margin:8px 0"></div>
+        <div class="sim-row"><span>Budget restant après validation</span><span class="sim-result">0 €</span></div>
+        <div class="sim-row"><span>Nouveau taux de consommation</span><span class="sim-result">0%</span></div>
+      </div>
+
+      <div class="form-row-1">
+        <div class="field-label">Commentaire de décision</div>
+        <textarea id="valid-comment" placeholder="Motif de la décision (obligatoire en cas de refus)..."></textarea>
+      </div>
+
+      <div class="form-row-1">
+        <div class="field-label">Timeline de la demande</div>
+        <ul class="timeline">
+          <li class="timeline-item">
+            <div class="timeline-dot blue">📝</div>
+            <div class="timeline-content">
+              <div class="timeline-text">La chronologie apparaîtra ici</div>
+              <div class="timeline-time">En attente</div>
+            </div>
+          </li>
+          <li class="timeline-item">
+            <div class="timeline-dot">📧</div>
+            <div class="timeline-content">
+              <div class="timeline-text">Aucune notification pour le moment</div>
+              <div class="timeline-time">-</div>
+            </div>
+          </li>
+          <li class="timeline-item" style="opacity:0.4">
+            <div class="timeline-dot">⏳</div>
+            <div class="timeline-content">
+              <div class="timeline-text">Sélectionnez une demande pour continuer</div>
+              <div class="timeline-time">...</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="decideValidation('complement', this)">💬 Demander complément</button>
+      <button class="btn btn-danger" onclick="decideValidation('refuse', this)">✗ Refuser</button>
+      <button class="btn btn-success" onclick="decideValidation('validate', this)">✓ Valider</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL ADD USER ══════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-add-user">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Ajouter un utilisateur</div>
+      <button class="modal-close" onclick="closeModal('modal-add-user')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div><div class="field-label">Prénom</div><input type="text" id="new-user-prenom" placeholder="Prénom"></div>
+        <div><div class="field-label">Nom</div><input type="text" id="new-user-nom" placeholder="Nom"></div>
+      </div>
+      <div class="form-row-1"><div class="field-label">Email professionnel</div><input type="email" id="new-user-email" placeholder="prenom.nom@organisme.fr"></div>
+      <div class="form-row">
+        <div>
+          <div class="field-label">Rôle</div>
+          <select id="new-user-role"><option value="agent">Agent</option><option value="admin">Directeur</option><option value="superadmin">Super Admin</option></select>
+        </div>
+        <div>
+          <div class="field-label">Site(s)</div>
+          <select id="new-user-site"><option value="Tous">Tous</option></select>
+        </div>
+      </div>
+      <div class="form-row-1">
+        <div class="field-label">Mot de passe initial</div>
+        <input type="text" id="new-user-password" placeholder="Laisser vide pour génération automatique">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-user')">Annuler</button>
+      <button class="btn btn-primary" onclick="addUser(this)">Créer l'utilisateur</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ═══════════════════════════════════════════════════════ -->
+<div id="toast">
+  <span id="toast-icon">✅</span>
+  <span id="toast-msg">Action effectuée avec succès</span>
+</div>
+
+<!-- ══ SCRIPT ══════════════════════════════════════════════════════ -->
+<script>
+const APPS_SCRIPT_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxFxtTjoRJajv1RrZSro_nO91GXQK6TqNHmc1hk1IpYsESFLnajldbUB4YT2_bfgDrM/exec';
+
+const state = {
+  currentUser: null,
+  authToken: null,
+  demandes: [],
+  users: [],
+  categories: [],
+  sites: [],
+  logs: [],
+  settings: {},
+  filters: { search: '', status: '', urgency: '' },
+  selectedDemande: null
+};
+
+function getActiveCategories() {
+  return state.categories.filter(category => category.actif !== false && String(category.actif).toLowerCase() !== 'false');
+}
+
+function createTempId(prefix = 'TMP') {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function setButtonLoading(button, loading, loadingText) {
+  if (!button) return;
+  if (loading) {
+    if (!button.dataset.originalText) button.dataset.originalText = button.innerHTML;
+    button.disabled = true;
+    button.classList.add('is-loading');
+    if (loadingText) button.textContent = loadingText;
+    return;
+  }
+  button.disabled = false;
+  button.classList.remove('is-loading');
+  if (button.dataset.originalText) {
+    button.innerHTML = button.dataset.originalText;
+    delete button.dataset.originalText;
+  }
+}
+
+async function withButtonLoading(button, loadingText, task) {
+  setButtonLoading(button, true, loadingText);
+  try {
+    return await task();
+  } finally {
+    setButtonLoading(button, false);
+  }
+}
+
+function renderTableSkeleton(tbodyId, columns, lines = 4) {
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  tbody.innerHTML = Array.from({ length: lines }).map(() => `
+    <tr>
+      ${Array.from({ length: columns }).map(() => `<td><div class="skeleton-line ${Math.random() > 0.5 ? 'medium' : 'short'}"></div></td>`).join('')}
+    </tr>
+  `).join('');
+}
+
+function renderCategorySkeleton(lines = 3) {
+  const container = document.getElementById('category-admin-list');
+  if (!container) return;
+  container.innerHTML = Array.from({ length: lines }).map(() => `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px">
+      <div style="flex:1">
+        <div class="skeleton-line medium"></div>
+        <div class="skeleton-line short"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="skeleton-chip"></div>
+        <div class="skeleton-chip"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderSiteSkeleton(lines = 3) {
+  const container = document.getElementById('site-admin-list');
+  if (!container) return;
+  container.innerHTML = Array.from({ length: lines }).map(() => `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px">
+      <div style="flex:1">
+        <div class="skeleton-line medium"></div>
+        <div class="skeleton-line short"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="skeleton-chip"></div>
+        <div class="skeleton-chip"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function downloadCsv(filename, csv) {
+  const blob = new Blob(["\uFEFF" + String(csv || '')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename || 'export.csv';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function isApiConfigured() {
+  return !APPS_SCRIPT_WEBAPP_URL.includes('REPLACE_WITH_YOUR_DEPLOYMENT_ID');
+}
+
+function shouldUseJsonp(action) {
+  return window.location.protocol === 'file:' && action !== 'uploadPhoto';
+}
+
+async function apiRequest(action, payload = {}, options = {}) {
+  if (!isApiConfigured()) {
+    throw new Error("Renseignez l'URL Apps Script dans APPS_SCRIPT_WEBAPP_URL.");
+  }
+
+  if (shouldUseJsonp(action)) {
+    return apiRequestJsonp(action, payload, options);
+  }
+
+  const response = await fetch(APPS_SCRIPT_WEBAPP_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action,
+      payload,
+      token: options.skipAuth ? undefined : state.authToken
+    })
+  });
+
+  const result = await response.json();
+  if (!result.success) throw new Error(result.error || 'Erreur API');
+  if (result.data && result.data.error) throw new Error(result.data.error);
+  return result.data;
+}
+
+function apiRequestJsonp(action, payload = {}, options = {}) {
+  return new Promise((resolve, reject) => {
+    const callbackName = '__cfalog_jsonp_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    const script = document.createElement('script');
+    const timeoutMs = options.timeoutMs || 12000;
+    let timeoutId = null;
+    const cleanup = () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (script.parentNode) script.parentNode.removeChild(script);
+      try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+    };
+
+    const params = new URLSearchParams({
+      action: action,
+      payload: JSON.stringify(payload || {}),
+      callback: callbackName
+    });
+
+    if (!options.skipAuth && state.authToken) {
+      params.set('token', state.authToken);
+    }
+
+    window[callbackName] = result => {
+      cleanup();
+      if (!result || !result.success) {
+        reject(new Error((result && result.error) || 'Erreur API'));
+        return;
+      }
+      if (result.data && result.data.error) {
+        reject(new Error(result.data.error));
+        return;
+      }
+      resolve(result.data);
+    };
+
+    script.onerror = () => {
+      cleanup();
+      reject(new Error("Connexion Apps Script impossible depuis le fichier local. Verifiez que la Web App est deployee en acces 'Tout le monde', executee 'en tant que moi', et qu'un autre compte Google ouvert dans le navigateur ne force pas une page d'authentification."));
+    };
+
+    timeoutId = setTimeout(() => {
+      cleanup();
+      reject(new Error("Aucune reponse de la Web App Apps Script. Verifiez le deploiement public, l'URL configuree, et testez aussi dans une fenetre privee sans autre session Google."));
+    }, timeoutMs);
+
+    script.src = APPS_SCRIPT_WEBAPP_URL + '?' + params.toString();
+    document.body.appendChild(script);
+  });
+}
+
+async function doLogin(button) {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-pwd').value;
+  const role = document.getElementById('login-role').value;
+
+  if (!email || !password) {
+    showToast('Saisissez votre email et votre mot de passe.', 'error');
+    return;
+  }
+
+  setButtonLoading(button, true, 'Connexion...');
+
+  try {
+    // petit délai visuel premium
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    const data = await apiRequest(
+      'login',
+      { email, password, role },
+      { skipAuth: true }
+    );
+
+    state.authToken = data.token;
+    state.currentUser = normalizeUser(data.user);
+
+    // transition douce
+    document.getElementById('login-screen').style.opacity = '0';
+
+    setTimeout(async () => {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      document.getElementById('login-pwd').value = '';
+
+     
+      await initApp();
+
+     
+      showToast('Connexion réussie.');
+    }, 400);
+
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || 'Connexion impossible.', 'error');
+  } finally {
+    setButtonLoading(button, false);
+  }
+}
+function doLogout() {
+  state.currentUser = null;
+  state.authToken = null;
+  state.demandes = [];
+  state.users = [];
+  state.categories = [];
+  state.sites = [];
+  state.logs = [];
+  state.settings = {};
+  state.selectedDemande = null;
+  document.querySelectorAll('.modal-overlay.open').forEach(modal => modal.classList.remove('open'));
+  document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  document.getElementById('login-screen').style.opacity = '1';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-email').focus();
+}
+
+async function initApp() {
+  const user = state.currentUser;
+  document.getElementById('sidebar-name').textContent = user.name;
+  document.getElementById('sidebar-role').textContent = user.roleLabel;
+  document.getElementById('sidebar-avatar').textContent = user.initials;
+  document.getElementById('agent-firstname').textContent = user.firstName;
+
+  document.getElementById('nav-agent').style.display = user.role === 'agent' ? 'block' : 'none';
+  document.getElementById('nav-admin').style.display = user.role === 'admin' ? 'block' : 'none';
+  document.getElementById('nav-superadmin').style.display = user.role === 'superadmin' ? 'block' : 'none';
+
+  if (user.role === 'agent') showPage('agent-dashboard');
+  else if (user.role === 'admin') showPage('admin-dashboard');
+  else showPage('sa-users');
+
+  await Promise.all([loadCategories(), loadSites()]);
+  await loadCurrentPageData();
+}
+
+function showPage(id, options = {}) {
+  document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+
+  const page = document.getElementById('page-' + id);
+  if (page) page.classList.add('active');
+
+  document.querySelectorAll('.nav-item').forEach(item => {
+    const onclick = item.getAttribute('onclick') || '';
+    if (onclick.includes(`showPage('${id}')`)) item.classList.add('active');
+  });
+
+  if (!options.skipLoad) {
+    loadCurrentPageData(options).catch(error => {
+      console.error(error);
+      showToast(error.message || 'Chargement impossible.', 'error');
+    });
+  }
+}
+
+async function loadCurrentPageData(options = {}) {
+  if (!state.currentUser) return;
+  const activePage = document.querySelector('.page.active');
+  if (!activePage) return;
+
+  if (state.currentUser.role === 'agent') {
+    await loadAgentDemandes(options);
+    loadAgentKPIs();
+    renderDemandesTable();
+    return;
+  }
+
+  if (state.currentUser.role === 'admin') {
+    await loadAdminData(options);
+    return;
+  }
+
+  if (activePage.id === 'page-sa-users') {
+    await loadUsers(options);
+  } else if (activePage.id === 'page-sa-rgpd') {
+    await Promise.all([loadLogs(options), loadSettings(options)]);
+  } else if (activePage.id === 'page-sa-settings') {
+    await loadSettings(options);
+  }
+}
+
+function normalizeUser(user) {
+  const fullName = [user.prenom, user.nom].filter(Boolean).join(' ').trim() || user.nom || user.email;
+  return {
+    id: user.id || '',
+    email: user.email,
+    role: user.role,
+    roleLabel: roleLabel(user.role),
+    name: fullName,
+    firstName: user.prenom || fullName.split(' ')[0] || user.email,
+    initials: makeInitials(fullName || user.email),
+    site: user.site || ''
+  };
+}
+
+function roleLabel(role) {
+  if (role === 'superadmin') return 'Super Admin';
+  if (role === 'admin') return 'Direction';
+  return 'Agent';
+}
+
+function makeInitials(text) {
+  return String(text || '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part[0].toUpperCase())
+    .join('') || 'CF';
+}
+
+async function loadAgentDemandes(options = {}) {
+  if (!options.silent) renderTableSkeleton('agent-demandes-table', 7, 4);
+  state.demandes = await apiRequest('getMyDemandes');
+}
+
+async function loadCategories(options = {}) {
+  if (!options.silent) renderCategorySkeleton();
+  try {
+    state.categories = await apiRequest('getCategories', {
+      includeInactive: state.currentUser?.role === 'superadmin'
+    });
+  } catch (error) {
+    console.error(error);
+    state.categories = [];
+  }
+
+  renderCategoryOptions();
+  renderCategoryAdminList();
+}
+
+async function loadSites(options = {}) {
+  if (!options.silent) renderSiteSkeleton();
+  try {
+    state.sites = await apiRequest('getSites', {
+      includeInactive: state.currentUser?.role === 'superadmin'
+    });
+  } catch (error) {
+    console.error(error);
+    state.sites = [];
+  }
+
+  renderSiteOptions();
+  renderSiteAdminList();
+}
+
+function renderSiteOptions() {
+  const activeSites = state.sites.filter(site => site.actif !== false && String(site.actif).toLowerCase() !== 'false');
+
+  const demandeSelect = document.getElementById('f-site');
+  if (demandeSelect) {
+    const currentValue = demandeSelect.value;
+    demandeSelect.innerHTML = ['<option value="">Sélectionner...</option>']
+      .concat(activeSites.map(site => `<option>${escapeHtml(site.nom)}</option>`))
+      .join('');
+    if (currentValue && activeSites.some(site => site.nom === currentValue)) {
+      demandeSelect.value = currentValue;
+    }
+  }
+
+  const userSiteSelect = document.getElementById('new-user-site');
+  if (userSiteSelect) {
+    const currentValue = userSiteSelect.value;
+    userSiteSelect.innerHTML = ['<option value="Tous">Tous</option>']
+      .concat(activeSites.map(site => `<option>${escapeHtml(site.nom)}</option>`))
+      .join('');
+    if (currentValue && (currentValue === 'Tous' || activeSites.some(site => site.nom === currentValue))) {
+      userSiteSelect.value = currentValue;
+    }
+  }
+}
+
+function renderSiteAdminList() {
+  const container = document.getElementById('site-admin-list');
+  if (!container) return;
+
+  if (!state.sites.length) {
+    container.innerHTML = '<div class="empty-text">Aucun site configuré</div>';
+    return;
+  }
+
+  container.innerHTML = state.sites.map(site => `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px">
+      <div>
+        <div style="font-weight:600">${escapeHtml(site.nom || '-')}</div>
+        <div style="font-size:12px;color:var(--muted)">${escapeHtml(site.description || 'Sans description')}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        <span class="badge ${site.actif ? 'badge-validated' : 'badge-draft'}">${site.actif ? 'Actif' : 'Inactif'}</span>
+        ${state.currentUser?.role === 'superadmin' ? `
+          <button class="btn btn-sm btn-ghost" onclick="editSite('${escapeJs(site.id)}', this)">Modifier</button>
+          <button class="btn btn-sm btn-ghost" onclick="toggleSiteStatus('${escapeJs(site.id)}', ${site.actif ? 'false' : 'true'}, this)">${site.actif ? 'Désactiver' : 'Activer'}</button>
+          <button class="btn btn-sm btn-danger" onclick="removeSite('${escapeJs(site.id)}', this)">Supprimer</button>
+        ` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderCategoryOptions() {
+  const select = document.getElementById('f-cat');
+  if (!select) return;
+
+  const currentValue = select.value;
+  const options = ['<option value="">Sélectionner...</option>']
+    .concat(getActiveCategories().map(category => `<option>${escapeHtml(category.nom)}</option>`));
+  select.innerHTML = options.join('');
+
+  if (currentValue && getActiveCategories().some(category => category.nom === currentValue)) {
+    select.value = currentValue;
+  }
+}
+
+function renderCategoryAdminList() {
+  const container = document.getElementById('category-admin-list');
+  if (!container) return;
+
+  if (!state.categories.length) {
+    container.innerHTML = '<div class="empty-text">Aucune catégorie configurée</div>';
+    return;
+  }
+
+  container.innerHTML = state.categories.map(category => `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px">
+      <div>
+        <div style="font-weight:600">${escapeHtml(category.nom || '-')}</div>
+        <div style="font-size:12px;color:var(--muted)">${escapeHtml(category.description || 'Sans description')}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        <span style="width:12px;height:12px;border-radius:4px;background:${escapeHtml(category.couleur || '#4f8ef7')};border:1px solid rgba(255,255,255,0.2)"></span>
+        <span class="badge ${category.actif ? 'badge-validated' : 'badge-draft'}">${category.actif ? 'Active' : 'Inactive'}</span>
+        ${state.currentUser?.role === 'superadmin' ? `
+          <button class="btn btn-sm btn-ghost" onclick="editCategory('${escapeJs(category.id)}', this)">Modifier</button>
+          <button class="btn btn-sm btn-ghost" onclick="toggleCategoryStatus('${escapeJs(category.id)}', ${category.actif ? 'false' : 'true'}, this)">${category.actif ? 'Désactiver' : 'Activer'}</button>
+          <button class="btn btn-sm btn-danger" onclick="removeCategory('${escapeJs(category.id)}', this)">Supprimer</button>
+        ` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function loadAgentKPIs() {
+  const demandes = state.demandes;
+  const validees = demandes.filter(item => item.statut === 'Validée');
+  const totalMontant = validees.reduce((sum, item) => sum + toNumber(item.montant_estime), 0);
+
+  document.getElementById('kpi-total').textContent = demandes.length;
+  document.getElementById('kpi-pending').textContent = demandes.filter(item => item.statut === 'En attente').length;
+  document.getElementById('kpi-valid').textContent = validees.length;
+  document.getElementById('kpi-amount').textContent = formatCurrency(totalMontant);
+
+  renderAgentTable(demandes.slice(0, 5));
+}
+
+function renderAgentTable(list) {
+  const tbody = document.getElementById('agent-demandes-table');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted)">Aucune demande</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = list.map(demande => `
+    <tr>
+      <td><code style="font-size:11px;color:var(--accent)">#${escapeHtml(demande.id)}</code></td>
+      <td>${truncate(demande.description, 40)}</td>
+      <td>${escapeHtml(demande.site || '-')}</td>
+      <td>${renderUrgencyBadge(demande.urgence)}</td>
+      <td>${formatCurrency(demande.montant_estime)}</td>
+      <td>${renderStatusBadge(demande.statut)}</td>
+      <td><button class="btn btn-sm btn-ghost" onclick="openDetail('${escapeJs(demande.id)}')">Voir</button></td>
+    </tr>
+  `).join('');
+}
+
+function renderDemandesTable() {
+  const tbody = document.getElementById('all-demandes-table');
+  const filtered = state.demandes.filter(demande => {
+    const haystack = `${demande.id} ${demande.description} ${demande.site}`.toLowerCase();
+    const matchesSearch = !state.filters.search || haystack.includes(state.filters.search);
+    const matchesStatus = !state.filters.status || demande.statut === state.filters.status;
+    const matchesUrgency = !state.filters.urgency || String(demande.urgence || '').toLowerCase() === state.filters.urgency;
+    return matchesSearch && matchesStatus && matchesUrgency;
+  });
+
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Aucune demande</div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(demande => `
+    <tr>
+      <td><code style="font-size:11px;color:var(--accent)">#${escapeHtml(demande.id)}</code></td>
+      <td>${truncate(demande.description, 40)}</td>
+      <td>${escapeHtml(demande.site || '-')}</td>
+      <td>${renderUrgencyBadge(demande.urgence)}</td>
+      <td>${formatCurrency(demande.montant_estime)}</td>
+      <td>${formatDate(demande.created_at || demande.date_souhaitee)}</td>
+      <td>${renderStatusBadge(demande.statut)}</td>
+      <td><button class="btn btn-sm btn-ghost" onclick="openDetail('${escapeJs(demande.id)}')">Voir</button></td>
+    </tr>
+  `).join('');
+}
+
+function filterDemandes(value) {
+  state.filters.search = String(value || '').trim().toLowerCase();
+  renderDemandesTable();
+}
+
+function filterByStatus(value) {
+  state.filters.status = value || '';
+  renderDemandesTable();
+}
+
+function filterByUrgency(value) {
+  state.filters.urgency = String(value || '').trim().toLowerCase();
+  renderDemandesTable();
+}
+
+async function submitDemande(button) {
+  const payload = {
+    site: document.getElementById('f-site').value,
+    categorie: document.getElementById('f-cat').value,
+    description: document.getElementById('f-desc').value.trim(),
+    urgence: document.getElementById('f-urgence').value,
+    montant: toNumber(document.getElementById('f-montant').value),
+    materiel: document.getElementById('f-materiel').value.trim(),
+    date_souhaitee: document.getElementById('f-date').value,
+    commentaire: document.getElementById('f-comment').value.trim()
+  };
+
+  if (!payload.site || !payload.categorie || !payload.description || !payload.urgence) {
+    showToast('Veuillez remplir tous les champs obligatoires.', 'error');
+    return;
+  }
+
+  const tempDemande = {
+    id: createTempId('INT'),
+    created_at: new Date().toISOString(),
+    agent_nom: state.currentUser?.name || '',
+    agent_email: state.currentUser?.email || '',
+    statut: 'En attente',
+    montant_estime: payload.montant,
+    _optimistic: true,
+    ...payload
+  };
+
+  state.demandes = [tempDemande].concat(state.demandes);
+  loadAgentKPIs();
+  renderDemandesTable();
+
+  try {
+    await withButtonLoading(button, 'Envoi en cours...', async () => {
+      const photoInput = document.getElementById('f-photo');
+      if (photoInput.files && photoInput.files[0]) {
+        const upload = await uploadSelectedPhoto(photoInput.files[0]);
+        payload.photo_url = upload.file_id || '';
+      }
+
+      const result = await apiRequest('createDemande', payload);
+      state.demandes = state.demandes.map(item => item.id === tempDemande.id ? { ...tempDemande, id: result.id, _optimistic: false } : item);
+      resetForm();
+      showPage('agent-list', { skipLoad: true });
+      showToast(`Demande envoyée avec succès. Réf. ${result.id}`);
+      loadAgentDemandes({ silent: true }).then(() => {
+        loadAgentKPIs();
+        renderDemandesTable();
+      }).catch(console.error);
+    });
+  } catch (error) {
+    state.demandes = state.demandes.filter(item => item.id !== tempDemande.id);
+    loadAgentKPIs();
+    renderDemandesTable();
+    console.error(error);
+    showToast(error.message || "Impossible d'envoyer la demande.", 'error');
+  }
+}
+
+async function saveDraft(button) {
+  const payload = {
+    site: document.getElementById('f-site').value,
+    categorie: document.getElementById('f-cat').value,
+    description: document.getElementById('f-desc').value.trim(),
+    urgence: document.getElementById('f-urgence').value,
+    montant: toNumber(document.getElementById('f-montant').value),
+    materiel: document.getElementById('f-materiel').value.trim(),
+    date_souhaitee: document.getElementById('f-date').value
+  };
+
+  const tempDraft = {
+    id: createTempId('DRF'),
+    created_at: new Date().toISOString(),
+    agent_nom: state.currentUser?.name || '',
+    agent_email: state.currentUser?.email || '',
+    statut: 'Brouillon',
+    montant_estime: payload.montant,
+    _optimistic: true,
+    ...payload
+  };
+
+  state.demandes = [tempDraft].concat(state.demandes);
+  loadAgentKPIs();
+  renderDemandesTable();
+
+  try {
+    await withButtonLoading(button, 'Sauvegarde...', async () => {
+      await apiRequest('saveDraft', payload);
+      showToast('Brouillon sauvegardé.');
+      loadAgentDemandes({ silent: true }).then(() => {
+        loadAgentKPIs();
+        renderDemandesTable();
+      }).catch(console.error);
+    });
+  } catch (error) {
+    state.demandes = state.demandes.filter(item => item.id !== tempDraft.id);
+    loadAgentKPIs();
+    renderDemandesTable();
+    console.error(error);
+    showToast(error.message || 'Impossible de sauvegarder le brouillon.', 'error');
+  }
+}
+
+function resetForm() {
+  ['f-site', 'f-cat', 'f-desc', 'f-urgence', 'f-montant', 'f-materiel', 'f-comment', 'f-date', 'f-photo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const preview = document.getElementById('preview-img');
+  preview.style.display = 'none';
+  preview.removeAttribute('src');
+}
+
+async function uploadSelectedPhoto(file) {
+  const base64 = await fileToBase64(file);
+  return apiRequest('uploadPhoto', {
+    base64,
+    filename: file.name,
+    mimeType: file.type,
+    demandeId: `TMP-${Date.now()}`
+  });
+}
+
+function previewPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById('preview-img');
+    img.src = e.target.result;
+    img.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function loadAdminData(options = {}) {
+  if (!options.silent) renderTableSkeleton('admin-demandes-table', 9, 5);
+  const [demandes, budget, analytics] = await Promise.all([
+    apiRequest('getAllDemandes', {}),
+    apiRequest('getBudget'),
+    apiRequest('getAnalytics')
+  ]);
+
+  state.demandes = demandes;
+  renderAdminDashboard(budget, analytics);
+  renderAdminDemandes(demandes);
+  renderAnalytics(budget, analytics);
+}
+
+function renderAdminDashboard(budget, analytics) {
+  document.getElementById('admin-kpi-pending').textContent = analytics.par_statut?.['En attente'] || 0;
+  document.getElementById('admin-kpi-engaged').textContent = formatCurrency(budget.engage);
+  document.getElementById('admin-kpi-remaining').textContent = formatCurrency(budget.restant);
+
+  const validated = analytics.par_statut?.['Validée'] || 0;
+  const total = analytics.total || 0;
+  const rate = total ? Math.round((validated / total) * 100) : 0;
+  document.getElementById('admin-kpi-validation-rate').textContent = `${rate}%`;
+
+  const pct = Math.max(0, Math.min(100, toNumber(budget.pct)));
+  document.getElementById('admin-budget-pct').textContent = `${pct}%`;
+  document.getElementById('admin-budget-fill').style.width = `${pct}%`;
+  document.getElementById('admin-budget-engaged-label').textContent = `${formatCurrency(budget.engage)} engagés`;
+  document.getElementById('admin-budget-total-label').textContent = `Budget total : ${formatCurrency(budget.annuel)}`;
+  document.getElementById('admin-budget-remaining-label').textContent = `${formatCurrency(budget.restant)} restants`;
+  renderBudgetViews(budget, analytics);
+}
+
+function renderAnalytics(budget, analytics) {
+  document.getElementById('analytics-kpi-delay').textContent = `${toNumber(analytics.delai_moyen)}j`;
+  document.getElementById('analytics-kpi-refusal').textContent = `${toNumber(analytics.taux_refus)}%`;
+  document.getElementById('analytics-kpi-total').textContent = analytics.total || 0;
+  document.getElementById('analytics-kpi-overrun').textContent = toNumber(budget.restant) < 0 ? 'Oui' : 'Non';
+}
+
+function renderBudgetViews(budget, analytics) {
+  const annual = toNumber(budget.annuel);
+  const engaged = toNumber(budget.engage);
+  const remaining = toNumber(budget.restant);
+  const pendingAmount = state.demandes
+    .filter(item => ['En attente', 'Complément demandé'].includes(item.statut))
+    .reduce((sum, item) => sum + toNumber(item.montant_estime), 0);
+  const pct = annual > 0 ? Math.max(0, Math.min(100, Math.round((engaged / annual) * 100))) : 0;
+
+  const annualTarget = document.getElementById('budget-kpi-annual');
+  const engagedTarget = document.getElementById('budget-kpi-engaged');
+  const remainingTarget = document.getElementById('budget-kpi-remaining');
+  const pendingTarget = document.getElementById('budget-kpi-pending');
+  const pctTarget = document.getElementById('budget-page-pct');
+  const fillTarget = document.getElementById('budget-page-fill');
+  const metaTarget = document.getElementById('budget-page-meta');
+
+  if (annualTarget) annualTarget.textContent = formatCurrency(annual);
+  if (engagedTarget) engagedTarget.textContent = formatCurrency(engaged);
+  if (remainingTarget) remainingTarget.textContent = formatCurrency(remaining);
+  if (pendingTarget) pendingTarget.textContent = formatCurrency(pendingAmount);
+  if (pctTarget) pctTarget.textContent = `${pct}%`;
+  if (fillTarget) fillTarget.style.width = `${pct}%`;
+  if (metaTarget) metaTarget.textContent = `${formatCurrency(engaged)} / ${formatCurrency(annual)}`;
+
+  renderBudgetBreakdownList('budget-cat-list', analytics?.par_categorie || {}, annual, 'Aucune depense par categorie pour le moment.');
+  renderBudgetBreakdownList('budget-site-list', analytics?.par_site || {}, annual, 'Aucune depense par site pour le moment.');
+}
+
+function renderBudgetBreakdownList(containerId, entries, annualBudget, emptyText) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const rows = Object.entries(entries || {})
+    .filter(([, amount]) => toNumber(amount) > 0)
+    .sort((a, b) => toNumber(b[1]) - toNumber(a[1]));
+
+  if (!rows.length) {
+    container.innerHTML = `<div class="empty-state" style="padding:28px 12px"><div class="empty-icon">📊</div><div class="empty-text">${escapeHtml(emptyText)}</div></div>`;
+    return;
+  }
+
+  container.innerHTML = rows.map(([label, amount]) => {
+    const value = toNumber(amount);
+    const pct = annualBudget > 0 ? Math.max(0, Math.min(100, Math.round((value / annualBudget) * 100))) : 0;
+    return `
+      <div style="padding:14px 0;border-bottom:1px solid rgba(42,47,61,0.55)">
+        <div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:8px">
+          <strong>${escapeHtml(label)}</strong>
+          <span>${formatCurrency(value)} · ${pct}%</span>
+        </div>
+        <div class="budget-track"><div class="budget-fill" style="width:${pct}%"></div></div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderAdminDemandes(list) {
+  const tbody = document.getElementById('admin-demandes-table');
+  if (!tbody) return;
+
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Aucune demande à traiter</div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = list.map(demande => `
+    <tr class="${demande._optimistic ? 'pending-row' : ''}">
+      <td><code style="font-size:11px;color:var(--accent)">#${escapeHtml(demande.id)}</code></td>
+      <td>${escapeHtml(demande.agent_nom || demande.agent_email || '-')}</td>
+      <td>${truncate(demande.description, 42)}</td>
+      <td>${escapeHtml(demande.site || '-')}</td>
+      <td>${renderUrgencyBadge(demande.urgence)}</td>
+      <td><strong>${formatCurrency(demande.montant_estime)}</strong></td>
+      <td>${formatDate(demande.created_at)}</td>
+      <td>${renderStatusBadge(demande.statut)}</td>
+      <td>${demande.statut === 'En attente' ? `<button class="btn btn-sm btn-primary" onclick="openValidation('${escapeJs(demande.id)}')">Traiter</button>` : `<button class="btn btn-sm btn-ghost" onclick="openDetail('${escapeJs(demande.id)}')">Voir</button>`}</td>
+    </tr>
+  `).join('');
+}
+
+async function openValidation(id) {
+  const demande = state.demandes.find(item => item.id === id);
+  if (!demande) {
+    showToast('Demande introuvable.', 'error');
+    return;
+  }
+
+  state.selectedDemande = demande;
+  document.querySelector('#modal-validation .modal-title').textContent = `Traiter la demande #${demande.id}`;
+
+  const panel = document.querySelector('#modal-validation .validation-panel');
+  const blocks = panel.querySelectorAll('div');
+  panel.querySelector('strong').textContent = `${demande.description || 'Demande'} — ${demande.site || '-'}`;
+  if (blocks[0]) blocks[0].innerHTML = `Par ${escapeHtml(demande.agent_nom || demande.agent_email || '-')} — ${formatDate(demande.created_at)} — ${renderUrgencyBadge(demande.urgence)}`;
+  if (blocks[1]) blocks[1].textContent = demande.description || '';
+  if (blocks[2]) blocks[2].innerHTML = demande.photo_url ? '📎 <span style="color:var(--accent)">Pièce jointe disponible</span>' : '📭 <span style="color:var(--muted)">Aucune photo jointe</span>';
+
+  try {
+    const simulation = await apiRequest('simulateBudget', { montant: demande.montant_estime || 0 });
+    const rows = document.querySelectorAll('.simulation-box .sim-row');
+    rows[0].lastElementChild.textContent = formatCurrency(simulation.avant.restant);
+    rows[1].lastElementChild.textContent = formatCurrency(demande.montant_estime);
+    rows[2].lastElementChild.textContent = formatCurrency(simulation.apres_validation.restant);
+    rows[3].lastElementChild.textContent = `${simulation.apres_validation.pct_consomme}%`;
+  } catch (error) {
+    console.error(error);
+  }
+
+  document.getElementById('valid-comment').value = '';
+  openModal('modal-validation');
+}
+
+async function decideValidation(action, button) {
+  const commentaire = document.getElementById('valid-comment').value.trim();
+  if (!state.selectedDemande) {
+    showToast('Aucune demande sélectionnée.', 'error');
+    return;
+  }
+
+  if (action === 'refuse' && !commentaire) {
+    showToast('Un motif est obligatoire pour refuser une demande.', 'error');
+    return;
+  }
+
+  const previousDemandes = state.demandes.map(item => ({ ...item }));
+  state.demandes = state.demandes.map(item => {
+    if (item.id !== state.selectedDemande.id) return item;
+    const nextStatus = action === 'validate' ? 'Validée' : action === 'refuse' ? 'Refusée' : 'Complément demandé';
+    return { ...item, statut: nextStatus, commentaire_decision: commentaire, _optimistic: true };
+  });
+  renderAdminDemandes(state.demandes);
+
+  try {
+    await withButtonLoading(button, 'Traitement...', async () => {
+      await apiRequest('updateStatut', {
+        id: state.selectedDemande.id,
+        action,
+        commentaire
+      });
+
+      closeModal('modal-validation');
+      state.selectedDemande = null;
+      showToast(action === 'validate' ? 'Demande validée.' : action === 'refuse' ? 'Demande refusée.' : 'Complément demandé.');
+      loadAdminData({ silent: true }).catch(console.error);
+    });
+  } catch (error) {
+    state.demandes = previousDemandes;
+    renderAdminDemandes(state.demandes);
+    console.error(error);
+    showToast(error.message || 'Mise à jour impossible.', 'error');
+  }
+}
+
+function openDetail(id) {
+  const demande = state.demandes.find(item => item.id === id);
+  if (!demande) {
+    showToast(`Demande #${id}`);
+    return;
+  }
+  showToast([`Réf. ${demande.id}`, demande.site || '-', demande.statut || '-', truncateText(demande.description, 60)].join(' — '));
+}
+
+async function loadUsers(options = {}) {
+  if (!options.silent) renderTableSkeleton('sa-users-table', 7, 4);
+  state.users = await apiRequest('getUsers');
+  renderUsersTable();
+}
+
+function renderUsersTable() {
+  const tbody = document.getElementById('sa-users-table');
+  if (!tbody) return;
+
+  if (!state.users.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">Aucun utilisateur</div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = state.users.map(user => {
+    const fullName = [user.prenom, user.nom].filter(Boolean).join(' ').trim() || user.email;
+    const lastLogin = user.last_login ? formatDate(user.last_login, true) : 'Jamais';
+    return `
+      <tr class="${user._optimistic ? 'pending-row' : ''}">
+        <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:28px;height:28px;font-size:10px">${makeInitials(fullName)}</div>${escapeHtml(fullName)}</div></td>
+        <td>${escapeHtml(user.email)}</td>
+        <td>${renderRoleBadge(user.role)}</td>
+        <td>${escapeHtml(user.site || 'Tous')}</td>
+        <td>${user.actif ? '<span class="badge badge-validated"><span class="badge-dot"></span>Actif</span>' : '<span class="badge badge-draft"><span class="badge-dot"></span>Inactif</span>'}</td>
+        <td style="color:var(--muted);font-size:12px">${escapeHtml(lastLogin)}</td>
+        <td><button class="btn btn-sm btn-ghost" onclick="toggleUserStatus('${escapeJs(user.id)}', ${user.actif ? 'false' : 'true'}, this)">${user.actif ? 'Désactiver' : 'Réactiver'}</button></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function addUser(button) {
+  const prenom = document.getElementById('new-user-prenom').value.trim();
+  const nom = document.getElementById('new-user-nom').value.trim();
+  const email = document.getElementById('new-user-email').value.trim().toLowerCase();
+  const role = document.getElementById('new-user-role').value;
+  const site = document.getElementById('new-user-site').value;
+  const customPassword = document.getElementById('new-user-password').value.trim();
+  const password = customPassword || generateTemporaryPassword();
+
+  if (!prenom || !nom || !email) {
+    showToast('Prénom, nom et email sont obligatoires.', 'error');
+    return;
+  }
+
+  const tempUser = {
+    id: createTempId('USR'),
+    prenom,
+    nom,
+    email,
+    role,
+    site,
+    actif: true,
+    last_login: '',
+    _optimistic: true
+  };
+
+  state.users = [tempUser].concat(state.users);
+  renderUsersTable();
+
+  try {
+    await withButtonLoading(button, 'Création...', async () => {
+      await apiRequest('createUser', { prenom, nom, email, role, site, password });
+      closeModal('modal-add-user');
+      ['new-user-prenom', 'new-user-nom', 'new-user-email', 'new-user-password'].forEach(id => { document.getElementById(id).value = ''; });
+      document.getElementById('new-user-role').value = 'agent';
+      document.getElementById('new-user-site').value = 'Tous';
+      showToast(`Utilisateur créé. Mot de passe temporaire : ${password}`);
+      loadUsers({ silent: true }).catch(console.error);
+    });
+  } catch (error) {
+    state.users = state.users.filter(user => user.id !== tempUser.id);
+    renderUsersTable();
+    console.error(error);
+    showToast(error.message || "Impossible de créer l'utilisateur.", 'error');
+  }
+}
+
+async function toggleUserStatus(id, actif, button) {
+  const previousUsers = state.users.map(user => ({ ...user }));
+  state.users = state.users.map(user => user.id === id ? { ...user, actif, _optimistic: true } : user);
+  renderUsersTable();
+
+  try {
+    await withButtonLoading(button, 'Mise à jour...', async () => {
+      await apiRequest('updateUser', { id, actif });
+      showToast(actif ? 'Utilisateur réactivé.' : 'Utilisateur désactivé.');
+      loadUsers({ silent: true }).catch(console.error);
+    });
+  } catch (error) {
+    state.users = previousUsers;
+    renderUsersTable();
+    console.error(error);
+    showToast(error.message || 'Mise à jour impossible.', 'error');
+  }
+}
+
+async function loadSettings(options = {}) {
+  const [settings] = await Promise.all([
+    apiRequest('getSettings'),
+    loadCategories(options),
+    loadSites(options)
+  ]);
+  state.settings = settings;
+  document.getElementById('cfg-budget').value = state.settings.budget_annuel ?? '';
+  document.getElementById('cfg-seuil').value = state.settings.alerte_seuil_pct || 80;
+  document.getElementById('cfg-retention').value = state.settings.retention_months || 24;
+  document.getElementById('cfg-email').value = state.settings.admin_email || '';
+  const retentionTarget = document.getElementById('rgpd-kpi-retention');
+  if (retentionTarget) retentionTarget.textContent = `${state.settings.retention_months || 24} mois`;
+}
+
+async function addCategory(button) {
+  const nom = document.getElementById('new-category-name').value.trim();
+  const description = document.getElementById('new-category-description').value.trim();
+  const couleur = document.getElementById('new-category-color').value;
+
+  if (!nom) {
+    showToast('Le nom de la catégorie est obligatoire.', 'error');
+    return;
+  }
+
+  const tempCategory = { id: createTempId('CAT'), nom, description, couleur, actif: true, _optimistic: true };
+  state.categories = state.categories.concat([tempCategory]);
+  renderCategoryOptions();
+  renderCategoryAdminList();
+
+  try {
+    await withButtonLoading(button, 'Ajout...', async () => {
+      await apiRequest('createCategory', { nom, description, couleur });
+      ['new-category-name', 'new-category-description'].forEach(id => { document.getElementById(id).value = ''; });
+      document.getElementById('new-category-color').value = '#4f8ef7';
+      showToast('Catégorie ajoutée.');
+      loadCategories({ silent: true }).catch(console.error);
+    });
+  } catch (error) {
+    state.categories = state.categories.filter(category => category.id !== tempCategory.id);
+    renderCategoryOptions();
+    renderCategoryAdminList();
+    console.error(error);
+    showToast(error.message || "Impossible d'ajouter la catégorie.", 'error');
+  }
+}
+
+async function addSite(button) {
+  const nom = document.getElementById('new-site-name').value.trim();
+  const description = document.getElementById('new-site-description').value.trim();
+
+  if (!nom) {
+    showToast('Le nom du site est obligatoire.', 'error');
+    return;
+  }
+
+  const tempSite = { id: createTempId('STE'), nom, description, actif: true, _optimistic: true };
+  state.sites = state.sites.concat([tempSite]);
+  renderSiteOptions();
+  renderSiteAdminList();
+
+  try {
+    await withButtonLoading(button, 'Ajout...', async () => {
+      await apiRequest('createSite', { nom, description });
+      ['new-site-name', 'new-site-description'].forEach(id => { document.getElementById(id).value = ''; });
+      showToast('Site ajouté.');
+      loadSites({ silent: true }).catch(console.error);
+    });
+  } catch (error) {
+    state.sites = state.sites.filter(site => site.id !== tempSite.id);
+    renderSiteOptions();
+    renderSiteAdminList();
+    console.error(error);
+    showToast(error.message || "Impossible d'ajouter le site.", 'error');
+  }
+}
+
+async function editSite(id, button) {
+  const site = state.sites.find(item => item.id === id);
+  if (!site) {
+    showToast('Site introuvable.', 'error');
+    return;
+  }
+
+  const nom = prompt('Nom du site', site.nom || '');
+  if (nom === null) return;
+  const description = prompt('Description du site', site.description || '');
+  if (description === null) return;
+
+  const previousSites = state.sites.map(item => ({ ...item }));
+  state.sites = state.sites.map(item => item.id === id ? { ...item, nom: nom.trim(), description: description.trim(), _optimistic: true } : item);
+  renderSiteOptions();
+  renderSiteAdminList();
+
+  try {
+    await withButtonLoading(button, 'Modification...', async () => {
+      await apiRequest('updateSite', { id, nom: nom.trim(), description: description.trim() });
+      showToast('Site modifié.');
+      loadSites({ silent: true }).catch(console.error);
+    });
+  } catch (error) {
+    state.sites = previousSites;
+    renderSiteOptions();
+    renderSiteAdminList();
+    console.error(error);
+    showToast(error.message || 'Modification impossible.', 'error');
+  }
+}
+
+async function toggleSiteStatus(id, actif, button) {
+  const previousSites = state.sites.map(item => ({ ...item }));
+  state.sites = state.sites.map(item => item.id === id ? { ...item, actif, _optimistic: true } : item);
+  renderSiteOptions();
+  renderSiteAdminList();
+
+  try {
+    await withButtonLoading(button, actif ? 'Activation...' : 'Désactivation...', async () => {
+      await apiRequest('updateSite', { id, actif });
+      showToast(actif ? 'Site activé.' : 'Site désactivé.');
+      loadSites({ silent: true }).catch(console.error);
+    });
+  } catch (error) {
+    state.sites = previousSites;
+    renderSiteOptions();
+    renderSiteAdminList();
+    console.error(error);
+    showToast(error.message || 'Mise à jour impossible.', 'error');
+  }
+}
+
+async function removeSite(id, button) {
+  const site = state.sites.find(item => item.id === id);
+  if (!site) {
+    showToast('Site introuvable.', 'error');
+    return;
+  }
+  if (!confirm(`Supprimer définitivement le site "${site.nom}" ?`)) return;
+
+  const previousSites = state.sites.map(item => ({ ...item }));
+  state.sites = state.sites.filter(item => item.id !== id);
+  renderSiteOptions();
+  renderSiteAdminList();
+
+  try {
+    await withButtonLoading(button, 'Suppression...', async () => {
+      await apiRequest('deleteSite', { id });
+      showToast('Site supprimé.');
+      loadSites({ silent: true }).catch(console.error);
+    });
+  } catch (error) {
+    state.sites = previousSites;
+    renderSiteOptions();
+    renderSiteAdminList();
+    console.error(error);
+    showToast(error.message || 'Suppression impossible.', 'error');
+  }
+}
+
+async function editCategory(id, button) {
+  const category = state.categories.find(item => item.id === id);
+  if (!category) {
+    showToast('Catégorie introuvable.', 'error');
+    return;
+  }
+
+  const nom = prompt('Nom de la catégorie', category.nom || '');
+  if (nom === null) return;
+  const description = prompt('Description de la catégorie', category.description || '');
+  if (description === null) return;
+
+  const previousCategories = state.categories.map(item => ({ ...item }));
+  state.categories = state.categories.map(item => item.id === id ? { ...item, nom: nom.trim(), description: description.trim(), _optimistic: true } : item);
+  renderCategoryOptions();
+  renderCategoryAdminList();
+
+  try {
+    await withButtonLoading(button, 'Modification...', async () => {
+      await apiRequest('updateCategory', { id, nom: nom.trim(), description: description.trim() });
+      showToast('Catégorie modifiée.');
+      loadCategories({ silent: true }).catch(console.error);
+    });
+  } catch (error) {
+    state.categories = previousCategories;
+    renderCategoryOptions();
+    renderCategoryAdminList();
+    console.error(error);
+    showToast(error.message || 'Modification impossible.', 'error');
+  }
+}
+
+async function toggleCategoryStatus(id, actif, button) {
+  const previousCategories = state.categories.map(item => ({ ...item }));
+  state.categories = state.categories.map(item => item.id === id ? { ...item, actif, _optimistic: true } : item);
+  renderCategoryOptions();
+  renderCategoryAdminList();
+
+  try {
+    await withButtonLoading(button, actif ? 'Activation...' : 'Désactivation...', async () => {
+      await apiRequest('updateCategory', { id, actif });
+      showToast(actif ? 'Catégorie activée.' : 'Catégorie désactivée.');
+      loadCategories({ silent: true }).catch(console.error);
+    });
+  } catch (error) {
+    state.categories = previousCategories;
+    renderCategoryOptions();
+    renderCategoryAdminList();
+    console.error(error);
+    showToast(error.message || 'Mise à jour impossible.', 'error');
+  }
+}
+
+async function removeCategory(id, button) {
+  const category = state.categories.find(item => item.id === id);
+  if (!category) {
+    showToast('Catégorie introuvable.', 'error');
+    return;
+  }
+  if (!confirm(`Supprimer définitivement la catégorie "${category.nom}" ?`)) return;
+
+  const previousCategories = state.categories.map(item => ({ ...item }));
+  state.categories = state.categories.filter(item => item.id !== id);
+  renderCategoryOptions();
+  renderCategoryAdminList();
+
+  try {
+    await withButtonLoading(button, 'Suppression...', async () => {
+      await apiRequest('deleteCategory', { id });
+      showToast('Catégorie supprimée.');
+      loadCategories({ silent: true }).catch(console.error);
+    });
+  } catch (error) {
+    state.categories = previousCategories;
+    renderCategoryOptions();
+    renderCategoryAdminList();
+    console.error(error);
+    showToast(error.message || 'Suppression impossible.', 'error');
+  }
+}
+
+async function saveAppSettings(button) {
+  const payload = {
+    budget_annuel: document.getElementById('cfg-budget').value,
+    alerte_seuil_pct: document.getElementById('cfg-seuil').value,
+    retention_months: document.getElementById('cfg-retention').value,
+    admin_email: document.getElementById('cfg-email').value.trim()
+  };
+
+  state.settings = { ...state.settings, ...payload };
+  const retentionTarget = document.getElementById('rgpd-kpi-retention');
+  if (retentionTarget) retentionTarget.textContent = `${payload.retention_months || 24} mois`;
+
+  try {
+    await withButtonLoading(button, 'Enregistrement...', async () => {
+      await apiRequest('saveSettings', payload);
+      showToast('Paramètres enregistrés.');
+      loadSettings({ silent: true }).catch(console.error);
+    });
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || 'Enregistrement impossible.', 'error');
+  }
+}
+
+async function loadLogs(options = {}) {
+  if (!options.silent) renderTableSkeleton('rgpd-logs-table', 5, 4);
+  state.logs = await apiRequest('getLogs', { limit: 30 });
+  const tbody = document.getElementById('rgpd-logs-table');
+
+  document.getElementById('rgpd-kpi-logs').textContent = state.logs.length;
+  document.getElementById('rgpd-kpi-last').textContent = state.logs[0]?.timestamp ? formatDate(state.logs[0].timestamp, true) : '-';
+
+  if (!state.logs.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><div class="empty-icon">🔐</div><div class="empty-text">Aucun journal disponible</div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = state.logs.map(log => `
+    <tr>
+      <td style="font-size:11px;color:var(--muted)">${escapeHtml(formatDate(log.timestamp, true))}</td>
+      <td>${escapeHtml(log.email || '-')}</td>
+      <td>${escapeHtml(log.action || '-')}</td>
+      <td>${escapeHtml(log.ip || '-')}</td>
+      <td style="font-family:monospace;font-size:10px;color:var(--muted)">${escapeHtml((log.hash || '').slice(0, 10))}${log.hash ? '...' : ''}</td>
+    </tr>
+  `).join('');
+}
+
+async function exportAuditSecurity(button) {
+  try {
+    await withButtonLoading(button, 'Export...', async () => {
+      const result = await apiRequest('exportAuditSecurity');
+      downloadCsv(result.filename || 'audit_security.csv', result.csv || '');
+      showToast("Export de l'audit généré.");
+    });
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || "Export de l'audit impossible.", 'error');
+  }
+}
+
+async function purgeAuditSecurity(button) {
+  if (!confirm("Purger toute la feuille audit_security ? Cette action supprimera toutes les lignes d'audit existantes.")) return;
+
+  const previousLogs = state.logs.map(log => ({ ...log }));
+  state.logs = [];
+  document.getElementById('rgpd-kpi-logs').textContent = '0';
+  document.getElementById('rgpd-kpi-last').textContent = '-';
+  const tbody = document.getElementById('rgpd-logs-table');
+  if (tbody) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><div class="empty-icon">🧹</div><div class="empty-text">Purge en cours...</div></td></tr>';
+  }
+
+  try {
+    await withButtonLoading(button, 'Purge...', async () => {
+      const result = await apiRequest('purgeAuditSecurity', { all: true });
+      showToast(result.message || 'Audit purgé.');
+      loadLogs({ silent: true }).catch(console.error);
+    });
+  } catch (error) {
+    state.logs = previousLogs;
+    loadLogs({ silent: true }).catch(console.error);
+    console.error(error);
+    showToast(error.message || "Purge de l'audit impossible.", 'error');
+  }
+}
+
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(modal => {
+  modal.addEventListener('click', event => {
+    if (event.target === modal) modal.classList.remove('open');
+  });
+});
+
+function switchTab(el, tabId) {
+  el.closest('.tabs').querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('#page-admin-budget > [id^="tab-"]').forEach(panel => {
+    panel.style.display = panel.id === tabId ? 'block' : 'none';
+  });
+}
+
+function renderRoleBadge(role) {
+  if (role === 'superadmin') return '<span class="badge badge-refused">Super Admin</span>';
+  if (role === 'admin') return '<span class="badge badge-pending">Direction</span>';
+  return '<span class="badge badge-validated">Agent</span>';
+}
+
+function renderStatusBadge(status) {
+  const cls = status === 'En attente' ? 'pending' : status === 'Validée' ? 'validated' : status === 'Refusée' ? 'refused' : 'draft';
+  return `<span class="badge badge-${cls}"><span class="badge-dot"></span>${escapeHtml(status || 'Brouillon')}</span>`;
+}
+
+function renderUrgencyBadge(urgence) {
+  const normalized = String(urgence || '').toLowerCase();
+  const cls = normalized === 'critique' ? 'high' : normalized === 'haute' ? 'med' : 'low';
+  const label = normalized ? normalized.charAt(0).toUpperCase() + normalized.slice(1) : 'Normale';
+  return `<span class="urgency-${cls}">${escapeHtml(label)}</span>`;
+}
+
+function truncate(value, max) {
+  const text = String(value || '');
+  if (text.length <= max) return escapeHtml(text);
+  return `${escapeHtml(text.slice(0, max))}...`;
+}
+
+function truncateText(value, max) {
+  const text = String(value || '');
+  if (text.length <= max) return text;
+  return `${text.slice(0, max)}...`;
+}
+
+function formatCurrency(value) {
+  return `${toNumber(value).toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} €`;
+}
+
+function formatDate(value, withTime = false) {
+  if (!value) return '-';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleString('fr-FR', withTime ? { dateStyle: 'short', timeStyle: 'short' } : { dateStyle: 'short' });
+}
+
+function toNumber(value) {
+  const parsed = parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || '').split(',')[1] || '');
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function generateTemporaryPassword() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+  let core = '';
+  for (let i = 0; i < 8; i++) {
+    core += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return `CFA${core}A1`;
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escapeJs(value) {
+  return String(value || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  document.getElementById('toast-icon').textContent = type === 'error' ? '⚠️' : '✅';
+  t.className = 'show ' + type;
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+  if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') doLogin();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const annualTab = document.getElementById('tab-annuel');
+  const categoryTab = document.getElementById('tab-cat');
+  const siteTab = document.getElementById('tab-site');
+  if (annualTab) annualTab.style.display = 'block';
+  if (categoryTab) categoryTab.style.display = 'none';
+  if (siteTab) siteTab.style.display = 'none';
+});
+function showGlobalAppSkeleton() {
+  document.querySelector('.main').innerHTML = `
+    <div style="padding:32px">
+      <div class="skeleton-line medium" style="height:28px;width:260px;margin-bottom:12px"></div>
+      <div class="skeleton-line short" style="margin-bottom:30px"></div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="skeleton-line medium"></div></div>
+        <div class="kpi-card"><div class="skeleton-line medium"></div></div>
+        <div class="kpi-card"><div class="skeleton-line medium"></div></div>
+        <div class="kpi-card"><div class="skeleton-line medium"></div></div>
+      </div>
+
+      <div class="table-wrap" style="margin-top:20px">
+        <table>
+          <tbody>
+            <tr><td><div class="skeleton-line medium"></div></td></tr>
+            <tr><td><div class="skeleton-line short"></div></td></tr>
+            <tr><td><div class="skeleton-line medium"></div></td></tr>
+            <tr><td><div class="skeleton-line short"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function hideGlobalAppSkeleton() {
+  // ne rien faire, initApp recharge déjà les vraies données
+}
+</script>
+</body>
+</html>
+
