@@ -37,112 +37,10 @@
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    padding: 28px;
+    padding: 24px 16px;
     background:
-      radial-gradient(circle at top left, rgba(79,142,247,0.24), transparent 32%),
-      radial-gradient(circle at 85% 15%, rgba(124,92,246,0.18), transparent 24%),
+      radial-gradient(circle at top left, rgba(79,142,247,0.18), transparent 28%),
       radial-gradient(ellipse 80% 60% at 50% 0%, #1a2040 0%, var(--bg) 70%);
-  }
-
-  .login-shell {
-    width: min(1100px, 100%);
-    display: grid;
-    grid-template-columns: minmax(320px, 1.15fr) minmax(340px, 420px);
-    gap: 28px;
-    align-items: stretch;
-  }
-  .login-hero {
-    position: relative;
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 28px;
-    padding: 38px;
-    background:
-      linear-gradient(160deg, rgba(79,142,247,0.16), rgba(22,25,33,0.98) 42%),
-      linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
-    box-shadow: var(--card-shadow);
-  }
-  .login-hero::after {
-    content: '';
-    position: absolute;
-    width: 240px;
-    height: 240px;
-    right: -80px;
-    bottom: -80px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(79,142,247,0.3), transparent 68%);
-    pointer-events: none;
-  }
-  .login-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 12px;
-    border-radius: 999px;
-    background: rgba(79,142,247,0.12);
-    border: 1px solid rgba(79,142,247,0.18);
-    color: #b8d0ff;
-    font-size: 12px;
-    letter-spacing: 0.3px;
-    margin-bottom: 18px;
-  }
-  .login-title {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(34px, 5vw, 56px);
-    line-height: 0.98;
-    letter-spacing: -1.4px;
-    max-width: 9ch;
-    margin-bottom: 18px;
-  }
-  .login-copy {
-    max-width: 560px;
-    color: #c4c9db;
-    font-size: 16px;
-    line-height: 1.6;
-    margin-bottom: 24px;
-  }
-  .login-highlights {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-  .login-highlight {
-    padding: 16px;
-    border-radius: 18px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.06);
-    backdrop-filter: blur(8px);
-  }
-  .login-highlight strong {
-    display: block;
-    font-size: 22px;
-    margin-bottom: 4px;
-  }
-  .login-highlight span {
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.4;
-  }
-  .login-points {
-    display: grid;
-    gap: 10px;
-    max-width: 560px;
-  }
-  .login-point {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    color: #d8dded;
-    font-size: 14px;
-    line-height: 1.55;
-  }
-  .login-point::before {
-    content: '●';
-    color: var(--success);
-    font-size: 11px;
-    margin-top: 4px;
-    flex-shrink: 0;
   }
 
   .login-box {
@@ -150,7 +48,7 @@
     border: 1px solid var(--border);
     border-radius: 24px;
     padding: 48px 40px;
-    width: 100%;
+    width: min(100%, 560px);
     box-shadow: var(--card-shadow);
     position: relative;
     overflow: hidden;
@@ -488,10 +386,6 @@
   /* ─── RESPONSIVE ──────────────────────── */
   @media (max-width: 900px) {
     #login-screen { padding: 16px; }
-    .login-shell { grid-template-columns: 1fr; }
-    .login-hero { padding: 28px 22px; }
-    .login-highlights { grid-template-columns: 1fr; }
-    .login-title { max-width: none; }
     .login-box { padding: 32px 22px; }
     .sidebar { width: 60px; }
     .sidebar-logo, .nav-item span, .user-info, .sidebar-section { display: none; }
@@ -500,6 +394,29 @@
     .kpi-grid { grid-template-columns: 1fr 1fr; }
     .form-row { grid-template-columns: 1fr; }
     .charts-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 560px) {
+    #login-screen { align-items: stretch; }
+    .login-box {
+      width: 100%;
+      min-height: calc(100vh - 32px);
+      border-radius: 20px;
+      padding: 26px 18px;
+    }
+    .login-logo { font-size: 20px; }
+    .login-sub { font-size: 12px; }
+    .login-status { font-size: 11px; padding: 10px; }
+    .field-label { font-size: 11px; }
+    input, select, textarea { padding: 12px 13px; font-size: 16px; }
+    .btn { min-height: 48px; }
+  }
+
+  @media (min-width: 1400px) {
+    .login-box {
+      width: min(100%, 620px);
+      padding: 52px 44px;
+    }
   }
 
   .empty-state { text-align: center; padding: 48px 20px; color: var(--muted); }
@@ -548,74 +465,35 @@
 
 <!-- ══ LOGIN ══════════════════════════════════════════════════════ -->
 <div id="login-screen">
-  <div class="login-shell">
-    <section class="login-hero">
-      <div class="login-kicker">Acces public GitHub + Apps Script</div>
-      <h1 class="login-title">Vos interventions commencent plus sereinement.</h1>
-      <p class="login-copy">
-        Connectez-vous depuis GitHub Pages ou en local sans rester bloqué sur le compte Google du développeur. La session métier reste gérée dans votre base utilisateurs.
-      </p>
-      <div class="login-highlights">
-        <div class="login-highlight">
-          <strong>1 passerelle</strong>
-          <span>Les appels Apps Script passent par une liaison dédiée plus tolérante côté navigateur.</span>
-        </div>
-        <div class="login-highlight">
-          <strong>Tout compte</strong>
-          <span>Le front n’impose plus de dépendance implicite au compte Google qui a publié le script.</span>
-        </div>
-        <div class="login-highlight">
-          <strong>UX plus douce</strong>
-          <span>Messages plus clairs, attente plus rassurante et écran de connexion moins technique.</span>
-        </div>
-      </div>
-      <div class="login-points">
-        <div class="login-point">Saisissez votre email applicatif puis votre mot de passe habituel.</div>
-        <div class="login-point">Depuis GitHub Pages, la connexion initialise automatiquement un pont sécurisé avec la Web App.</div>
-        <div class="login-point">Si une fenêtre Apps Script s’ouvre seule, laissez-la simplement ouverte pendant votre session.</div>
-      </div>
-    </section>
-
-    <div class="login-box">
-      <div class="login-logo">⚡ InterventionPro</div>
-      <div class="login-sub">Plateforme de gestion des demandes d'intervention</div>
-      <div class="login-status">
-        <span class="login-status-dot"></span>
-        <span id="login-status-text">Connexion prête. Vous pouvez vous authentifier depuis un hébergement GitHub ou un fichier local.</span>
-      </div>
-      <div class="field-group">
-        <div class="field-label">Adresse email</div>
-        <input type="email" id="login-email" placeholder="prenom.nom@organisme.fr">
-      </div>
-      <div class="field-group">
-        <div class="field-label">Mot de passe</div>
-        <input type="password" id="login-pwd" placeholder="••••••••">
-      </div>
-      <div class="field-group">
-        <div class="field-label">Profil</div>
-        <select id="login-role">
-          <option value="">Détection automatique</option>
-          <option value="agent">Agent</option>
-          <option value="admin">Directeur</option>
-          <option value="superadmin">Super Admin</option>
-        </select>
-      </div>
-      <button id="login-btn" class="btn btn-primary btn-full" onclick="doLogin(this)">
-        Se connecter
-      </button>
-      <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--muted)">
-        <a href="#" style="color:var(--accent);text-decoration:none">Mot de passe oublié ?</a>
-      </div>
-      <div class="login-tips">
-        <div class="login-tip">
-          <strong>Depuis GitHub Pages</strong>
-          La première connexion peut prendre quelques secondes le temps d’activer la passerelle Apps Script.
-        </div>
-        <div class="login-tip">
-          <strong>Si ça bloque</strong>
-          Redéployez la Web App en accès public et exécutez-la en tant que propriétaire du script.
-        </div>
-      </div>
+  <div class="login-box">
+    <div class="login-logo">⚡ InterventionPro</div>
+    <div class="login-sub">Connexion à votre espace</div>
+    <div class="login-status">
+      <span class="login-status-dot"></span>
+      <span id="login-status-text">Connexion prête.</span>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Adresse email</div>
+      <input type="email" id="login-email" placeholder="prenom.nom@organisme.fr">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Mot de passe</div>
+      <input type="password" id="login-pwd" placeholder="••••••••">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Profil</div>
+      <select id="login-role">
+        <option value="">Détection automatique</option>
+        <option value="agent">Agent</option>
+        <option value="admin">Directeur</option>
+        <option value="superadmin">Super Admin</option>
+      </select>
+    </div>
+    <button id="login-btn" class="btn btn-primary btn-full" onclick="doLogin(this)">
+      Se connecter
+    </button>
+    <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--muted)">
+      <a href="#" style="color:var(--accent);text-decoration:none">Mot de passe oublié ?</a>
     </div>
   </div>
 </div>
@@ -1345,15 +1223,19 @@ function isGitHubPagesHost() {
   return /\.github\.io$/i.test(window.location.hostname || '');
 }
 
+function isLocalFileHost() {
+  return window.location.protocol === 'file:';
+}
+
 function shouldUseJsonp(action) {
   return action !== 'uploadPhoto' && (
-    window.location.protocol === 'file:' ||
+    isLocalFileHost() ||
     isGitHubPagesHost()
   );
 }
 
 function shouldUseBridge() {
-  return window.location.protocol === 'file:' || isGitHubPagesHost();
+  return isGitHubPagesHost();
 }
 
 function setLoginStatus(message, tone = 'info') {
@@ -1520,7 +1402,7 @@ function apiRequestJsonp(action, payload = {}, options = {}) {
   return new Promise((resolve, reject) => {
     const callbackName = '__cfalog_jsonp_' + Date.now() + '_' + Math.random().toString(36).slice(2);
     const script = document.createElement('script');
-    const timeoutMs = options.timeoutMs || 12000;
+    const timeoutMs = options.timeoutMs || 7000;
     let timeoutId = null;
     const cleanup = () => {
       if (timeoutId) clearTimeout(timeoutId);
@@ -1553,12 +1435,14 @@ function apiRequestJsonp(action, payload = {}, options = {}) {
 
     script.onerror = () => {
       cleanup();
-      reject(new Error("Connexion Apps Script impossible depuis le fichier local. Verifiez que la Web App est deployee en acces 'Tout le monde', executee 'en tant que moi', et qu'un autre compte Google ouvert dans le navigateur ne force pas une page d'authentification."));
+      reject(new Error(isLocalFileHost()
+        ? "Connexion Apps Script impossible depuis un fichier local. Ouvrez plutot la page via GitHub Pages ou un petit serveur local, puis verifiez que la Web App est deployee en acces 'Tout le monde' et executee 'en tant que moi'."
+        : "Connexion Apps Script impossible. Verifiez que la Web App est deployee en acces 'Tout le monde' et executee 'en tant que moi'."));
     };
 
     timeoutId = setTimeout(() => {
       cleanup();
-      reject(new Error("Aucune reponse de la Web App Apps Script. Verifiez le deploiement public, l'URL configuree, et testez aussi dans une fenetre privee sans autre session Google."));
+      reject(new Error("Aucune reponse de la Web App Apps Script. Verifiez le deploiement public et l'URL configuree."));
     }, timeoutMs);
 
     script.src = APPS_SCRIPT_WEBAPP_URL + '?' + params.toString();
@@ -2820,6 +2704,8 @@ document.addEventListener('DOMContentLoaded', () => {
     ensureBridgeReady().catch(error => {
       console.warn('Bridge init failed:', error);
     });
+  } else if (isLocalFileHost()) {
+    setLoginStatus('Mode local detecte. Pour une connexion plus fiable, utilisez GitHub Pages ou un serveur local.', 'info');
   }
   const annualTab = document.getElementById('tab-annuel');
   const categoryTab = document.getElementById('tab-cat');
