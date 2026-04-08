@@ -4,28 +4,33 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>InterventionPro — Gestion des demandes</title>
+<meta name="theme-color" content="#0d0f14">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23161921'/%3E%3Cpath d='M36 8 18 35h10l-2 21 20-29H35l1-19Z' fill='%234f8ef7'/%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0d0f14;
-    --surface: #161921;
-    --surface2: #1e2230;
-    --border: #2a2f3d;
-    --accent: #4f8ef7;
-    --accent2: #7c5cf6;
+    --bg: #0a0d14;
+    --surface: rgba(19,24,35,0.94);
+    --surface2: #202637;
+    --border: rgba(139,157,196,0.16);
+    --accent: #5a95ff;
+    --accent2: #76b7ff;
     --danger: #f74f6a;
     --warning: #f7a34f;
-    --success: #4ff7a3;
-    --text: #e8eaf2;
-    --muted: #6b7394;
-    --card-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --success: #50d6a0;
+    --text: #edf3ff;
+    --muted: #8b97b6;
+    --card-shadow: 0 24px 80px rgba(3,8,20,0.38);
   }
 
   * { margin:0; padding:0; box-sizing:border-box; }
 
   body {
     font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
+    background:
+      radial-gradient(circle at top left, rgba(90,149,255,0.16), transparent 24%),
+      radial-gradient(circle at top right, rgba(118,183,255,0.10), transparent 22%),
+      linear-gradient(180deg, #0f1628 0%, var(--bg) 24%, #080b12 100%);
     color: var(--text);
     min-height: 100vh;
     overflow-x: hidden;
@@ -83,6 +88,7 @@
     font-size: 12px;
     line-height: 1.4;
   }
+  .login-status.hidden { display: none; }
   .login-status-dot {
     width: 10px;
     height: 10px;
@@ -156,31 +162,35 @@
   #app { display: none; min-height: 100vh; }
 
   .sidebar {
-    position: fixed; top: 0; left: 0; bottom: 0; width: 240px;
-    background: var(--surface); border-right: 1px solid var(--border);
+    position: fixed; top: 18px; left: 18px; bottom: 18px; width: 258px;
+    background: linear-gradient(180deg, rgba(20,25,37,0.96), rgba(14,18,27,0.98));
+    border: 1px solid var(--border);
+    border-radius: 24px;
     display: flex; flex-direction: column; padding: 24px 0; z-index: 100;
+    backdrop-filter: blur(18px);
+    box-shadow: var(--card-shadow);
   }
   .sidebar-logo {
-    font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 800;
-    padding: 0 20px 24px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 800;
+    padding: 0 22px 24px;
+    background: linear-gradient(135deg, #9bc1ff, var(--accent));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     border-bottom: 1px solid var(--border);
   }
   .sidebar-section { padding: 16px 12px 4px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
   .nav-item {
     display: flex; align-items: center; gap: 10px;
-    padding: 10px 20px; margin: 2px 8px; border-radius: 8px;
+    padding: 12px 16px; margin: 4px 12px; border-radius: 14px;
     cursor: pointer; font-size: 14px; color: var(--muted);
     transition: all 0.15s; user-select: none;
   }
-  .nav-item:hover { background: var(--surface2); color: var(--text); }
-  .nav-item.active { background: rgba(79,142,247,0.12); color: var(--accent); }
+  .nav-item:hover { background: rgba(90,149,255,0.10); color: var(--text); }
+  .nav-item.active { background: linear-gradient(135deg, rgba(90,149,255,0.18), rgba(118,183,255,0.08)); color: #dbe9ff; border: 1px solid rgba(90,149,255,0.14); }
   .nav-icon { width: 18px; text-align: center; font-size: 16px; }
   .sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border); }
   .user-chip {
     display: flex; align-items: center; gap: 10px; padding: 10px;
-    background: var(--surface2); border-radius: 10px;
+    background: rgba(31,38,55,0.9); border-radius: 14px; border: 1px solid rgba(139,157,196,0.1);
   }
   .avatar {
     width: 32px; height: 32px; border-radius: 50%;
@@ -192,19 +202,21 @@
   .user-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .user-role { font-size: 11px; color: var(--muted); }
 
-  .main { margin-left: 240px; padding: 32px; min-height: 100vh; }
+  .main { margin-left: 294px; padding: 24px; min-height: 100vh; }
+  .main > * { max-width: 1420px; margin-left: auto; margin-right: auto; }
   .page { display: none; }
   .page.active { display: block; }
 
-  .page-header { margin-bottom: 28px; }
-  .page-title { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; }
+  .page-header { margin-bottom: 24px; padding-top: 10px; }
+  .page-title { font-family: 'Syne', sans-serif; font-size: clamp(24px, 4vw, 34px); font-weight: 800; }
   .page-sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
 
   /* ─── CARDS KPI ──────────────────────── */
-  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 28px; }
   .kpi-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px;
+    background: linear-gradient(180deg, rgba(20,25,37,0.96), rgba(16,20,30,0.94)); border: 1px solid var(--border); border-radius: 20px; padding: 22px;
     position: relative; overflow: hidden;
+    box-shadow: 0 14px 40px rgba(3, 8, 20, 0.20);
   }
   .kpi-card::after {
     content: ''; position: absolute; top: 0; right: 0; width: 60px; height: 60px;
@@ -223,7 +235,7 @@
   .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
 
   /* ─── BUDGET BAR ─────────────────────── */
-  .budget-bar-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 28px; }
+  .budget-bar-wrap { background: linear-gradient(180deg, rgba(20,25,37,0.96), rgba(16,20,30,0.94)); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 28px; box-shadow: 0 14px 40px rgba(3, 8, 20, 0.18); }
   .budget-bar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
   .budget-bar-title { font-weight: 600; }
   .budget-bar-pct { font-family: 'Syne', sans-serif; font-size: 18px; color: var(--accent); }
@@ -233,7 +245,7 @@
   .budget-meta { display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: var(--muted); }
 
   /* ─── TABLE ──────────────────────────── */
-  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .table-wrap { background: linear-gradient(180deg, rgba(20,25,37,0.96), rgba(16,20,30,0.94)); border: 1px solid var(--border); border-radius: 20px; overflow: auto; box-shadow: 0 14px 40px rgba(3, 8, 20, 0.18); }
   .table-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
   .table-title { font-weight: 600; }
   .search-bar {
@@ -272,8 +284,8 @@
   }
   .modal-overlay.open { display: flex; }
   .modal {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
-    width: 560px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+    background: linear-gradient(180deg, rgba(20,25,37,0.98), rgba(16,20,30,0.97)); border: 1px solid var(--border); border-radius: 24px;
+    width: min(720px, calc(100vw - 28px)); max-height: min(88vh, 940px); overflow-y: auto;
     box-shadow: 0 20px 60px rgba(0,0,0,0.5);
     animation: modalIn 0.2s ease;
   }
@@ -384,16 +396,24 @@
   .divider { height: 1px; background: var(--border); margin: 16px 0; }
 
   /* ─── RESPONSIVE ──────────────────────── */
+  @media (max-width: 1240px) {
+    .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
   @media (max-width: 900px) {
     #login-screen { padding: 16px; }
     .login-box { padding: 32px 22px; }
-    .sidebar { width: 60px; }
+    .sidebar { top: 12px; left: 12px; bottom: 12px; width: 78px; padding: 18px 0; }
     .sidebar-logo, .nav-item span, .user-info, .sidebar-section { display: none; }
-    .nav-item { justify-content: center; padding: 12px; margin: 2px; }
-    .main { margin-left: 60px; padding: 20px; }
+    .nav-item { justify-content: center; padding: 12px; margin: 4px 10px; }
+    .sidebar-footer { padding: 12px; }
+    .user-chip { justify-content: center; padding: 10px 8px; }
+    .main { margin-left: 102px; padding: 18px 14px 24px; }
     .kpi-grid { grid-template-columns: 1fr 1fr; }
     .form-row { grid-template-columns: 1fr; }
     .charts-grid { grid-template-columns: 1fr; }
+    .modal-footer { flex-wrap: wrap; }
+    .modal-footer .btn { flex: 1 1 180px; }
   }
 
   @media (max-width: 560px) {
@@ -410,6 +430,56 @@
     .field-label { font-size: 11px; }
     input, select, textarea { padding: 12px 13px; font-size: 16px; }
     .btn { min-height: 48px; }
+    .sidebar {
+      position: sticky;
+      top: 0;
+      left: 0;
+      bottom: auto;
+      width: 100%;
+      height: auto;
+      border-radius: 0 0 20px 20px;
+      padding: 12px 0;
+    }
+    .sidebar-logo {
+      display: block;
+      padding: 0 16px 12px;
+      font-size: 17px;
+    }
+    .sidebar-section, .user-info { display: none; }
+    #nav-agent, #nav-admin, #nav-superadmin {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 0 10px;
+    }
+    .nav-item {
+      flex: 0 0 auto;
+      justify-content: center;
+      min-width: 48px;
+      margin: 0;
+    }
+    .sidebar-footer {
+      padding: 10px 12px 0;
+      border-top: none;
+    }
+    .user-chip {
+      width: fit-content;
+      margin-left: auto;
+    }
+    .main {
+      margin-left: 0;
+      padding: 18px 12px 28px;
+    }
+    .kpi-grid { grid-template-columns: 1fr; }
+    .table-header { padding: 14px; gap: 10px; flex-wrap: wrap; }
+    .search-bar { width: 100%; }
+    thead th, tbody td { padding-left: 12px; padding-right: 12px; }
+    .modal {
+      width: calc(100vw - 16px);
+      max-height: 92vh;
+      border-radius: 20px;
+    }
+    .modal-body, .modal-header, .modal-footer { padding-left: 16px; padding-right: 16px; }
   }
 
   @media (min-width: 1400px) {
@@ -455,10 +525,10 @@
   @keyframes shimmer { 100% { transform: translateX(100%); } }
   .pending-row { opacity: 0.7; }
   .admin-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .settings-card { max-width:560px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px; }
+  .settings-card { max-width:560px;background:linear-gradient(180deg, rgba(20,25,37,0.96), rgba(16,20,30,0.94));border:1px solid var(--border);border-radius:20px;padding:28px;box-shadow:0 14px 40px rgba(3, 8, 20, 0.18); }
 
   .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
-  .filter-select { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; }
+  .filter-select { background: rgba(20,25,37,0.96); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; }
 </style>
 </head>
 <body>
@@ -468,7 +538,7 @@
   <div class="login-box">
     <div class="login-logo">⚡ InterventionPro</div>
     <div class="login-sub">Connexion à votre espace</div>
-    <div class="login-status">
+    <div class="login-status hidden">
       <span class="login-status-dot"></span>
       <span id="login-status-text">Connexion prête.</span>
     </div>
@@ -945,12 +1015,6 @@
     <div class="page" id="page-sa-settings">
       <div class="page-header"><div class="page-title">Paramètres système</div></div>
       <div class="settings-card">
-        <div class="field-group">
-          <div class="field-label">Intégration API</div>
-          <div style="font-size:13px;color:var(--muted);line-height:1.6">
-            L'URL de la Web App Google Apps Script est intégrée en dur dans le fichier HTML de livraison.
-          </div>
-        </div>
         <div class="field-group"><div class="field-label">Budget annuel (€)</div><input type="number" id="cfg-budget" value=""></div>
         <div class="field-group"><div class="field-label">Seuil d'alerte (%)</div><input type="number" id="cfg-seuil" value="80"></div>
         <div class="field-group"><div class="field-label">Rétention des données (mois)</div><input type="number" id="cfg-retention" value="24"></div>
@@ -1108,13 +1172,6 @@ const APPS_SCRIPT_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxFxtTjo
 const state = {
   currentUser: null,
   authToken: null,
-  bridge: {
-    iframe: null,
-    ready: false,
-    readyPromise: null,
-    readyResolver: null,
-    pending: {}
-  },
   demandes: [],
   users: [],
   categories: [],
@@ -1125,12 +1182,64 @@ const state = {
   selectedDemande: null
 };
 
+const SESSION_STORAGE_KEY = 'cfalog_session_v1';
+
 function getActiveCategories() {
   return state.categories.filter(category => category.actif !== false && String(category.actif).toLowerCase() !== 'false');
 }
 
 function createTempId(prefix = 'TMP') {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function persistSession() {
+  try {
+    if (!state.authToken || !state.currentUser) {
+      localStorage.removeItem(SESSION_STORAGE_KEY);
+      return;
+    }
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({
+      authToken: state.authToken,
+      currentUser: state.currentUser
+    }));
+  } catch (error) {
+    console.warn('Session persistence failed', error);
+  }
+}
+
+function restoreSession() {
+  try {
+    const raw = localStorage.getItem(SESSION_STORAGE_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.authToken || !parsed.currentUser) return false;
+    state.authToken = parsed.authToken;
+    state.currentUser = parsed.currentUser;
+    return true;
+  } catch (error) {
+    console.warn('Session restore failed', error);
+    localStorage.removeItem(SESSION_STORAGE_KEY);
+    return false;
+  }
+}
+
+function clearPersistedSession() {
+  try {
+    localStorage.removeItem(SESSION_STORAGE_KEY);
+  } catch (error) {
+    console.warn('Session cleanup failed', error);
+  }
+}
+
+function showAppShell() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+}
+
+function showLoginShell() {
+  document.getElementById('login-screen').style.opacity = '1';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
 }
 
 function setButtonLoading(button, loading, loadingText) {
@@ -1234,148 +1343,124 @@ function shouldUseJsonp(action) {
   );
 }
 
-function shouldUseBridge() {
-  return isGitHubPagesHost();
-}
-
 function setLoginStatus(message, tone = 'info') {
   const node = document.getElementById('login-status-text');
   if (!node) return;
   node.textContent = message;
   const status = node.parentElement;
   if (!status) return;
+  status.classList.remove('hidden');
   status.style.background = tone === 'error' ? 'rgba(247,79,106,0.08)' : tone === 'success' ? 'rgba(79,247,163,0.08)' : 'rgba(79,142,247,0.10)';
   status.style.borderColor = tone === 'error' ? 'rgba(247,79,106,0.16)' : tone === 'success' ? 'rgba(79,247,163,0.16)' : 'rgba(79,142,247,0.18)';
   status.style.color = tone === 'error' ? '#ffd4dc' : tone === 'success' ? '#c8f8dc' : '#d3ddff';
 }
 
-function getBridgeUrl() {
-  const origin = window.location.origin && window.location.origin !== 'null'
-    ? window.location.origin
-    : 'null';
-  return `${APPS_SCRIPT_WEBAPP_URL}?action=bridge&origin=${encodeURIComponent(origin)}`;
+function hideLoginStatus() {
+  const node = document.getElementById('login-status-text');
+  if (!node || !node.parentElement) return;
+  node.parentElement.classList.add('hidden');
 }
 
-function ensureBridgeReady() {
-  if (!shouldUseBridge()) return Promise.resolve();
-  if (state.bridge.ready) return Promise.resolve();
-  if (state.bridge.readyPromise) return state.bridge.readyPromise;
+async function fetchLoginRequest(email, password, role, timeoutMs = 12000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const params = new URLSearchParams({
+      login: '1',
+      email: email,
+      mdp: password
+    });
+    if (role) params.set('role', role);
 
-  setLoginStatus('Initialisation de la passerelle GitHub / Apps Script…', 'info');
-
-  state.bridge.readyPromise = new Promise((resolve, reject) => {
-    const iframe = document.createElement('iframe');
-    const timeoutId = setTimeout(() => {
-      reject(new Error("La passerelle Apps Script n'a pas repondu. Redeployez la Web App en acces 'Tout le monde' puis retestez."));
-    }, 12000);
-
-    state.bridge.iframe = iframe;
-    state.bridge.readyResolver = () => {
-      clearTimeout(timeoutId);
-      state.bridge.ready = true;
-      setLoginStatus('Passerelle Apps Script active. Vous pouvez vous connecter avec votre compte applicatif.', 'success');
-      resolve();
-    };
-
-    iframe.src = getBridgeUrl();
-    iframe.title = 'Apps Script Bridge';
-    iframe.setAttribute('aria-hidden', 'true');
-    iframe.style.position = 'fixed';
-    iframe.style.width = '1px';
-    iframe.style.height = '1px';
-    iframe.style.opacity = '0.01';
-    iframe.style.pointerEvents = 'none';
-    iframe.style.border = '0';
-    iframe.style.bottom = '0';
-    iframe.style.right = '0';
-    document.body.appendChild(iframe);
-  }).catch(error => {
-    state.bridge.ready = false;
-    state.bridge.readyPromise = null;
-    state.bridge.readyResolver = null;
-    if (state.bridge.iframe && state.bridge.iframe.parentNode) {
-      state.bridge.iframe.parentNode.removeChild(state.bridge.iframe);
+    const response = await fetch(`${APPS_SCRIPT_WEBAPP_URL}?${params.toString()}`, {
+      method: 'GET',
+      cache: 'no-store',
+      redirect: 'follow',
+      signal: controller.signal
+    });
+    const text = await response.text();
+    try {
+      return JSON.parse(text);
+    } catch (_) {
+      const match = text.match(/\(\s*(\{[\s\S]*\})\s*\)\s*;?\s*$/);
+      if (match) return JSON.parse(match[1]);
+      throw new Error('Invalid login payload');
     }
-    state.bridge.iframe = null;
-    setLoginStatus("Passerelle indisponible. Bascule en mode compatibilite GitHub / JSONP.", 'error');
-    throw error;
-  });
-
-  return state.bridge.readyPromise;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
-window.addEventListener('message', event => {
-  const data = event && event.data ? event.data : {};
-  if (!data || !data.type || !/^cfalog-bridge-/.test(data.type)) return;
-  if (state.bridge.iframe && event.source && state.bridge.iframe.contentWindow && event.source !== state.bridge.iframe.contentWindow) return;
-
-  if (data.type === 'cfalog-bridge-ready') {
-    if (typeof state.bridge.readyResolver === 'function') {
-      const resolver = state.bridge.readyResolver;
-      state.bridge.readyResolver = null;
-      resolver();
-    }
-    return;
-  }
-
-  if (data.type === 'cfalog-bridge-response' && data.id && state.bridge.pending[data.id]) {
-    const pending = state.bridge.pending[data.id];
-    delete state.bridge.pending[data.id];
-    if (data.success) {
-      pending.resolve(data.data);
-      return;
-    }
-    pending.reject(new Error(data.error || 'Erreur bridge Apps Script'));
-  }
-});
-
-async function apiRequestBridge(action, payload = {}, options = {}) {
-  await ensureBridgeReady();
-
+function jsonpLoginRequest(email, password, role, timeoutMs = 15000) {
   return new Promise((resolve, reject) => {
-    const requestId = createTempId('BRIDGE');
-    const timeoutId = setTimeout(() => {
-      delete state.bridge.pending[requestId];
-      reject(new Error("Le pont Apps Script a mis trop de temps a repondre."));
-    }, options.timeoutMs || 20000);
+    const callbackName = '__cfalog_login_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    const script = document.createElement('script');
+    const params = new URLSearchParams({
+      login: '1',
+      email: email,
+      mdp: password,
+      callback: callbackName
+    });
+    if (role) params.set('role', role);
 
-    state.bridge.pending[requestId] = {
-      resolve: data => {
-        clearTimeout(timeoutId);
-        resolve(data);
-      },
-      reject: error => {
-        clearTimeout(timeoutId);
-        reject(error);
-      }
+    let done = false;
+    const cleanup = () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+      try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+    };
+    const timer = setTimeout(() => {
+      if (done) return;
+      done = true;
+      cleanup();
+      reject(new Error('Timeout'));
+    }, timeoutMs);
+
+    window[callbackName] = data => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      cleanup();
+      resolve(data);
     };
 
-    state.bridge.iframe.contentWindow.postMessage({
-      type: 'cfalog-bridge-request',
-      id: requestId,
-      body: {
-        action,
-        payload,
-        token: options.skipAuth ? undefined : state.authToken
-      }
-    }, '*');
+    script.onerror = () => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      cleanup();
+      reject(new Error('Script error'));
+    };
+
+    document.head.appendChild(script);
+    setTimeout(() => {
+      script.src = `${APPS_SCRIPT_WEBAPP_URL}?${params.toString()}`;
+    }, 50);
   });
+}
+
+function applyLoginResult(data) {
+  if (!data || data.success !== true || !data.token || !data.user) return false;
+  state.authToken = data.token;
+  state.currentUser = normalizeUser(data.user);
+  persistSession();
+  return true;
+}
+
+function explainLoginFailure(data) {
+  if (!data) return 'Connexion impossible.';
+  if (data.error) return data.error;
+  if (data.success === true && data.data && data.data.status === 'ok') {
+    return "La Web App Apps Script n'est pas redéployée avec la nouvelle route de login.";
+  }
+  if (data.success === true && !data.token && !data.user) {
+    return "La réponse de connexion Apps Script n'est pas au bon format. Redéployez GSCFA1.";
+  }
+  return 'Email ou mot de passe incorrect.';
 }
 
 async function apiRequest(action, payload = {}, options = {}) {
   if (!isApiConfigured()) {
     throw new Error("Renseignez l'URL Apps Script dans APPS_SCRIPT_WEBAPP_URL.");
-  }
-
-  if (shouldUseBridge()) {
-    try {
-      return await apiRequestBridge(action, payload, options);
-    } catch (bridgeError) {
-      if (shouldUseJsonp(action)) {
-        return apiRequestJsonp(action, payload, options);
-      }
-      throw bridgeError;
-    }
   }
 
   if (shouldUseJsonp(action)) {
@@ -1463,28 +1548,23 @@ async function doLogin(button) {
   setButtonLoading(button, true, 'Connexion...');
 
   try {
-    if (shouldUseBridge()) {
-      await ensureBridgeReady().catch(() => null);
+    let data = null;
+    try {
+      data = await fetchLoginRequest(email, password, role, 10000);
+    } catch (fetchErr) {
+      console.warn('Login fetch failed, fallback JSONP', fetchErr);
+      data = await jsonpLoginRequest(email, password, role, 12000);
     }
 
-    // petit délai visuel premium
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    const data = await apiRequest(
-      'login',
-      { email, password, role },
-      { skipAuth: true }
-    );
-
-    state.authToken = data.token;
-    state.currentUser = normalizeUser(data.user);
+    if (!applyLoginResult(data)) {
+      throw new Error(explainLoginFailure(data));
+    }
 
     // transition douce
     document.getElementById('login-screen').style.opacity = '0';
 
     setTimeout(async () => {
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
+      showAppShell();
       document.getElementById('login-pwd').value = '';
 
      
@@ -1513,13 +1593,12 @@ function doLogout() {
   state.logs = [];
   state.settings = {};
   state.selectedDemande = null;
+  clearPersistedSession();
   document.querySelectorAll('.modal-overlay.open').forEach(modal => modal.classList.remove('open'));
   document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-  document.getElementById('login-screen').style.opacity = '1';
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
-  setLoginStatus('Connexion prête. Vous pouvez vous authentifier depuis un hébergement GitHub ou un fichier local.', 'info');
+  showLoginShell();
+  hideLoginStatus();
   document.getElementById('login-email').focus();
 }
 
@@ -1540,6 +1619,21 @@ async function initApp() {
 
   await Promise.all([loadCategories(), loadSites()]);
   await loadCurrentPageData();
+}
+
+async function resumePersistedSession() {
+  if (!restoreSession()) return false;
+
+  try {
+    showAppShell();
+    document.getElementById('login-pwd').value = '';
+    await initApp();
+    return true;
+  } catch (error) {
+    console.warn('Session resume failed', error);
+    doLogout();
+    return false;
+  }
 }
 
 function showPage(id, options = {}) {
@@ -1623,6 +1717,12 @@ async function loadAgentDemandes(options = {}) {
 }
 
 async function loadCategories(options = {}) {
+  if (!state.currentUser || !state.authToken) {
+    state.categories = [];
+    renderCategoryOptions();
+    renderCategoryAdminList();
+    return;
+  }
   if (!options.silent) renderCategorySkeleton();
   try {
     state.categories = await apiRequest('getCategories', {
@@ -1638,6 +1738,12 @@ async function loadCategories(options = {}) {
 }
 
 async function loadSites(options = {}) {
+  if (!state.currentUser || !state.authToken) {
+    state.sites = [];
+    renderSiteOptions();
+    renderSiteAdminList();
+    return;
+  }
   if (!options.silent) renderSiteSkeleton();
   try {
     state.sites = await apiRequest('getSites', {
@@ -2700,13 +2806,10 @@ document.addEventListener('keydown', e => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  if (shouldUseBridge()) {
-    ensureBridgeReady().catch(error => {
-      console.warn('Bridge init failed:', error);
-    });
-  } else if (isLocalFileHost()) {
-    setLoginStatus('Mode local detecte. Pour une connexion plus fiable, utilisez GitHub Pages ou un serveur local.', 'info');
-  }
+  hideLoginStatus();
+  resumePersistedSession().catch(error => {
+    console.warn('Persisted session restore failed', error);
+  });
   const annualTab = document.getElementById('tab-annuel');
   const categoryTab = document.getElementById('tab-cat');
   const siteTab = document.getElementById('tab-site');
