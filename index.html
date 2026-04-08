@@ -37,15 +37,120 @@
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    background: radial-gradient(ellipse 80% 60% at 50% 0%, #1a2040 0%, var(--bg) 70%);
+    padding: 28px;
+    background:
+      radial-gradient(circle at top left, rgba(79,142,247,0.24), transparent 32%),
+      radial-gradient(circle at 85% 15%, rgba(124,92,246,0.18), transparent 24%),
+      radial-gradient(ellipse 80% 60% at 50% 0%, #1a2040 0%, var(--bg) 70%);
+  }
+
+  .login-shell {
+    width: min(1100px, 100%);
+    display: grid;
+    grid-template-columns: minmax(320px, 1.15fr) minmax(340px, 420px);
+    gap: 28px;
+    align-items: stretch;
+  }
+  .login-hero {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 28px;
+    padding: 38px;
+    background:
+      linear-gradient(160deg, rgba(79,142,247,0.16), rgba(22,25,33,0.98) 42%),
+      linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    box-shadow: var(--card-shadow);
+  }
+  .login-hero::after {
+    content: '';
+    position: absolute;
+    width: 240px;
+    height: 240px;
+    right: -80px;
+    bottom: -80px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(79,142,247,0.3), transparent 68%);
+    pointer-events: none;
+  }
+  .login-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: rgba(79,142,247,0.12);
+    border: 1px solid rgba(79,142,247,0.18);
+    color: #b8d0ff;
+    font-size: 12px;
+    letter-spacing: 0.3px;
+    margin-bottom: 18px;
+  }
+  .login-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(34px, 5vw, 56px);
+    line-height: 0.98;
+    letter-spacing: -1.4px;
+    max-width: 9ch;
+    margin-bottom: 18px;
+  }
+  .login-copy {
+    max-width: 560px;
+    color: #c4c9db;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+  .login-highlights {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .login-highlight {
+    padding: 16px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    backdrop-filter: blur(8px);
+  }
+  .login-highlight strong {
+    display: block;
+    font-size: 22px;
+    margin-bottom: 4px;
+  }
+  .login-highlight span {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .login-points {
+    display: grid;
+    gap: 10px;
+    max-width: 560px;
+  }
+  .login-point {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: #d8dded;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .login-point::before {
+    content: '●';
+    color: var(--success);
+    font-size: 11px;
+    margin-top: 4px;
+    flex-shrink: 0;
   }
 
   .login-box {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 20px;
+    border-radius: 24px;
     padding: 48px 40px;
-    width: 380px;
+    width: 100%;
     box-shadow: var(--card-shadow);
     position: relative;
     overflow: hidden;
@@ -66,7 +171,48 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
-  .login-sub { color: var(--muted); font-size: 13px; margin-bottom: 32px; }
+  .login-sub { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+  .login-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(79,247,163,0.08);
+    border: 1px solid rgba(79,247,163,0.16);
+    color: #c8f8dc;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .login-status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--success);
+    box-shadow: 0 0 0 6px rgba(79,247,163,0.12);
+    flex-shrink: 0;
+  }
+  .login-tips {
+    margin-top: 18px;
+    display: grid;
+    gap: 10px;
+  }
+  .login-tip {
+    padding: 12px 14px;
+    background: var(--surface2);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.04);
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .login-tip strong {
+    color: var(--text);
+    display: block;
+    font-size: 12px;
+    margin-bottom: 2px;
+  }
   .field-label { font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; }
   .field-group { margin-bottom: 18px; }
   input, select, textarea {
@@ -341,6 +487,12 @@
 
   /* ─── RESPONSIVE ──────────────────────── */
   @media (max-width: 900px) {
+    #login-screen { padding: 16px; }
+    .login-shell { grid-template-columns: 1fr; }
+    .login-hero { padding: 28px 22px; }
+    .login-highlights { grid-template-columns: 1fr; }
+    .login-title { max-width: none; }
+    .login-box { padding: 32px 22px; }
     .sidebar { width: 60px; }
     .sidebar-logo, .nav-item span, .user-info, .sidebar-section { display: none; }
     .nav-item { justify-content: center; padding: 12px; margin: 2px; }
@@ -396,34 +548,74 @@
 
 <!-- ══ LOGIN ══════════════════════════════════════════════════════ -->
 <div id="login-screen">
-  <div class="login-box">
-    <div class="login-logo">⚡ InterventionPro</div>
-    <div class="login-sub">Plateforme de gestion des demandes d'intervention</div>
-    <div class="field-group">
-      <div class="field-label">Adresse email</div>
-      <input type="email" id="login-email" placeholder="prenom.nom@organisme.fr">
-    </div>
-    <div class="field-group">
-      <div class="field-label">Mot de passe</div>
-      <input type="password" id="login-pwd" placeholder="••••••••">
-    </div>
-    <div class="field-group">
-      <div class="field-label">Profil</div>
-      <select id="login-role">
-        <option value="">Détection automatique</option>
-        <option value="agent">Agent</option>
-        <option value="admin">Directeur</option>
-        <option value="superadmin">Super Admin</option>
-      </select>
-    </div>
-    <button id="login-btn" class="btn btn-primary btn-full" onclick="doLogin(this)">
-  Se connecter
-</button>
-    <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--muted)">
-      <a href="#" style="color:var(--accent);text-decoration:none">Mot de passe oublié ?</a>
-    </div>
-    <div style="margin-top:20px;padding:12px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--muted)">
-      Connexion sécurisée reliée à votre base Google Sheets via Google Apps Script.
+  <div class="login-shell">
+    <section class="login-hero">
+      <div class="login-kicker">Acces public GitHub + Apps Script</div>
+      <h1 class="login-title">Vos interventions commencent plus sereinement.</h1>
+      <p class="login-copy">
+        Connectez-vous depuis GitHub Pages ou en local sans rester bloqué sur le compte Google du développeur. La session métier reste gérée dans votre base utilisateurs.
+      </p>
+      <div class="login-highlights">
+        <div class="login-highlight">
+          <strong>1 passerelle</strong>
+          <span>Les appels Apps Script passent par une liaison dédiée plus tolérante côté navigateur.</span>
+        </div>
+        <div class="login-highlight">
+          <strong>Tout compte</strong>
+          <span>Le front n’impose plus de dépendance implicite au compte Google qui a publié le script.</span>
+        </div>
+        <div class="login-highlight">
+          <strong>UX plus douce</strong>
+          <span>Messages plus clairs, attente plus rassurante et écran de connexion moins technique.</span>
+        </div>
+      </div>
+      <div class="login-points">
+        <div class="login-point">Saisissez votre email applicatif puis votre mot de passe habituel.</div>
+        <div class="login-point">Depuis GitHub Pages, la connexion initialise automatiquement un pont sécurisé avec la Web App.</div>
+        <div class="login-point">Si une fenêtre Apps Script s’ouvre seule, laissez-la simplement ouverte pendant votre session.</div>
+      </div>
+    </section>
+
+    <div class="login-box">
+      <div class="login-logo">⚡ InterventionPro</div>
+      <div class="login-sub">Plateforme de gestion des demandes d'intervention</div>
+      <div class="login-status">
+        <span class="login-status-dot"></span>
+        <span id="login-status-text">Connexion prête. Vous pouvez vous authentifier depuis un hébergement GitHub ou un fichier local.</span>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Adresse email</div>
+        <input type="email" id="login-email" placeholder="prenom.nom@organisme.fr">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Mot de passe</div>
+        <input type="password" id="login-pwd" placeholder="••••••••">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Profil</div>
+        <select id="login-role">
+          <option value="">Détection automatique</option>
+          <option value="agent">Agent</option>
+          <option value="admin">Directeur</option>
+          <option value="superadmin">Super Admin</option>
+        </select>
+      </div>
+      <button id="login-btn" class="btn btn-primary btn-full" onclick="doLogin(this)">
+        Se connecter
+      </button>
+      <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--muted)">
+        <a href="#" style="color:var(--accent);text-decoration:none">Mot de passe oublié ?</a>
+      </div>
+      <div class="login-tips">
+        <div class="login-tip">
+          <strong>Depuis GitHub Pages</strong>
+          La première connexion peut prendre quelques secondes le temps d’activer la passerelle Apps Script.
+        </div>
+        <div class="login-tip">
+          <strong>Si ça bloque</strong>
+          Redéployez la Web App en accès public et exécutez-la en tant que propriétaire du script.
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1038,6 +1230,13 @@ const APPS_SCRIPT_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxFxtTjo
 const state = {
   currentUser: null,
   authToken: null,
+  bridge: {
+    iframe: null,
+    ready: false,
+    readyPromise: null,
+    readyResolver: null,
+    pending: {}
+  },
   demandes: [],
   users: [],
   categories: [],
@@ -1153,9 +1352,148 @@ function shouldUseJsonp(action) {
   );
 }
 
+function shouldUseBridge() {
+  return window.location.protocol === 'file:' || isGitHubPagesHost();
+}
+
+function setLoginStatus(message, tone = 'info') {
+  const node = document.getElementById('login-status-text');
+  if (!node) return;
+  node.textContent = message;
+  const status = node.parentElement;
+  if (!status) return;
+  status.style.background = tone === 'error' ? 'rgba(247,79,106,0.08)' : tone === 'success' ? 'rgba(79,247,163,0.08)' : 'rgba(79,142,247,0.10)';
+  status.style.borderColor = tone === 'error' ? 'rgba(247,79,106,0.16)' : tone === 'success' ? 'rgba(79,247,163,0.16)' : 'rgba(79,142,247,0.18)';
+  status.style.color = tone === 'error' ? '#ffd4dc' : tone === 'success' ? '#c8f8dc' : '#d3ddff';
+}
+
+function getBridgeUrl() {
+  const origin = window.location.origin && window.location.origin !== 'null'
+    ? window.location.origin
+    : 'null';
+  return `${APPS_SCRIPT_WEBAPP_URL}?action=bridge&origin=${encodeURIComponent(origin)}`;
+}
+
+function ensureBridgeReady() {
+  if (!shouldUseBridge()) return Promise.resolve();
+  if (state.bridge.ready) return Promise.resolve();
+  if (state.bridge.readyPromise) return state.bridge.readyPromise;
+
+  setLoginStatus('Initialisation de la passerelle GitHub / Apps Script…', 'info');
+
+  state.bridge.readyPromise = new Promise((resolve, reject) => {
+    const iframe = document.createElement('iframe');
+    const timeoutId = setTimeout(() => {
+      reject(new Error("La passerelle Apps Script n'a pas repondu. Redeployez la Web App en acces 'Tout le monde' puis retestez."));
+    }, 12000);
+
+    state.bridge.iframe = iframe;
+    state.bridge.readyResolver = () => {
+      clearTimeout(timeoutId);
+      state.bridge.ready = true;
+      setLoginStatus('Passerelle Apps Script active. Vous pouvez vous connecter avec votre compte applicatif.', 'success');
+      resolve();
+    };
+
+    iframe.src = getBridgeUrl();
+    iframe.title = 'Apps Script Bridge';
+    iframe.setAttribute('aria-hidden', 'true');
+    iframe.style.position = 'fixed';
+    iframe.style.width = '1px';
+    iframe.style.height = '1px';
+    iframe.style.opacity = '0.01';
+    iframe.style.pointerEvents = 'none';
+    iframe.style.border = '0';
+    iframe.style.bottom = '0';
+    iframe.style.right = '0';
+    document.body.appendChild(iframe);
+  }).catch(error => {
+    state.bridge.ready = false;
+    state.bridge.readyPromise = null;
+    state.bridge.readyResolver = null;
+    if (state.bridge.iframe && state.bridge.iframe.parentNode) {
+      state.bridge.iframe.parentNode.removeChild(state.bridge.iframe);
+    }
+    state.bridge.iframe = null;
+    setLoginStatus("Passerelle indisponible. Bascule en mode compatibilite GitHub / JSONP.", 'error');
+    throw error;
+  });
+
+  return state.bridge.readyPromise;
+}
+
+window.addEventListener('message', event => {
+  const data = event && event.data ? event.data : {};
+  if (!data || !data.type || !/^cfalog-bridge-/.test(data.type)) return;
+  if (state.bridge.iframe && event.source && state.bridge.iframe.contentWindow && event.source !== state.bridge.iframe.contentWindow) return;
+
+  if (data.type === 'cfalog-bridge-ready') {
+    if (typeof state.bridge.readyResolver === 'function') {
+      const resolver = state.bridge.readyResolver;
+      state.bridge.readyResolver = null;
+      resolver();
+    }
+    return;
+  }
+
+  if (data.type === 'cfalog-bridge-response' && data.id && state.bridge.pending[data.id]) {
+    const pending = state.bridge.pending[data.id];
+    delete state.bridge.pending[data.id];
+    if (data.success) {
+      pending.resolve(data.data);
+      return;
+    }
+    pending.reject(new Error(data.error || 'Erreur bridge Apps Script'));
+  }
+});
+
+async function apiRequestBridge(action, payload = {}, options = {}) {
+  await ensureBridgeReady();
+
+  return new Promise((resolve, reject) => {
+    const requestId = createTempId('BRIDGE');
+    const timeoutId = setTimeout(() => {
+      delete state.bridge.pending[requestId];
+      reject(new Error("Le pont Apps Script a mis trop de temps a repondre."));
+    }, options.timeoutMs || 20000);
+
+    state.bridge.pending[requestId] = {
+      resolve: data => {
+        clearTimeout(timeoutId);
+        resolve(data);
+      },
+      reject: error => {
+        clearTimeout(timeoutId);
+        reject(error);
+      }
+    };
+
+    state.bridge.iframe.contentWindow.postMessage({
+      type: 'cfalog-bridge-request',
+      id: requestId,
+      body: {
+        action,
+        payload,
+        token: options.skipAuth ? undefined : state.authToken
+      }
+    }, '*');
+  });
+}
+
 async function apiRequest(action, payload = {}, options = {}) {
   if (!isApiConfigured()) {
     throw new Error("Renseignez l'URL Apps Script dans APPS_SCRIPT_WEBAPP_URL.");
+  }
+
+  if (shouldUseBridge()) {
+    try {
+      return await apiRequestBridge(action, payload, options);
+    } catch (bridgeError) {
+      if (shouldUseJsonp(action)) {
+        return apiRequestJsonp(action, payload, options);
+      }
+      throw bridgeError;
+    }
   }
 
   if (shouldUseJsonp(action)) {
@@ -1241,6 +1579,10 @@ async function doLogin(button) {
   setButtonLoading(button, true, 'Connexion...');
 
   try {
+    if (shouldUseBridge()) {
+      await ensureBridgeReady().catch(() => null);
+    }
+
     // petit délai visuel premium
     await new Promise(resolve => setTimeout(resolve, 800));
 
@@ -1265,11 +1607,13 @@ async function doLogin(button) {
       await initApp();
 
      
+      setLoginStatus('Connexion etablie. Votre session est active.', 'success');
       showToast('Connexion réussie.');
     }, 400);
 
   } catch (error) {
     console.error(error);
+    setLoginStatus(error.message || 'Connexion impossible pour le moment.', 'error');
     showToast(error.message || 'Connexion impossible.', 'error');
   } finally {
     setButtonLoading(button, false);
@@ -1291,6 +1635,7 @@ function doLogout() {
   document.getElementById('login-screen').style.opacity = '1';
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
+  setLoginStatus('Connexion prête. Vous pouvez vous authentifier depuis un hébergement GitHub ou un fichier local.', 'info');
   document.getElementById('login-email').focus();
 }
 
@@ -2471,6 +2816,11 @@ document.addEventListener('keydown', e => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+  if (shouldUseBridge()) {
+    ensureBridgeReady().catch(error => {
+      console.warn('Bridge init failed:', error);
+    });
+  }
   const annualTab = document.getElementById('tab-annuel');
   const categoryTab = document.getElementById('tab-cat');
   const siteTab = document.getElementById('tab-site');
