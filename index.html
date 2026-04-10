@@ -1316,14 +1316,28 @@ async function gasPost(action, body = {}) {
   }
 }
 
+async function syncServerState(targetPage = APP.currentPage) {
+  await preloadData();
+  renderPage(targetPage || APP.currentPage);
+}
+
 // Optimistic update helper
-function optimisticAction(uiFn, apiFn, rollbackFn) {
+function optimisticAction(uiFn, apiFn, rollbackFn, successFn = null) {
   uiFn();
   showSync('sync');
   apiFn().then(res => {
-    if (res.success) showSync('success');
-    else { rollbackFn(); showSync('error'); }
-  }).catch(() => { rollbackFn(); showSync('error'); });
+    if (res.success) {
+      Promise.resolve(successFn ? successFn(res) : null)
+        .then(() => showSync('success'))
+        .catch(() => showSync('success'));
+    } else {
+      rollbackFn();
+      showSync('error', res.message || 'Synchronisation echouee');
+    }
+  }).catch(() => {
+    rollbackFn();
+    showSync('error');
+  });
 }
 
 // ════════════════════════════════════════
@@ -1806,7 +1820,8 @@ function submitDemande() {
     optimisticAction(
       () => {},
       () => gasPost('updateTache', { id: APP.editingDemandeId, categorie: cat, site, description: desc, date_souhaitee: date, montant_estime: montant }),
-      () => { APP.taches[idx] = old; renderPage(APP.currentPage); }
+      () => { APP.taches[idx] = old; renderPage(APP.currentPage); },
+      () => syncServerState(APP.currentPage)
     );
   } else {
     APP.taches.unshift(newItem);
@@ -1814,7 +1829,11 @@ function submitDemande() {
     optimisticAction(
       () => {},
       () => gasPost('addTache', newItem),
-      () => { APP.taches = APP.taches.filter(t => t.id !== newItem.id); renderPage(APP.currentPage); }
+      () => { APP.taches = APP.taches.filter(t => t.id !== newItem.id); renderPage(APP.currentPage); },
+      (res) => {
+        if (res.id) newItem.id = res.id;
+        return syncServerState(APP.currentPage);
+      }
     );
   }
 }
@@ -1868,7 +1887,8 @@ function validerDemande(statut) {
   optimisticAction(
     () => {},
     () => gasPost('validerTache', { id, statut, justification: justif }),
-    () => { APP.taches[idx] = old; renderPage(APP.currentPage); }
+    () => { APP.taches[idx] = old; renderPage(APP.currentPage); },
+    () => syncServerState(APP.currentPage)
   );
 }
 
@@ -1913,7 +1933,8 @@ function submitExecution() {
   optimisticAction(
     () => {},
     () => gasPost('executerTache', { id, statut, justification: justif, operateur_nom: APP.taches[idx].operateur_nom, date_execution: APP.taches[idx].date_execution }),
-    () => { APP.taches[idx] = old; renderPage(APP.currentPage); }
+    () => { APP.taches[idx] = old; renderPage(APP.currentPage); },
+    () => syncServerState(APP.currentPage)
   );
 }
 
@@ -1937,13 +1958,15 @@ function submitUser() {
   closeModal('modalUser');
   renderPage('utilisateurs');
 
-  sha256(pass).then(hash => {
-    optimisticAction(
-      () => {},
-      () => gasPost('addUser', { prenom, nom, email, password_hash: hash, role, entreprise: APP.user.entreprise }),
-      () => { APP.users = APP.users.filter(u => u.id !== newUser.id); renderPage('utilisateurs'); }
-    );
-  });
+  optimisticAction(
+    () => {},
+    () => gasPost('addUser', { prenom, nom, email, mdp: pass, role, entreprise: APP.user.entreprise }),
+    () => { APP.users = APP.users.filter(u => u.id !== newUser.id); renderPage('utilisateurs'); },
+    (res) => {
+      if (res.id) newUser.id = res.id;
+      return syncServerState('utilisateurs');
+    }
+  );
 }
 
 function toggleUserActif(id, actif) {
@@ -1955,7 +1978,8 @@ function toggleUserActif(id, actif) {
   optimisticAction(
     () => {},
     () => gasPost('toggleUser', { id, actif: APP.users[idx].actif }),
-    () => { APP.users[idx] = old; renderPage('utilisateurs'); }
+    () => { APP.users[idx] = old; renderPage('utilisateurs'); },
+    () => syncServerState('utilisateurs')
   );
 }
 
@@ -1967,7 +1991,8 @@ function deleteUser(id) {
   optimisticAction(
     () => {},
     () => gasPost('deleteUser', { id }),
-    () => { APP.users = old; renderPage('utilisateurs'); }
+    () => { APP.users = old; renderPage('utilisateurs'); },
+    () => syncServerState('utilisateurs')
   );
 }
 
@@ -1999,6 +2024,10 @@ function submitRefItem() {
       if (type === 'categories') APP.categories = APP.categories.filter(i => i.id !== newItem.id);
       else APP.sites = APP.sites.filter(i => i.id !== newItem.id);
       renderPage(type);
+    },
+    (res) => {
+      if (res.id) newItem.id = res.id;
+      return syncServerState(type);
     }
   );
 }
@@ -2009,12 +2038,12 @@ function deleteRefItem(type, id) {
     const old = [...APP.categories];
     APP.categories = APP.categories.filter(i => i.id !== id);
     renderPage('categories');
-    optimisticAction(() => {}, () => gasPost('deleteCategorie', { id }), () => { APP.categories = old; renderPage('categories'); });
+    optimisticAction(() => {}, () => gasPost('deleteCategorie', { id }), () => { APP.categories = old; renderPage('categories'); }, () => syncServerState('categories'));
   } else {
     const old = [...APP.sites];
     APP.sites = APP.sites.filter(i => i.id !== id);
     renderPage('sites');
-    optimisticAction(() => {}, () => gasPost('deleteSite', { id }), () => { APP.sites = old; renderPage('sites'); });
+    optimisticAction(() => {}, () => gasPost('deleteSite', { id }), () => { APP.sites = old; renderPage('sites'); }, () => syncServerState('sites'));
   }
 }
 
@@ -2116,6 +2145,12 @@ function doLogout() {
 // BOOT — check existing session
 // ════════════════════════════════════════
 (async function boot() {
+
+  if (window.location.protocol === 'file:') {
+    showView('viewLogin');
+    showLoginError("Ouvrez l'application via http://localhost:5500/intervenia1.html avec start-local.bat, pas en file:///");
+    return;
+  }
 
   // ── 1. Session existante (rechargement page) ──
   const saved = sessionStorage.getItem('iv_session');
