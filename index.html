@@ -3,2079 +3,1231 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Intervenia</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<title>InterMaster — CFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-/* ════════════════════════════════════════
-   DESIGN SYSTEM
-════════════════════════════════════════ */
 :root {
-  --bg:          #0a0a0b;
-  --bg2:         #111114;
-  --bg3:         #18181c;
-  --border:      #252529;
-  --border2:     #2e2e34;
-  --surface:     #1c1c21;
-  --text:        #e8e8ea;
-  --text2:       #8b8b95;
-  --text3:       #54545c;
-  --accent:      #3b6eff;
-  --accent2:     #2a54d4;
-  --accent-glow: rgba(59,110,255,0.18);
-  --yellow:      #f5a623;
-  --yellow-bg:   rgba(245,166,35,0.12);
-  --red:         #f04438;
-  --red-bg:      rgba(240,68,56,0.12);
-  --green:       #17b26a;
-  --green-bg:    rgba(23,178,106,0.12);
-  --gray:        #6b7280;
-  --gray-bg:     rgba(107,114,128,0.12);
-  --purple:      #a855f7;
-  --purple-bg:   rgba(168,85,247,0.12);
-  --sk:          #1e1e23;
-  --sk2:         #252529;
-  --r:           10px;
-  --r2:          14px;
-  --sidebar-w:   228px;
-  --trans:       all .2s cubic-bezier(.4,0,.2,1);
+  --bg: #0d0f14;
+  --surface: #161820;
+  --surface2: #1e2028;
+  --border: #2a2d3a;
+  --accent: #4f8ef7;
+  --accent2: #a78bfa;
+  --green: #34d399;
+  --yellow: #fbbf24;
+  --red: #f87171;
+  --orange: #fb923c;
+  --text: #e8eaf0;
+  --muted: #6b7280;
+  --superadmin: #a78bfa;
+  --directeur: #4f8ef7;
+  --agent: #34d399;
+  --operateur: #fbbf24;
 }
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 14px; }
-body {
-  font-family: 'Geist', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-}
-a { color: inherit; text-decoration: none; }
-button { font-family: inherit; }
-input, select, textarea { font-family: inherit; }
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+h1,h2,h3,.syne{font-family:'Syne',sans-serif}
 
-/* ════════════════════════════════════════
-   VIEWS — ROUTER
-════════════════════════════════════════ */
-.view { display: none !important; }
-.view.active { display: flex !important; }
-#viewLogin    { min-height: 100vh; }
-#viewSkeleton { min-height: 100vh; }
-#viewApp      { min-height: 100vh; }
+/* ── LOADER ── */
+#loader{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:16px}
+.loader-logo{font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;letter-spacing:-2px}
+.loader-logo span{color:var(--accent)}
+.loader-bar{width:200px;height:2px;background:var(--border);border-radius:2px;overflow:hidden}
+.loader-bar::after{content:'';display:block;height:100%;width:40%;background:linear-gradient(90deg,var(--accent),var(--accent2));animation:loadbar 1.2s ease-in-out infinite}
+@keyframes loadbar{0%{transform:translateX(-100%)}100%{transform:translateX(350%)};}
 
-/* ════════════════════════════════════════
-   LOGIN
-════════════════════════════════════════ */
-#viewLogin {
-  align-items: stretch;
-}
+/* ── LOGIN ── */
+#loginPage{display:none;min-height:100vh;align-items:center;justify-content:center;position:relative;overflow:hidden}
+#loginPage.active{display:flex}
+.login-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(79,142,247,0.12) 0%,transparent 70%)}
+.login-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:48px 48px;opacity:0.3}
+.login-card{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:48px 40px;width:420px;box-shadow:0 40px 80px rgba(0,0,0,0.5)}
+.login-logo{text-align:center;margin-bottom:36px}
+.login-logo h1{font-size:2rem;font-weight:800;letter-spacing:-1px}
+.login-logo h1 span{color:var(--accent)}
+.login-logo p{color:var(--muted);font-size:.85rem;margin-top:4px}
+.field{margin-bottom:20px}
+.field label{display:block;font-size:.78rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.field input,.field select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.95rem;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.field select option{background:var(--surface)}
+.btn{width:100%;padding:14px;border-radius:10px;border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;transition:all .2s;letter-spacing:.02em}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#3b7ae8;transform:translateY(-1px)}
+.login-error{color:var(--red);font-size:.82rem;text-align:center;margin-top:12px;min-height:20px}
 
-/* Left decorative panel */
-.login-panel-left {
-  width: 55%;
-  background: var(--bg2);
-  border-right: 1px solid var(--border);
-  padding: 3rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-  overflow: hidden;
-}
-.login-panel-left::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 80% 60% at 70% 20%, rgba(59,110,255,.12) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 20% 80%, rgba(59,110,255,.07) 0%, transparent 60%);
-  pointer-events: none;
-}
-/* Grid texture */
-.login-panel-left::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 40px 40px;
-  opacity: 0.3;
-  pointer-events: none;
-}
+/* ── LAYOUT ── */
+#app{display:none;min-height:100vh}
+#app.active{display:flex;flex-direction:column}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-left{display:flex;align-items:center;gap:20px}
+.logo-sm{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;letter-spacing:-1px}
+.logo-sm span{color:var(--accent)}
+.role-badge{padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.role-superadmin{background:rgba(167,139,250,.15);color:var(--superadmin);border:1px solid rgba(167,139,250,.3)}
+.role-directeur{background:rgba(79,142,247,.15);color:var(--directeur);border:1px solid rgba(79,142,247,.3)}
+.role-agent{background:rgba(52,211,153,.15);color:var(--agent);border:1px solid rgba(52,211,153,.3)}
+.role-operateur{background:rgba(251,191,36,.15);color:var(--operateur);border:1px solid rgba(251,191,36,.3)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.user-info{font-size:.85rem;color:var(--muted)}
+.btn-sm{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;transition:all .2s}
+.btn-sm:hover{background:var(--surface2);border-color:var(--accent)}
+.btn-sm.danger:hover{border-color:var(--red);color:var(--red)}
 
-.lp-brand {
-  display: flex; align-items: center; gap: .6rem;
-  position: relative; z-index: 1;
-}
-.lp-logo {
-  width: 38px; height: 38px;
-  background: var(--accent);
-  border-radius: 9px;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 20px var(--accent-glow);
-}
-.lp-logo svg { width: 19px; height: 19px; fill: white; }
-.lp-brand-name {
-  font-size: 1.2rem; font-weight: 700;
-  letter-spacing: -.03em;
-  color: var(--text);
-}
+.main-layout{display:flex;flex:1;min-height:calc(100vh - 60px)}
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);padding:20px 12px;flex-shrink:0}
+.nav-section{margin-bottom:24px}
+.nav-section-title{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:0 8px;margin-bottom:8px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:.88rem;color:var(--muted);transition:all .15s;margin-bottom:2px}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:rgba(79,142,247,.12);color:var(--accent)}
+.nav-item svg{width:16px;height:16px;flex-shrink:0}
+.content{flex:1;padding:28px;overflow-y:auto}
 
-.lp-hero { position: relative; z-index: 1; }
-.lp-eyebrow {
-  display: inline-flex; align-items: center; gap: .4rem;
-  background: rgba(59,110,255,.1);
-  border: 1px solid rgba(59,110,255,.25);
-  border-radius: 100px;
-  padding: .3rem .85rem;
-  font-size: .72rem; font-weight: 600; letter-spacing: .08em;
-  text-transform: uppercase; color: #7aa4ff;
-  margin-bottom: 1.5rem;
-}
-.lp-eyebrow-dot { width: 5px; height: 5px; background: var(--accent); border-radius: 50%; animation: blink 2s ease infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+/* ── PAGE TITLES ── */
+.page-header{margin-bottom:28px}
+.page-header h2{font-size:1.6rem;font-weight:800;letter-spacing:-.5px}
+.page-header p{color:var(--muted);font-size:.88rem;margin-top:4px}
 
-.lp-title {
-  font-family: 'Instrument Serif', serif;
-  font-size: clamp(2.4rem, 3.8vw, 3.6rem);
-  line-height: 1.08;
-  color: var(--text);
-  margin-bottom: 1.25rem;
-}
-.lp-title em { font-style: italic; color: var(--accent); }
-.lp-desc {
-  font-size: .92rem; color: var(--text2); line-height: 1.7; max-width: 380px;
-}
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem}
 
-.lp-stats {
-  display: flex; gap: 2rem; align-items: center;
-  position: relative; z-index: 1;
-}
-.lp-stat-val {
-  font-size: 1.8rem; font-weight: 700; letter-spacing: -.04em;
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-}
-.lp-stat-lbl { font-size: .72rem; color: var(--text3); margin-top: .1rem; }
-.lp-divider { width: 1px; height: 36px; background: var(--border2); }
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.875rem}
+th{text-align:left;padding:10px 14px;font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border)}
+td{padding:12px 14px;border-bottom:1px solid rgba(42,45,58,.5)}
+tr:hover td{background:var(--surface2)}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600}
+.badge-pending{background:rgba(251,191,36,.15);color:var(--yellow)}
+.badge-accepted{background:rgba(52,211,153,.15);color:var(--green)}
+.badge-refused{background:rgba(248,113,113,.15);color:var(--red)}
+.badge-done{background:rgba(52,211,153,.2);color:var(--green)}
+.badge-notdone{background:rgba(107,114,128,.15);color:var(--muted)}
 
-.lp-feature-chips {
-  display: flex; flex-wrap: wrap; gap: .5rem;
-  position: relative; z-index: 1;
-}
-.chip {
-  display: flex; align-items: center; gap: .4rem;
-  background: var(--bg3); border: 1px solid var(--border2);
-  border-radius: 7px; padding: .35rem .75rem;
-  font-size: .72rem; color: var(--text2);
-}
-.chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+/* ── FORMS ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group.full{grid-column:1/-1}
+.form-group label{font-size:.78rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.form-group input,.form-group select,.form-group textarea{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;transition:border-color .2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent)}
+.form-group textarea{min-height:90px;resize:vertical}
+.form-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+.btn-action{padding:9px 20px;border-radius:8px;border:none;font-family:'Syne',sans-serif;font-weight:600;font-size:.85rem;cursor:pointer;transition:all .15s}
+.btn-action.primary{background:var(--accent);color:#fff}
+.btn-action.primary:hover{background:#3b7ae8}
+.btn-action.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-action.secondary:hover{border-color:var(--accent)}
+.btn-action.danger{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.3)}
+.btn-action.danger:hover{background:rgba(248,113,113,.2)}
+.btn-action.success{background:rgba(52,211,153,.1);color:var(--green);border:1px solid rgba(52,211,153,.3)}
+.btn-action.success:hover{background:rgba(52,211,153,.2)}
 
-/* Right login form */
-.login-panel-right {
-  flex: 1;
-  display: flex; align-items: center; justify-content: center;
-  padding: 2.5rem;
-}
-.login-card {
-  width: 100%; max-width: 400px;
-}
-.lc-header { margin-bottom: 2rem; }
-.lc-title {
-  font-size: 1.5rem; font-weight: 700; letter-spacing: -.03em;
-  color: var(--text); margin-bottom: .3rem;
-}
-.lc-sub { font-size: .85rem; color: var(--text2); }
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative}
+.modal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:24px}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;line-height:1}
+.modal-close:hover{color:var(--text)}
 
-.lc-error {
-  background: var(--red-bg); border: 1px solid rgba(240,68,56,.3);
-  border-radius: var(--r); padding: .7rem 1rem;
-  font-size: .82rem; color: #f87171;
-  margin-bottom: 1.25rem;
-  display: none;
-  animation: shakeIn .25s ease;
-}
-.lc-error.show { display: block; }
-@keyframes shakeIn {
-  0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)}
+/* ── CALENDAR ── */
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.cal-nav{display:flex;align-items:center;gap:12px}
+.cal-month{font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem}
+.cal-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.cal-btn:hover{border-color:var(--accent);color:var(--accent)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-day-name{text-align:center;padding:8px 0;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.cal-day{min-height:80px;background:var(--surface2);border-radius:8px;padding:6px;cursor:pointer;transition:all .15s;border:1px solid transparent}
+.cal-day:hover{border-color:var(--accent)}
+.cal-day.other-month{opacity:.35}
+.cal-day.today{border-color:var(--accent)}
+.cal-day-num{font-size:.78rem;font-weight:600;margin-bottom:4px}
+.cal-event{font-size:.68rem;padding:2px 5px;border-radius:4px;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer}
+.cal-event.pending{background:rgba(251,191,36,.2);color:var(--yellow)}
+.cal-event.accepted{background:rgba(79,142,247,.2);color:var(--accent)}
+.cal-event.done{background:rgba(52,211,153,.2);color:var(--green)}
+.cal-event.refused{background:rgba(248,113,113,.15);color:var(--red)}
+.cal-legend{display:flex;gap:16px;margin-top:16px;flex-wrap:wrap}
+.cal-legend-item{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--muted)}
+.cal-legend-dot{width:10px;height:10px;border-radius:3px}
+
+/* ── STATS ROW ── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+.stat-val{font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem;line-height:1}
+.stat-label{font-size:.78rem;color:var(--muted);margin-top:4px}
+
+/* ── LOGS ── */
+.log-entry{padding:10px 14px;border-radius:8px;background:var(--surface2);margin-bottom:6px;display:flex;align-items:flex-start;gap:12px;font-size:.84rem}
+.log-time{color:var(--muted);flex-shrink:0;font-size:.78rem}
+.log-icon{flex-shrink:0;width:20px;height:20px}
+
+/* ── PHOTO UPLOAD ── */
+.photo-drop{border:2px dashed var(--border);border-radius:10px;padding:24px;text-align:center;color:var(--muted);cursor:pointer;transition:border-color .2s;font-size:.85rem}
+.photo-drop:hover{border-color:var(--accent)}
+.photo-drop img{max-width:100%;max-height:120px;border-radius:8px;margin-top:10px}
+
+/* ── REQUEST CARD ── */
+.request-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:12px;transition:border-color .2s}
+.request-card:hover{border-color:var(--border)}
+.request-meta{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center}
+.request-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;margin-bottom:6px}
+.request-desc{font-size:.85rem;color:var(--muted);line-height:1.5}
+.request-footer{display:flex;align-items:center;justify-content:space-between;margin-top:14px;flex-wrap:gap}
+.request-actions{display:flex;gap:8px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .sidebar{display:none}
+  .form-grid{grid-template-columns:1fr}
+  .cal-day{min-height:50px}
+  .cal-event{display:none}
 }
 
-.f-group { margin-bottom: 1rem; }
-.f-label {
-  display: block; font-size: .75rem; font-weight: 600; letter-spacing: .04em;
-  text-transform: uppercase; color: var(--text3); margin-bottom: .5rem;
-}
-.f-input {
-  width: 100%;
-  background: var(--bg2); border: 1px solid var(--border2);
-  border-radius: var(--r); padding: .75rem 1rem;
-  font-size: .9rem; color: var(--text);
-  outline: none;
-  transition: var(--trans);
-}
-.f-input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-glow);
-  background: var(--bg3);
-}
-.f-input::placeholder { color: var(--text3); }
+/* ── ANIMATIONS ── */
+.fade-in{animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-.btn-login-main {
-  width: 100%; margin-top: .75rem;
-  background: var(--accent);
-  color: white; border: none; cursor: pointer;
-  border-radius: var(--r); padding: .85rem 1.5rem;
-  font-size: .92rem; font-weight: 600; letter-spacing: -.01em;
-  display: flex; align-items: center; justify-content: center; gap: .6rem;
-  transition: var(--trans);
-  position: relative;
-  box-shadow: 0 1px 2px rgba(0,0,0,.4), 0 0 0 1px rgba(255,255,255,.05) inset;
-}
-.btn-login-main:hover { background: var(--accent2); box-shadow: 0 4px 20px rgba(59,110,255,.4); }
-.btn-login-main:active { transform: scale(.98); }
-.btn-login-main:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-.btn-spinner {
-  width: 16px; height: 16px;
-  border: 2px solid rgba(255,255,255,.3); border-top-color: white;
-  border-radius: 50%; animation: spin .6s linear infinite;
-  display: none;
-}
-.btn-login-main.loading .btn-spinner { display: block; }
-.btn-login-main.loading .btn-lbl { opacity: .7; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 20px;font-size:.88rem;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:9999;transform:translateY(20px);opacity:0;transition:all .3s;max-width:320px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-color:var(--green);color:var(--green)}
+.toast.error{border-color:var(--red);color:var(--red)}
+.toast.info{border-color:var(--accent);color:var(--accent)}
 
-.login-footer {
-  margin-top: 2rem; text-align: center;
-  font-size: .73rem; color: var(--text3);
+.sep{border:none;border-top:1px solid var(--border);margin:20px 0}
+.btn.is-loading,.btn-action.is-loading,.btn-sm.is-loading,.cal-btn.is-loading{pointer-events:none;opacity:.85}
+.btn.is-loading{color:transparent;position:relative;overflow:hidden}
+.btn.is-loading::before,.skeleton-block{background:linear-gradient(90deg,rgba(255,255,255,.05) 20%,rgba(255,255,255,.16) 50%,rgba(255,255,255,.05) 80%);background-size:220% 100%;animation:shimmer 1.15s linear infinite}
+.btn.is-loading::before{content:'';position:absolute;inset:0}
+.btn.is-loading::after{content:'Connexion...';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff}
+.login-card.is-submitting .field input,.login-card.is-submitting .field select{opacity:.72}
+.burger-btn{display:none;width:42px;height:42px;padding:0;border-radius:12px;border:1px solid var(--border);background:var(--surface2);color:var(--text);align-items:center;justify-content:center;cursor:pointer}
+.burger-btn svg{width:18px;height:18px}
+.sidebar-overlay{display:none;position:fixed;inset:60px 0 0 0;background:rgba(0,0,0,.5);backdrop-filter:blur(3px);z-index:89}
+.badge-saving{background:rgba(79,142,247,.14);color:var(--accent)}
+.optimistic-item{position:relative}
+.optimistic-item::after{content:'Sync...';position:absolute;top:12px;right:14px;font-size:.68rem;color:var(--accent)}
+.optimistic-dim{opacity:.55}
+.status-pill{display:inline-flex;align-items:center;gap:6px}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 0 0 currentColor;animation:pulseDot 1.2s infinite}
+.cal-mobile-list{display:none;margin-top:18px}
+.cal-mobile-event{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.cal-mobile-event-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:6px}
+.cal-mobile-event-title{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700}
+.cal-mobile-event-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:.78rem;color:var(--muted)}
+.page-skeleton{display:grid;gap:14px}
+.skeleton-card{height:108px;border-radius:14px;border:1px solid var(--border);background:var(--surface);padding:18px}
+@media(max-width:1024px){.topbar{padding:0 16px}.content{padding:20px}}
+@media(max-width:768px){
+  .burger-btn{display:flex}
+  .sidebar{display:block;position:fixed;top:60px;left:0;bottom:0;width:min(82vw,280px);transform:translateX(-100%);transition:transform .22s ease;z-index:90;box-shadow:24px 0 40px rgba(0,0,0,.35)}
+  body.menu-open .sidebar{transform:translateX(0)}
+  .sidebar-overlay{display:block;opacity:0;pointer-events:none;transition:opacity .2s ease}
+  body.menu-open .sidebar-overlay{opacity:1;pointer-events:auto}
+  .topbar-left{gap:12px}
+  .topbar-right .user-info{display:none}
+  .content{padding:16px}
+  .card{padding:18px}
+  .login-card{width:min(100%,420px);padding:34px 22px}
+  .form-grid{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .table-wrap{overflow:visible}
+  table,thead,tbody,tr,th,td{display:block;width:100%}
+  thead{display:none}
+  tr{padding:14px 0;border-bottom:1px solid rgba(42,45,58,.5)}
+  td{border:none;padding:6px 0}
+  td::before{content:attr(data-label);display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px}
+  .cal-header{flex-direction:column;align-items:flex-start;gap:12px}
+  .cal-grid{gap:6px}
+  .cal-day{min-height:62px;padding:8px 4px}
+  .cal-day-num{text-align:center;margin-bottom:0}
+  .cal-event,.cal-more{display:none}
+  .cal-mobile-list{display:block}
+  .modal{padding:24px 18px}
 }
-
-/* ════════════════════════════════════════
-   SKELETON VIEW
-════════════════════════════════════════ */
-#viewSkeleton {
-  flex-direction: row;
-  animation: fadeIn .15s ease;
+@media(max-width:560px){
+  .topbar-right .btn-sm:first-of-type{display:none}
+  .stats-row{grid-template-columns:1fr}
+  .request-actions,.form-actions{flex-direction:column}
+  .request-actions .btn-action,.form-actions .btn-action{width:100%}
 }
-@keyframes fadeIn { from{opacity:0} to{opacity:1} }
-
-.sk-sidebar {
-  width: var(--sidebar-w);
-  background: var(--bg2);
-  border-right: 1px solid var(--border);
-  padding: 1.25rem;
-  flex-shrink: 0;
-  display: flex; flex-direction: column; gap: .75rem;
-}
-.sk-main {
-  flex: 1; padding: 1.75rem;
-  display: flex; flex-direction: column; gap: 1.25rem;
-  overflow: hidden;
-}
-
-.skb {
-  background: linear-gradient(90deg, var(--sk) 25%, var(--sk2) 50%, var(--sk) 75%);
-  background-size: 300% 100%;
-  border-radius: 5px;
-  animation: skShimmer 1.6s ease-in-out infinite;
-}
-@keyframes skShimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-.sk-cards-row { display: grid; grid-template-columns: repeat(4,1fr); gap: .875rem; }
-.sk-card-item {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--r2); padding: 1.1rem;
-}
-.sk-table-wrap {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--r2); padding: 1.25rem;
-  flex: 1;
-}
-.sk-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: .875rem; }
-.sk-col-item {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--r2); padding: 1.25rem;
-  min-height: 200px;
-}
-.sk-row-gap { display: flex; flex-direction: column; gap: .5rem; }
-
-/* ════════════════════════════════════════
-   APP — LAYOUT
-════════════════════════════════════════ */
-#viewApp {
-  flex-direction: row;
-  animation: appReveal .4s cubic-bezier(.4,0,.2,1);
-}
-@keyframes appReveal {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ── SIDEBAR ── */
-.sidebar {
-  width: var(--sidebar-w);
-  background: var(--bg2);
-  border-right: 1px solid var(--border);
-  display: flex; flex-direction: column;
-  position: fixed; top: 0; left: 0; bottom: 0;
-  z-index: 200;
-  transition: transform .3s;
-}
-.sb-top {
-  padding: 1.1rem 1rem 0;
-}
-.sb-brand {
-  display: flex; align-items: center; gap: .55rem;
-  padding: .4rem .5rem; margin-bottom: 1.5rem;
-}
-.sb-logo {
-  width: 32px; height: 32px; background: var(--accent);
-  border-radius: 7px; display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 12px var(--accent-glow);
-}
-.sb-logo svg { width: 16px; height: 16px; fill: white; }
-.sb-brand-name {
-  font-size: 1.05rem; font-weight: 700; letter-spacing: -.03em;
-}
-
-.sb-section-lbl {
-  font-size: .65rem; font-weight: 600; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--text3);
-  padding: .4rem .75rem; margin-top: .75rem; margin-bottom: .2rem;
-}
-.sb-item {
-  display: flex; align-items: center; gap: .65rem;
-  padding: .6rem .75rem; border-radius: 8px; cursor: pointer;
-  color: var(--text2); font-size: .86rem; font-weight: 500;
-  transition: var(--trans); margin-bottom: 1px;
-  position: relative;
-}
-.sb-item:hover { background: var(--bg3); color: var(--text); }
-.sb-item.active { background: rgba(59,110,255,.15); color: #7aa4ff; }
-.sb-item.active::before {
-  content: ''; position: absolute; left: 0; top: 20%; bottom: 20%;
-  width: 2.5px; border-radius: 2px; background: var(--accent);
-}
-.sb-icon { width: 16px; height: 16px; flex-shrink: 0; opacity: .8; }
-.sb-badge {
-  margin-left: auto;
-  background: var(--accent); color: white;
-  border-radius: 100px; font-size: .65rem; font-weight: 700;
-  padding: 1px 6px; min-width: 18px; text-align: center;
-}
-.sb-badge.orange { background: var(--yellow); }
-
-.sb-footer {
-  margin-top: auto;
-  border-top: 1px solid var(--border);
-  padding: .875rem 1rem;
-}
-.sb-user {
-  display: flex; align-items: center; gap: .65rem; cursor: pointer;
-  padding: .5rem .5rem; border-radius: 8px; transition: var(--trans);
-}
-.sb-user:hover { background: var(--bg3); }
-.sb-avatar {
-  width: 32px; height: 32px; border-radius: 8px;
-  background: var(--accent); display: flex; align-items: center; justify-content: center;
-  font-size: .75rem; font-weight: 700; color: white; flex-shrink: 0;
-}
-.sb-uname { font-size: .83rem; font-weight: 600; color: var(--text); line-height: 1.2; }
-.sb-urole { font-size: .7rem; color: var(--text3); text-transform: capitalize; }
-.sb-logout-btn {
-  margin-left: auto; background: none; border: none; cursor: pointer;
-  color: var(--text3); padding: 4px; border-radius: 5px; transition: var(--trans);
-  display: flex;
-}
-.sb-logout-btn:hover { color: var(--red); background: var(--red-bg); }
-
-/* ── MAIN CONTENT ── */
-.app-main {
-  margin-left: var(--sidebar-w);
-  flex: 1; display: flex; flex-direction: column; min-height: 100vh;
-}
-.topbar {
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-  padding: .875rem 1.75rem;
-  display: flex; align-items: center; gap: 1rem;
-  position: sticky; top: 0; z-index: 100;
-  backdrop-filter: blur(12px);
-}
-.topbar-left { flex: 1; }
-.topbar-pg-title {
-  font-size: 1rem; font-weight: 700; letter-spacing: -.025em; color: var(--text);
-}
-.topbar-breadcrumb { font-size: .75rem; color: var(--text3); margin-top: 1px; }
-.topbar-actions { display: flex; align-items: center; gap: .6rem; }
-
-.page-content { padding: 1.75rem; flex: 1; }
-
-/* ── SYNC BAR ── */
-#syncBar {
-  position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
-  background: var(--bg3); border: 1px solid var(--border2);
-  color: var(--text); padding: .45rem 1.1rem;
-  border-radius: 100px; font-size: .78rem; font-weight: 500;
-  display: flex; align-items: center; gap: .5rem;
-  opacity: 0; pointer-events: none;
-  transition: opacity .3s; z-index: 9999;
-  box-shadow: 0 4px 24px rgba(0,0,0,.4);
-  white-space: nowrap;
-}
-#syncBar.show { opacity: 1; }
-#syncBar.error { background: var(--red-bg); border-color: rgba(240,68,56,.35); color: #f87171; }
-#syncBar.success { background: var(--green-bg); border-color: rgba(23,178,106,.35); color: #4ade80; }
-.sync-pulse {
-  width: 7px; height: 7px; border-radius: 50%; background: var(--green);
-  animation: pulse 1.2s ease-in-out infinite;
-}
-#syncBar.error .sync-pulse { background: var(--red); animation: none; }
-#syncBar.success .sync-pulse { background: var(--green); animation: none; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-
-/* ════════════════════════════════════════
-   COMPONENTS
-════════════════════════════════════════ */
-
-/* Stat cards */
-.stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: .875rem; margin-bottom: 1.5rem; }
-.stat-card {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--r2); padding: 1.1rem 1.25rem;
-  transition: var(--trans); cursor: default;
-}
-.stat-card:hover { border-color: var(--border2); background: var(--bg3); }
-.sc-label { font-size: .7rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--text3); margin-bottom: .75rem; }
-.sc-value {
-  font-size: 2.1rem; font-weight: 700; letter-spacing: -.04em;
-  color: var(--text); line-height: 1; font-variant-numeric: tabular-nums;
-}
-.sc-delta { font-size: .75rem; color: var(--text3); margin-top: .4rem; }
-.sc-delta.pos { color: var(--green); }
-.sc-delta.neg { color: var(--red); }
-
-/* Section header */
-.sec-hd {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: .875rem;
-}
-.sec-title {
-  font-size: .95rem; font-weight: 700; letter-spacing: -.02em; color: var(--text);
-}
-.sec-sub { font-size: .75rem; color: var(--text3); margin-top: 1px; }
-
-/* Table */
-.tbl-wrap {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--r2); overflow: hidden; margin-bottom: 1.5rem;
-}
-table { width: 100%; border-collapse: collapse; }
-thead th {
-  padding: .65rem 1rem; font-size: .7rem; font-weight: 600;
-  letter-spacing: .07em; text-transform: uppercase;
-  color: var(--text3); border-bottom: 1px solid var(--border);
-  text-align: left; white-space: nowrap;
-  background: var(--bg3);
-}
-tbody td {
-  padding: .875rem 1rem; font-size: .84rem;
-  border-bottom: 1px solid var(--border); vertical-align: middle;
-}
-tbody tr:last-child td { border-bottom: none; }
-tbody tr { transition: background .1s; }
-tbody tr:hover { background: rgba(255,255,255,.02); }
-
-/* Badges */
-.badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 3px 9px; border-radius: 6px;
-  font-size: .71rem; font-weight: 600;
-}
-.badge-dot { width: 5px; height: 5px; border-radius: 50%; }
-.badge-yellow { background: var(--yellow-bg); color: #fbbf24; }
-.badge-yellow .badge-dot { background: var(--yellow); }
-.badge-red    { background: var(--red-bg);    color: #f87171; }
-.badge-red    .badge-dot { background: var(--red); }
-.badge-green  { background: var(--green-bg);  color: #4ade80; }
-.badge-green  .badge-dot { background: var(--green); }
-.badge-gray   { background: var(--gray-bg);   color: var(--text2); }
-.badge-gray   .badge-dot { background: var(--gray); }
-.badge-purple { background: var(--purple-bg); color: #c084fc; }
-.badge-purple .badge-dot { background: var(--purple); }
-.badge-blue   { background: rgba(59,110,255,.12); color: #7aa4ff; }
-.badge-blue   .badge-dot { background: var(--accent); }
-
-/* Buttons */
-.btn {
-  display: inline-flex; align-items: center; gap: .45rem;
-  padding: .55rem 1rem; border-radius: 8px;
-  font-size: .83rem; font-weight: 600; cursor: pointer;
-  border: none; transition: var(--trans);
-  font-family: inherit; letter-spacing: -.01em;
-}
-.btn-primary {
-  background: var(--accent); color: white;
-  box-shadow: 0 1px 2px rgba(0,0,0,.3);
-}
-.btn-primary:hover { background: var(--accent2); box-shadow: 0 4px 16px rgba(59,110,255,.35); }
-.btn-ghost {
-  background: var(--bg3); color: var(--text2);
-  border: 1px solid var(--border2);
-}
-.btn-ghost:hover { color: var(--text); border-color: var(--text3); }
-.btn-danger { background: var(--red-bg); color: #f87171; border: 1px solid rgba(240,68,56,.25); }
-.btn-danger:hover { background: rgba(240,68,56,.2); }
-.btn-sm { padding: .4rem .75rem; font-size: .77rem; border-radius: 7px; }
-.btn-xs { padding: .28rem .6rem; font-size: .7rem; border-radius: 5px; }
-
-/* Avatar initial */
-.av {
-  display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 7px; font-weight: 700; font-size: .72rem; color: white;
-  background: var(--accent); width: 28px; height: 28px; flex-shrink: 0;
-}
-
-/* Modal */
-.modal-bg {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,.6); backdrop-filter: blur(6px);
-  z-index: 500; display: none;
-  align-items: center; justify-content: center;
-  padding: 1rem;
-  animation: fadeIn .15s ease;
-}
-.modal-bg.open { display: flex; }
-.modal {
-  background: var(--bg2); border: 1px solid var(--border2);
-  border-radius: 16px; padding: 1.75rem;
-  width: 100%; max-width: 500px;
-  max-height: 90vh; overflow-y: auto;
-  box-shadow: 0 24px 80px rgba(0,0,0,.5);
-  animation: modalSlide .22s cubic-bezier(.4,0,.2,1);
-}
-.modal.modal-lg { max-width: 640px; }
-@keyframes modalSlide {
-  from { transform: translateY(14px); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
-.modal-hd {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 1.5rem;
-}
-.modal-title { font-size: 1rem; font-weight: 700; letter-spacing: -.02em; }
-.modal-close {
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 7px; width: 28px; height: 28px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; color: var(--text2); font-size: .9rem;
-  transition: var(--trans);
-}
-.modal-close:hover { color: var(--text); border-color: var(--border2); }
-.modal-ft { display: flex; justify-content: flex-end; gap: .6rem; margin-top: 1.5rem; }
-
-/* Form */
-.fg { margin-bottom: 1rem; }
-.fl {
-  display: block; font-size: .72rem; font-weight: 600; letter-spacing: .05em;
-  text-transform: uppercase; color: var(--text3); margin-bottom: .4rem;
-}
-.fi, .fs, .fta {
-  width: 100%; background: var(--bg3); border: 1px solid var(--border2);
-  border-radius: 8px; padding: .65rem .9rem;
-  font-size: .88rem; color: var(--text); outline: none;
-  transition: var(--trans);
-}
-.fi:focus, .fs:focus, .fta:focus {
-  border-color: var(--accent); background: var(--bg2);
-  box-shadow: 0 0 0 3px var(--accent-glow);
-}
-.fi::placeholder, .fta::placeholder { color: var(--text3); }
-.fs option { background: var(--bg2); }
-.fta { resize: vertical; min-height: 85px; }
-.fr2 { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
-.fr3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .75rem; }
-.req { color: var(--red); margin-left: 2px; }
-
-/* Calendar */
-.cal-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 1.25rem;
-}
-.cal-nav-btn {
-  background: var(--bg3); border: 1px solid var(--border2);
-  border-radius: 7px; width: 30px; height: 30px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; color: var(--text2); font-size: .9rem; transition: var(--trans);
-}
-.cal-nav-btn:hover { color: var(--text); border-color: var(--text3); }
-.cal-month-lbl { font-weight: 700; font-size: .92rem; letter-spacing: -.02em; }
-.cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
-.cal-dh {
-  text-align: center; font-size: .65rem; font-weight: 600;
-  letter-spacing: .07em; text-transform: uppercase; color: var(--text3);
-  padding: .4rem 0; margin-bottom: .2rem;
-}
-.cal-day {
-  min-height: 72px; border-radius: 7px; padding: 5px;
-  background: var(--bg3); border: 1px solid transparent;
-  cursor: pointer; transition: var(--trans);
-  position: relative;
-}
-.cal-day:hover { border-color: var(--accent); }
-.cal-day.today { border-color: rgba(59,110,255,.4); background: rgba(59,110,255,.06); }
-.cal-day.other { opacity: .35; }
-.cal-day-n { font-size: .72rem; font-weight: 600; color: var(--text2); margin-bottom: 3px; }
-.cal-day.today .cal-day-n { color: var(--accent); }
-.cal-ev {
-  font-size: .6rem; padding: 2px 5px; border-radius: 4px;
-  margin-bottom: 2px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
-  font-weight: 500;
-}
-.ev-yellow { background: var(--yellow-bg); color: #fbbf24; }
-.ev-red    { background: var(--red-bg);    color: #f87171; }
-.ev-green  { background: var(--green-bg);  color: #4ade80; }
-.ev-gray   { background: var(--gray-bg);   color: var(--text2); }
-.ev-purple { background: var(--purple-bg); color: #c084fc; }
-
-/* Empty state */
-.empty {
-  text-align: center; padding: 3rem 1.5rem;
-  color: var(--text3);
-}
-.empty-icon { font-size: 2rem; margin-bottom: .75rem; filter: grayscale(1); }
-.empty-title { font-size: .92rem; font-weight: 700; color: var(--text2); margin-bottom: .35rem; }
-.empty-desc { font-size: .8rem; }
-
-/* Detail panel / card */
-.detail-card {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--r2); padding: 1.25rem 1.5rem; margin-bottom: 1rem;
-  transition: var(--trans);
-}
-.detail-card:hover { border-color: var(--border2); }
-
-/* Two-col layout */
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
-.grid3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.25rem; }
-
-/* Chip role */
-.role-chip {
-  display: inline-flex; align-items: center; gap: .35rem;
-  padding: .2rem .65rem; border-radius: 5px; font-size: .7rem; font-weight: 600;
-}
-.role-superadmin { background: var(--purple-bg); color: #c084fc; }
-.role-directeur   { background: rgba(59,110,255,.12); color: #7aa4ff; }
-.role-agent       { background: var(--green-bg);  color: #4ade80; }
-.role-operateur   { background: var(--yellow-bg); color: #fbbf24; }
-
-/* Tabs */
-.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
-.tab-btn {
-  padding: .6rem 1rem; font-size: .83rem; font-weight: 600; cursor: pointer;
-  border: none; background: none; color: var(--text3);
-  border-bottom: 2px solid transparent; margin-bottom: -1px;
-  transition: var(--trans);
-}
-.tab-btn:hover { color: var(--text2); }
-.tab-btn.active { color: var(--text); border-bottom-color: var(--accent); }
-.tab-pane { display: none; }
-.tab-pane.active { display: block; }
-
-/* Legend */
-.cal-legend {
-  display: flex; flex-wrap: wrap; gap: .75rem; margin-bottom: 1.25rem;
-}
-.leg-item { display: flex; align-items: center; gap: .4rem; font-size: .72rem; color: var(--text2); }
-.leg-dot { width: 8px; height: 8px; border-radius: 50%; }
-
-/* Photo upload */
-.photo-zone {
-  border: 1.5px dashed var(--border2); border-radius: var(--r);
-  padding: 1.5rem; text-align: center; cursor: pointer;
-  transition: var(--trans); color: var(--text3); font-size: .82rem;
-}
-.photo-zone:hover { border-color: var(--accent); color: var(--text2); }
-#photoPreview { max-width: 100%; border-radius: 8px; margin-top: .75rem; display: none; }
-
-/* Notification dot */
-.notif-dot {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--red); position: absolute; top: 8px; right: 8px;
-}
-
-/* ════════════════════════════════════════
-   RESPONSIVE
-════════════════════════════════════════ */
-@media (max-width: 1100px) {
-  .stat-grid { grid-template-columns: repeat(2,1fr); }
-  .sk-cards-row { grid-template-columns: repeat(2,1fr); }
-}
-@media (max-width: 768px) {
-  .login-panel-left { display: none; }
-  .login-panel-right { padding: 1.5rem; }
-  .sidebar { transform: translateX(-100%); }
-  .sidebar.open { transform: translateX(0); }
-  .app-main { margin-left: 0; }
-  .stat-grid, .grid2, .grid3, .fr2, .fr3 { grid-template-columns: 1fr; }
-  .sk-sidebar { display: none; }
-  .sk-cards-row { grid-template-columns: 1fr 1fr; }
-}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(79,142,247,.55)}70%{box-shadow:0 0 0 8px rgba(79,142,247,0)}100%{box-shadow:0 0 0 0 rgba(79,142,247,0)}}
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════
-     VIEW 1 — LOGIN
-══════════════════════════════════════════ -->
-<div id="viewLogin" class="view active" style="display:flex !important">
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-logo">Inter<span>Master</span></div>
+  <div class="loader-bar"></div>
+</div>
 
-  <div class="login-panel-left">
-    <div class="lp-brand">
-      <div class="lp-logo">
-        <svg viewBox="0 0 24 24"><path d="M13 3L4 14h7l-1 7 9-11h-7l1-7z"/></svg>
-      </div>
-      <span class="lp-brand-name">Intervenia</span>
+<!-- LOGIN PAGE -->
+<div id="loginPage">
+  <div class="login-bg"></div>
+  <div class="login-grid"></div>
+  <div class="login-card fade-in">
+    <div class="login-logo">
+      <h1>Inter<span>Master</span></h1>
+      <p>Plateforme de gestion des interventions CFA</p>
     </div>
-
-    <div class="lp-hero">
-      <div class="lp-eyebrow">
-        <span class="lp-eyebrow-dot"></span>
-        Plateforme SaaS multi-sites
-      </div>
-      <h1 class="lp-title">Gérez vos<br>interventions<br><em>sans friction.</em></h1>
-      <p class="lp-desc">Un seul tableau de bord pour piloter demandes, validations et exécutions terrain — sur toutes vos entités.</p>
+    <div class="field">
+      <label>Adresse e-mail</label>
+      <input type="email" id="loginEmail" placeholder="votre@email.com">
     </div>
-
-    <div class="lp-feature-chips">
-      <div class="chip"><span class="chip-dot"></span> Multi-entreprises</div>
-      <div class="chip"><span class="chip-dot"></span> 4 rôles métier</div>
-      <div class="chip"><span class="chip-dot"></span> Temps réel</div>
-      <div class="chip"><span class="chip-dot"></span> Export CSV</div>
+    <div class="field">
+      <label>Mot de passe</label>
+      <input type="password" id="loginPwd" placeholder="••••••••">
     </div>
-
-    <div class="lp-stats">
-      <div class="lp-stat">
-        <div class="lp-stat-val">3</div>
-        <div class="lp-stat-lbl">clics max / action</div>
-      </div>
-      <div class="lp-divider"></div>
-      <div class="lp-stat">
-        <div class="lp-stat-val">∞</div>
-        <div class="lp-stat-lbl">tenants</div>
-      </div>
-      <div class="lp-divider"></div>
-      <div class="lp-stat">
-        <div class="lp-stat-val">0</div>
-        <div class="lp-stat-lbl">écran blanc</div>
-      </div>
+    <div class="field" id="profileField" style="display:none">
+      <label>Profil de connexion</label>
+      <select id="loginProfile"></select>
     </div>
+    <button class="btn btn-primary" onclick="handleLogin()">Se connecter</button>
+    <div class="login-error" id="loginError"></div>
   </div>
+</div>
 
-  <div class="login-panel-right">
-    <div class="login-card">
-      <div class="lc-header">
-        <div class="lc-title">Connexion</div>
-        <div class="lc-sub">Accédez à votre espace de gestion</div>
-      </div>
-
-      <div class="lc-error" id="loginError">Identifiants incorrects ou compte inactif.</div>
-
-      <div class="f-group">
-        <label class="f-label">Email</label>
-        <input class="f-input" type="email" id="loginEmail" placeholder="vous@entreprise.com" autocomplete="email">
-      </div>
-      <div class="f-group">
-        <label class="f-label">Mot de passe</label>
-        <input class="f-input" type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
-      </div>
-
-      <button class="btn-login-main" id="btnLogin" onclick="doLogin()">
-        <span class="btn-lbl">Se connecter</span>
-        <div class="btn-spinner"></div>
+<!-- APP -->
+<div id="app">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="burger-btn" id="burgerBtn" onclick="toggleMobileMenu()" aria-label="Ouvrir le menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
       </button>
-
-      <div class="login-footer">Intervenia © 2025 — Gestion d'interventions</div>
+      <div class="logo-sm">Inter<span>Master</span></div>
+      <span class="role-badge" id="topRoleBadge"></span>
     </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════
-     VIEW 2 — SKELETON
-══════════════════════════════════════════ -->
-<div id="viewSkeleton" class="view">
-
-  <!-- Skeleton sidebar -->
-  <div class="sk-sidebar">
-    <div class="skb" style="height:28px;width:110px;margin-bottom:1.5rem;border-radius:7px;"></div>
-    <div class="skb" style="height:34px;border-radius:8px;"></div>
-    <div class="skb" style="height:34px;border-radius:8px;opacity:.7"></div>
-    <div class="skb" style="height:34px;border-radius:8px;opacity:.5"></div>
-    <div class="skb" style="height:34px;border-radius:8px;opacity:.35"></div>
-    <div style="margin-top:auto">
-      <div class="skb" style="height:44px;border-radius:10px;"></div>
+    <div class="topbar-right">
+      <span class="user-info" id="topUserInfo"></span>
+      <button class="btn-sm" onclick="showPage('calendar')">📅 Calendrier</button>
+      <button class="btn-sm danger" onclick="logout()">Déconnexion</button>
     </div>
   </div>
 
-  <!-- Skeleton main -->
-  <div class="sk-main">
-    <!-- Topbar -->
-    <div style="display:flex;align-items:center;gap:.75rem;padding:.875rem 0;border-bottom:1px solid var(--border);margin-bottom:.5rem">
-      <div>
-        <div class="skb" style="height:16px;width:160px;margin-bottom:6px;"></div>
-        <div class="skb" style="height:11px;width:100px;"></div>
-      </div>
-      <div style="margin-left:auto;display:flex;gap:.5rem">
-        <div class="skb" style="height:32px;width:90px;border-radius:8px;"></div>
-      </div>
-    </div>
-
-    <!-- Stat cards -->
-    <div class="sk-cards-row">
-      <div class="sk-card-item">
-        <div class="skb" style="height:11px;width:55%;margin-bottom:10px;"></div>
-        <div class="skb" style="height:30px;width:40%;margin-bottom:7px;"></div>
-        <div class="skb" style="height:10px;width:65%;"></div>
-      </div>
-      <div class="sk-card-item">
-        <div class="skb" style="height:11px;width:55%;margin-bottom:10px;opacity:.8"></div>
-        <div class="skb" style="height:30px;width:40%;margin-bottom:7px;opacity:.8"></div>
-        <div class="skb" style="height:10px;width:65%;opacity:.8"></div>
-      </div>
-      <div class="sk-card-item">
-        <div class="skb" style="height:11px;width:55%;margin-bottom:10px;opacity:.6"></div>
-        <div class="skb" style="height:30px;width:40%;margin-bottom:7px;opacity:.6"></div>
-        <div class="skb" style="height:10px;width:65%;opacity:.6"></div>
-      </div>
-      <div class="sk-card-item">
-        <div class="skb" style="height:11px;width:55%;margin-bottom:10px;opacity:.4"></div>
-        <div class="skb" style="height:30px;width:40%;margin-bottom:7px;opacity:.4"></div>
-        <div class="skb" style="height:10px;width:65%;opacity:.4"></div>
-      </div>
-    </div>
-
-    <!-- Table/content block -->
-    <div class="sk-table-wrap sk-row-gap">
-      <div class="skb" style="height:14px;width:160px;margin-bottom:6px;"></div>
-      <div class="skb" style="height:40px;border-radius:8px;"></div>
-      <div class="skb" style="height:40px;border-radius:8px;opacity:.8"></div>
-      <div class="skb" style="height:40px;border-radius:8px;opacity:.6"></div>
-      <div class="skb" style="height:40px;border-radius:8px;opacity:.4"></div>
-      <div class="skb" style="height:40px;border-radius:8px;opacity:.25"></div>
-    </div>
+  <div class="main-layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar"></div>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileMenu()"></div>
+    <!-- CONTENT -->
+    <div class="content" id="mainContent"></div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     VIEW 3 — APP
-══════════════════════════════════════════ -->
-<div id="viewApp" class="view">
-
-  <!-- SIDEBAR -->
-  <nav class="sidebar" id="sidebar">
-    <div class="sb-top">
-      <div class="sb-brand">
-        <div class="sb-logo">
-          <svg viewBox="0 0 24 24"><path d="M13 3L4 14h7l-1 7 9-11h-7l1-7z"/></svg>
-        </div>
-        <span class="sb-brand-name">Intervenia</span>
-      </div>
-      <div id="sidebarNav"></div>
-    </div>
-    <div class="sb-footer">
-      <div class="sb-user">
-        <div class="sb-avatar" id="sbAvatar">?</div>
-        <div>
-          <div class="sb-uname" id="sbName">—</div>
-          <div class="sb-urole" id="sbRole">—</div>
-        </div>
-        <button class="sb-logout-btn" onclick="doLogout()" title="Déconnexion">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        </button>
-      </div>
-    </div>
-  </nav>
-
-  <!-- MAIN -->
-  <div class="app-main">
-    <div class="topbar">
-      <div class="topbar-left">
-        <div class="topbar-pg-title" id="topbarTitle">Dashboard</div>
-        <div class="topbar-breadcrumb" id="topbarBreadcrumb">Vue d'ensemble</div>
-      </div>
-      <div class="topbar-actions" id="topbarActions"></div>
-    </div>
-    <div class="page-content" id="pageContent">
-      <!-- Pages injected here -->
-    </div>
+<!-- MODAL GENERIC -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalContent">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modalBody"></div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     MODALS
-══════════════════════════════════════════ -->
-<div class="modal-bg" id="modalDemande">
-  <div class="modal">
-    <div class="modal-hd">
-      <div class="modal-title" id="modalDemandeTitle">Nouvelle demande</div>
-      <button class="modal-close" onclick="closeModal('modalDemande')">✕</button>
-    </div>
-    <div class="fg">
-      <label class="fl">Catégorie <span class="req">*</span></label>
-      <select class="fs" id="dCat"></select>
-    </div>
-    <div class="fg">
-      <label class="fl">Site <span class="req">*</span></label>
-      <select class="fs" id="dSite"></select>
-    </div>
-    <div class="fg">
-      <label class="fl">Description <span class="req">*</span></label>
-      <textarea class="fta" id="dDesc" placeholder="Décrivez l'intervention nécessaire..."></textarea>
-    </div>
-    <div class="fr2">
-      <div class="fg">
-        <label class="fl">Date souhaitée <span class="req">*</span></label>
-        <input class="fi" type="date" id="dDate">
-      </div>
-      <div class="fg">
-        <label class="fl">Montant estimé (€)</label>
-        <input class="fi" type="number" id="dMontant" placeholder="0" min="0" step="0.01">
-      </div>
-    </div>
-    <div class="fg">
-      <label class="fl">Photo (optionnel)</label>
-      <div class="photo-zone" onclick="document.getElementById('dPhoto').click()">
-        📎 Cliquez pour joindre une photo
-        <input type="file" id="dPhoto" accept="image/*" style="display:none" onchange="previewPhoto(this)">
-      </div>
-      <img id="photoPreview">
-    </div>
-    <div class="modal-ft">
-      <button class="btn btn-ghost" onclick="closeModal('modalDemande')">Annuler</button>
-      <button class="btn btn-primary" onclick="submitDemande()">Envoyer la demande</button>
-    </div>
-  </div>
-</div>
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
-<div class="modal-bg" id="modalValidation">
-  <div class="modal">
-    <div class="modal-hd">
-      <div class="modal-title" id="mvTitle">Valider la demande</div>
-      <button class="modal-close" onclick="closeModal('modalValidation')">✕</button>
-    </div>
-    <div id="mvBody"></div>
-    <div class="fg" id="mvJustifGroup" style="display:none">
-      <label class="fl">Justification de refus <span class="req">*</span></label>
-      <textarea class="fta" id="mvJustif" placeholder="Expliquez le motif du refus..."></textarea>
-    </div>
-    <div class="modal-ft">
-      <button class="btn btn-ghost" onclick="closeModal('modalValidation')">Fermer</button>
-      <button class="btn btn-danger" id="btnRefuser" onclick="validerDemande('refusee')">Refuser</button>
-      <button class="btn btn-primary" id="btnAccepter" onclick="validerDemande('acceptee')">Accepter</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-bg" id="modalExecution">
-  <div class="modal">
-    <div class="modal-hd">
-      <div class="modal-title">Rapport d'exécution</div>
-      <button class="modal-close" onclick="closeModal('modalExecution')">✕</button>
-    </div>
-    <div id="meBody"></div>
-    <div class="fg">
-      <label class="fl">Résultat <span class="req">*</span></label>
-      <select class="fs" id="meStatut" onchange="toggleJustifExec()">
-        <option value="">-- Choisir --</option>
-        <option value="faite">✅ Faite</option>
-        <option value="non_faite">❌ Non faite</option>
-      </select>
-    </div>
-    <div class="fg" id="meJustifGroup" style="display:none">
-      <label class="fl">Justification obligatoire <span class="req">*</span></label>
-      <textarea class="fta" id="meJustif" placeholder="Expliquez pourquoi l'intervention n'a pas pu être réalisée..."></textarea>
-    </div>
-    <div class="modal-ft">
-      <button class="btn btn-ghost" onclick="closeModal('modalExecution')">Annuler</button>
-      <button class="btn btn-primary" onclick="submitExecution()">Confirmer</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-bg" id="modalUser">
-  <div class="modal">
-    <div class="modal-hd">
-      <div class="modal-title" id="muTitle">Nouvel utilisateur</div>
-      <button class="modal-close" onclick="closeModal('modalUser')">✕</button>
-    </div>
-    <div class="fr2">
-      <div class="fg">
-        <label class="fl">Prénom <span class="req">*</span></label>
-        <input class="fi" id="muPrenom" placeholder="Jean">
-      </div>
-      <div class="fg">
-        <label class="fl">Nom <span class="req">*</span></label>
-        <input class="fi" id="muNom" placeholder="Dupont">
-      </div>
-    </div>
-    <div class="fg">
-      <label class="fl">Email <span class="req">*</span></label>
-      <input class="fi" type="email" id="muEmail" placeholder="jean.dupont@entreprise.com">
-    </div>
-    <div class="fg">
-      <label class="fl">Mot de passe <span class="req">*</span></label>
-      <input class="fi" type="password" id="muPass" placeholder="Minimum 8 caractères">
-    </div>
-    <div class="fg">
-      <label class="fl">Rôle <span class="req">*</span></label>
-      <select class="fs" id="muRole">
-        <option value="agent">Agent</option>
-        <option value="operateur">Opérateur</option>
-        <option value="directeur">Directeur</option>
-        <option value="superadmin">Superadmin</option>
-      </select>
-    </div>
-    <div class="modal-ft">
-      <button class="btn btn-ghost" onclick="closeModal('modalUser')">Annuler</button>
-      <button class="btn btn-primary" onclick="submitUser()">Créer l'utilisateur</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-bg" id="modalRefItem">
-  <div class="modal">
-    <div class="modal-hd">
-      <div class="modal-title" id="mriTitle">Nouvel élément</div>
-      <button class="modal-close" onclick="closeModal('modalRefItem')">✕</button>
-    </div>
-    <div class="fg">
-      <label class="fl">Nom <span class="req">*</span></label>
-      <input class="fi" id="mriNom" placeholder="Nom...">
-    </div>
-    <div class="fg" id="mriDescGroup">
-      <label class="fl">Description</label>
-      <input class="fi" id="mriDesc" placeholder="Description (optionnel)">
-    </div>
-    <div class="modal-ft">
-      <button class="btn btn-ghost" onclick="closeModal('modalRefItem')">Annuler</button>
-      <button class="btn btn-primary" id="mriSubmitBtn" onclick="submitRefItem()">Créer</button>
-    </div>
-  </div>
-</div>
-
-<!-- SYNC BAR -->
-<div id="syncBar">
-  <div class="sync-pulse"></div>
-  <span id="syncMsg">Synchronisation…</span>
-</div>
-
-<!-- ══════════════════════════════════════════
-     JAVASCRIPT
-══════════════════════════════════════════ -->
 <script>
-// ════════════════════════════════════════
-// CONFIG
-// ════════════════════════════════════════
-// ⚠️ Seule l'URL Master est fixe — l'URL client est lue dynamiquement
-// depuis la colonne WebbappUrl du sheet MASTER après login.
-const MASTER_GAS_URL = 'https://script.google.com/macros/s/AKfycbwGH16K8WztuHWRp-Di5qj79MyAPhRNVYeRLrNDkjiR0OM0LwguRsXC9DLsCRa4X4lH/exec';
+// ═══════════════════════════════════════════════════════
+//  CONFIG — Remplacez par votre URL GAS Master déployée
+// ═══════════════════════════════════════════════════════
+const GAS_MASTER_URL = 'https://script.google.com/macros/s/AKfycbwGH16K8WztuHWRp-Di5qj79MyAPhRNVYeRLrNDkjiR0OM0LwguRsXC9DLsCRa4X4lH/exec';
 
-// URL de la webapp client — remplie automatiquement après login
-// (= valeur de la colonne WebbappUrl du sheet MASTER pour cet utilisateur)
-let GAS_URL = '';
-
-// ════════════════════════════════════════
-// GLOBAL STATE
-// ════════════════════════════════════════
-const APP = {
-  user: null,
-  token: null,
-  currentPage: 'dashboard',
-
-  // Data
-  taches: [],
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+let currentUser = null; // {nom, email, role, webappUrl, entreprise}
+let clientGAS = null;   // URL du GAS client
+let calendarDate = new Date();
+let allTasks = [];
+let allRequests = [];
+let currentPage = 'calendar';
+let loginPending = false;
+const store = {
+  users: [],
   categories: [],
   sites: [],
-  users: [],
   logs: [],
-
-  // Editing context
-  editingDemandeId: null,
-  editingUserId: null,
-  editingRefType: null,
-  editingRefId: null,
-  calYear: new Date().getFullYear(),
-  calMonth: new Date().getMonth(),
+  calendarTasks: [],
+  requestTasks: [],
+  myRequests: [],
+  myTasks: []
 };
-
-let syncTimer = null;
-
-function normalizeClientRole(role) {
-  const v = String(role || '')
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
-  if (v === 'superadmin' || v === 'super admin') return 'superadmin';
-  if (v === 'directeur' || v === 'director') return 'directeur';
-  if (v === 'agent') return 'agent';
-  if (v === 'operateur' || v === 'operateur ' || v === 'operateurr' || v === 'operator' || v === 'opérateur') return 'operateur';
-  return v;
+function getUserRole() {
+  return (
+    currentUser?.role ||
+    currentUser?.["rôle"] ||
+    ""
+  ).toString().toLowerCase().trim();
 }
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('loader').style.display = 'none';
+    const saved = sessionStorage.getItem('intermaster_user');
+    if (saved) {
+      currentUser = JSON.parse(saved);
 
-// ════════════════════════════════════════
-// ROUTER / VIEWS
-// ════════════════════════════════════════
-function showView(id) {
-  document.querySelectorAll('.view').forEach(v => {
-    v.classList.remove('active');
-    v.style.display = 'none';
-  });
-  const el = document.getElementById(id);
-  el.style.display = 'flex';
-  el.classList.add('active');
+// compat ancienne session
+if (!currentUser.role && currentUser["rôle"]) {
+  currentUser.role = currentUser["rôle"];
 }
-
-// ════════════════════════════════════════
-// SHA-256
-// ════════════════════════════════════════
-async function sha256(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-}
-
-// ════════════════════════════════════════
-// AUTH — LOGIN
-// Sheet Master : Nom | Mail | MDP | Rôle | WebbappUrl | Entreprise
-// Le frontend envoie mail + mdp brut (ou hash selon config GAS)
-// ════════════════════════════════════════
-async function doLogin() {
-  const mail = document.getElementById('loginEmail').value.trim();
-  const mdp  = document.getElementById('loginPass').value;
-  const btn  = document.getElementById('btnLogin');
-
-  sessionStorage.removeItem('iv_session');
-  APP.user = null;
-  APP.token = null;
-  GAS_URL = '';
-
-  document.getElementById('loginError').classList.remove('show');
-  if (!mail || !mdp) { showLoginError('Remplissez tous les champs.'); return; }
-
-  btn.disabled = true;
-  btn.classList.add('loading');
-
-  try {
-    const hash = await sha256(mdp);
-    // Compatibilite avec les differentes versions du master deploye
-    const qs = new URLSearchParams({
-      action: 'login',
-      email: mail,
-      mail,
-      hash,
-      mdp
-    });
-    const url  = `${MASTER_GAS_URL}?${qs.toString()}`;
-    const res  = await fetch(url);
-    const data = await res.json();
-    console.log('LOGIN_RESPONSE', data);
-
-    if (!data.success) {
-      showLoginError(data.message || 'Identifiants incorrects.');
-      btn.disabled = false; btn.classList.remove('loading');
-      return;
-    }
-
-    // ── Données retournées par le Master ──
-    // data.nom        ← colonne Nom
-    // data.email      ← colonne Email
-    // data.role       ← colonne Rôle  (agent | directeur | operateur | superadmin)
-    // data.webapp_url ← colonne WebbappUrl  ← URL GAS de l'instance client
-    // data.entreprise_id ← entreprise de rattachement
-    // data.token      ← token signé généré par le Master
-
-    // Injecter l'URL client dynamiquement (vient du sheet Master)
-    GAS_URL = data.webapp_url || '';
-    if (!GAS_URL) {
-      throw new Error("Aucune URL client n'est configurée pour cet utilisateur (webapp_url).");
-    }
-
-    // Stocker la session complète
-    const normalizedRole = normalizeClientRole(data.role);
-    APP.user = {
-      email:      data.email || mail,
-      nom:        data.nom,
-      prenom:     data.prenom || '',
-      role:       normalizedRole,
-      entreprise: data.entreprise || data.entreprise_id || '',
-      entreprise_id: data.entreprise_id || '',
-      gasUrl:     data.webapp_url   // sauvegardé pour restauration session
-    };
-    APP.token = data.token;
-
-    sessionStorage.setItem('iv_session', JSON.stringify({
-      user:    APP.user,
-      token:   APP.token,
-      gas_url: GAS_URL
-    }));
-
-    // ── Skeleton immédiat puis chargement parallèle ──
-    showView('viewSkeleton');
-    await preloadData();
-    initApp();
-    showView('viewApp');
-
-  } catch(e) {
-    console.error('Login/preload failed', e);
-    showView('viewLogin');
-    showLoginError(e?.message || 'Erreur réseau. Vérifiez votre connexion.');
-    btn.disabled = false; btn.classList.remove('loading');
-  }
-}
-
-function showLoginError(msg) {
-  const err = document.getElementById('loginError');
-  err.textContent = msg;
-  err.classList.add('show');
-}
-
-// ════════════════════════════════════════
-// PRELOAD (Promise.all parallèle)
-// ════════════════════════════════════════
-async function preloadData() {
-  const role = APP.user.role;
-  if (!GAS_URL) throw new Error("Aucune URL de web app client n'a ete renvoyee par le master.");
-  if (!APP.token) throw new Error("Aucun token de session n'a ete genere.");
-
-  const tasks = [
-    gasGet('getTaches').then(d => {
-      if (!d.success) throw new Error(d.message || 'Impossible de charger les taches.');
-      APP.taches = d.data || [];
-    }),
-    gasGet('getCategories').then(d => {
-      if (!d.success) throw new Error(d.message || 'Impossible de charger les categories.');
-      APP.categories = d.data || [];
-    }),
-    gasGet('getSites').then(d => {
-      if (!d.success) throw new Error(d.message || 'Impossible de charger les sites.');
-      APP.sites = d.data || [];
-    }),
-  ];
-
-  // Données supplémentaires selon rôle
-  if (role === 'superadmin' || role === 'directeur') {
-    tasks.push(gasGet('getUsers').then(d => {
-      if (!d.success) throw new Error(d.message || 'Impossible de charger les utilisateurs.');
-      APP.users = d.data || [];
-    }));
-  }
-  if (role === 'superadmin') {
-    tasks.push(gasGet('getLogs').then(d => {
-      if (!d.success) throw new Error(d.message || 'Impossible de charger les logs.');
-      APP.logs = d.data || [];
-    }));
-  }
-
-  await Promise.all(tasks);
-}
-
-// ════════════════════════════════════════
-// GAS API HELPERS
-// ════════════════════════════════════════
-async function gasGet(action, params = {}) {
-  try {
-    const qs = new URLSearchParams({ action, token: APP.token, ...params });
-    const res = await fetch(`${GAS_URL}?${qs}`);
-    if (!res.ok) return { success: false, message: `HTTP ${res.status}` };
-    return await res.json();
-  } catch(e) {
-    return { success: false, message: e?.message || 'Erreur reseau' };
-  }
-}
-
-async function gasPost(action, body = {}) {
-  try {
-    // GAS + navigateur: evite le preflight CORS en utilisant GET encodé.
-    // Le backend accepte deja p.action / p.token / p.* via e.parameter.
-    const qs = new URLSearchParams({ action, token: APP.token });
-    Object.entries(body || {}).forEach(([k, v]) => {
-      if (v === undefined || v === null) return;
-      qs.set(k, String(v));
-    });
-    const res = await fetch(`${GAS_URL}?${qs.toString()}`);
-    if (!res.ok) return { success: false, message: `HTTP ${res.status}` };
-    return await res.json();
-  } catch(e) {
-    return { success: false, message: e?.message || 'Erreur reseau' };
-  }
-}
-
-async function syncServerState(targetPage = APP.currentPage) {
-  await preloadData();
-  renderPage(targetPage || APP.currentPage);
-}
-
-// Optimistic update helper
-function optimisticAction(uiFn, apiFn, rollbackFn, successFn = null) {
-  uiFn();
-  showSync('sync');
-  apiFn().then(res => {
-    if (res.success) {
-      Promise.resolve(successFn ? successFn(res) : null)
-        .then(() => showSync('success'))
-        .catch(() => showSync('success'));
+      clientGAS = currentUser.webappUrl;
+      launchApp();
     } else {
-      rollbackFn();
-      showSync('error', res.message || 'Synchronisation echouee');
+      document.getElementById('loginPage').classList.add('active');
     }
-  }).catch(() => {
-    rollbackFn();
-    showSync('error');
+  }, 1200);
+});
+
+// ═══════════════════════════════════════════════════════
+//  LOGIN FLOW
+// ═══════════════════════════════════════════════════════
+let loginMatches = [];
+function clone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+function ensureTaskFlags(task) {
+  if (!task) return task;
+  return {...task, _optimistic: !!task._optimistic, _pendingDelete: !!task._pendingDelete};
+}
+function updateTaskCollections(id, updater) {
+  ['calendarTasks','requestTasks','myRequests','myTasks'].forEach(key => {
+    store[key] = store[key].map(task => task.id === id ? ensureTaskFlags(updater({...task})) : task).filter(Boolean);
   });
 }
-
-// ════════════════════════════════════════
-// SYNC BAR
-// ════════════════════════════════════════
-function showSync(type = 'sync', msg = null) {
-  const bar = document.getElementById('syncBar');
-  const txt = document.getElementById('syncMsg');
-  bar.className = '';
-  clearTimeout(syncTimer);
-
-  if (type === 'sync') {
-    txt.textContent = msg || 'Synchronisation…';
-    bar.classList.add('show');
-    syncTimer = setTimeout(() => bar.classList.remove('show'), 3000);
-  } else if (type === 'success') {
-    txt.textContent = msg || 'Synchronisé ✓';
-    bar.classList.add('show', 'success');
-    syncTimer = setTimeout(() => bar.classList.remove('show'), 2000);
-  } else if (type === 'error') {
-    txt.textContent = msg || 'Erreur de synchronisation';
-    bar.classList.add('show', 'error');
-    syncTimer = setTimeout(() => bar.classList.remove('show'), 4000);
+function refreshAllTasks() {
+  allTasks = [...store.calendarTasks, ...store.requestTasks, ...store.myRequests, ...store.myTasks]
+    .filter((task, index, arr) => arr.findIndex(t => t.id === task.id) === index);
+}
+function replaceSnapshot(snapshot) {
+  Object.keys(snapshot).forEach(key => {
+    store[key] = clone(snapshot[key]);
+  });
+  refreshAllTasks();
+}
+function tableCell(label, content) {
+  return `<td data-label="${label}">${content}</td>`;
+}
+function statusBadge(task) {
+  if (task._optimistic) {
+    return `<span class="badge badge-saving"><span class="status-pill"><span class="sync-dot"></span>Sync...</span></span>`;
+  }
+  const variant = task.statut === 'waiting' ? 'pending' : task.statut;
+  return `<span class="badge badge-${variant}">${task.statut}</span>`;
+}
+function requestCardClass(task) {
+  return `request-card fade-in${task._optimistic ? ' optimistic-item' : ''}${task._pendingDelete ? ' optimistic-dim' : ''}`;
+}
+function skeletonPage(count=3) {
+  return `<div class="page-skeleton">${Array.from({length:count}).map(() => `
+    <div class="skeleton-card">
+      <div class="skeleton-block" style="height:18px;border-radius:10px;width:38%"></div>
+      <div class="skeleton-block" style="height:18px;border-radius:10px;margin-top:14px"></div>
+      <div class="skeleton-block" style="height:18px;border-radius:10px;margin-top:10px;width:72%"></div>
+    </div>`).join('')}</div>`;
+}
+function rerenderCurrentPage() {
+  const pages = {
+    calendar: renderCalendar,
+    users: renderUsers,
+    categories: renderCategories,
+    sites: renderSites,
+    logs: renderLogs,
+    requests: renderRequests,
+    newrequest: renderNewRequest,
+    myrequests: renderMyRequests,
+    mytasks: renderMyTasks,
+  };
+  const fn = pages[currentPage];
+  if (fn) fn(true);
+}
+async function runOptimisticMutation({snapshotKeys, apply, request, successMessage, errorMessage, onSuccess}) {
+  const snapshot = {};
+  snapshotKeys.forEach(key => snapshot[key] = clone(store[key]));
+  apply();
+  refreshAllTasks();
+  rerenderCurrentPage();
+  if (successMessage) showToast(successMessage, 'success');
+  try {
+    const res = await request();
+    snapshotKeys.forEach(key => {
+      store[key] = store[key].map(item => item && item._optimistic ? {...item, _optimistic:false, _pendingDelete:false} : item).filter(Boolean);
+    });
+    if (onSuccess) await onSuccess(res);
+    refreshAllTasks();
+    rerenderCurrentPage();
+    return res;
+  } catch (error) {
+    replaceSnapshot(snapshot);
+    rerenderCurrentPage();
+    showToast(errorMessage || 'Erreur de synchronisation', 'error');
+    console.error(error);
+    throw error;
   }
 }
+function toggleMobileMenu() {
+  document.body.classList.toggle('menu-open');
+}
+function closeMobileMenu() {
+  document.body.classList.remove('menu-open');
+}
 
-// ════════════════════════════════════════
-// APP INIT
-// ════════════════════════════════════════
-function initApp() {
-  const u = APP.user;
-  const allowedRoles = ['superadmin', 'directeur', 'agent', 'operateur'];
-  if (!allowedRoles.includes(u.role)) {
-    showView('viewLogin');
-    showLoginError(`Rôle invalide reçu: "${u.role}". Vérifiez la colonne Role du master.`);
+async function handleLogin() {
+  if (loginPending) return;
+  const email = document.getElementById('loginEmail').value.trim();
+  const pwd = document.getElementById('loginPwd').value;
+  const profileSel = document.getElementById('loginProfile');
+  const errEl = document.getElementById('loginError');
+  const loginCard = document.querySelector('.login-card');
+  const loginBtn = document.querySelector('#loginPage .btn-primary');
+  errEl.textContent = '';
+
+  if (!email || !pwd) { errEl.textContent = 'Veuillez remplir tous les champs.'; return; }
+  loginPending = true;
+  loginCard.classList.add('is-submitting');
+  loginBtn.classList.add('is-loading');
+
+  // Si profil déjà affiché → connexion directe
+  if (document.getElementById('profileField').style.display !== 'none' && loginMatches.length) {
+    const chosen = loginMatches[parseInt(profileSel.value)];
+    currentUser = chosen;
+    clientGAS = chosen.webappUrl;
+    sessionStorage.setItem('intermaster_user', JSON.stringify(currentUser));
+    launchApp();
+    loginPending = false;
     return;
   }
 
-  // Initiales avatar — nom peut être "Jean Dupont" ou juste "Dupont"
-  const displayName = [u.prenom || '', u.nom || ''].join(' ').trim() || u.email || '';
-  const parts   = displayName.trim().split(' ').filter(Boolean);
-  const initials = parts.length >= 2
-    ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-    : (displayName || '?').slice(0, 2).toUpperCase();
-
-  document.getElementById('sbAvatar').textContent = initials;
-  document.getElementById('sbName').textContent   = displayName || '—';
-  document.getElementById('sbRole').textContent   = formatRole(u.role);
-
-  // Build navigation
-  buildNav(u.role);
-
-  // Load default page
-  navigateTo('dashboard');
-}
-
-function buildNav(role) {
-  const nav = document.getElementById('sidebarNav');
-  const items = getNavItems(role);
-  nav.innerHTML = items.map(item =>
-    item.divider
-      ? `<div class="sb-section-lbl">${item.label}</div>`
-      : `<div class="sb-item" id="nav-${item.page}" onclick="navigateTo('${item.page}')">
-          ${item.icon}
-          <span>${item.label}</span>
-          ${item.badge ? `<span class="sb-badge ${item.badgeClass||''}" id="badge-${item.page}">${item.badge}</span>` : ''}
-        </div>`
-  ).join('');
-}
-
-function getNavItems(role) {
-  const base = [
-    { divider: true, label: 'Navigation' },
-    { page: 'dashboard', label: 'Vue d\'ensemble', icon: iconSvg('dashboard') },
-    { page: 'calendrier', label: 'Calendrier', icon: iconSvg('calendar') },
-  ];
-
-  if (role === 'agent') {
-    base.push(
-      { divider: true, label: 'Mes actions' },
-      { page: 'mes-demandes', label: 'Mes demandes', icon: iconSvg('list') },
-    );
-  }
-  if (role === 'directeur') {
-    base.push(
-      { divider: true, label: 'Validation' },
-      { page: 'validations', label: 'Validations', icon: iconSvg('check'), badge: '0', badgeClass: 'orange', page: 'validations' },
-      { page: 'toutes-demandes', label: 'Toutes les demandes', icon: iconSvg('list') },
-    );
-  }
-  if (role === 'operateur') {
-    base.push(
-      { divider: true, label: 'Terrain' },
-      { page: 'mes-taches', label: 'Mes tâches', icon: iconSvg('bolt'), badge: '0', page: 'mes-taches' },
-    );
-  }
-  if (role === 'superadmin') {
-    base.push(
-      { divider: true, label: 'Gestion' },
-      { page: 'toutes-demandes', label: 'Toutes les demandes', icon: iconSvg('list') },
-      { page: 'utilisateurs', label: 'Utilisateurs', icon: iconSvg('users') },
-      { page: 'categories', label: 'Catégories', icon: iconSvg('tag') },
-      { page: 'sites', label: 'Sites', icon: iconSvg('location') },
-      { divider: true, label: 'Système' },
-      { page: 'logs', label: 'Journaux', icon: iconSvg('log') },
-      { page: 'exports', label: 'Export & Purge', icon: iconSvg('export') },
-    );
-  }
-  return base;
-}
-
-function navigateTo(page) {
-  APP.currentPage = page;
-  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
-  const navEl = document.getElementById('nav-' + page);
-  if (navEl) navEl.classList.add('active');
-
-  const titles = {
-    'dashboard': ['Vue d\'ensemble', 'Tableau de bord'],
-    'calendrier': ['Calendrier', 'Planning des interventions'],
-    'mes-demandes': ['Mes demandes', 'Suivi de vos demandes'],
-    'validations': ['Validations', 'Demandes en attente de validation'],
-    'toutes-demandes': ['Toutes les demandes', 'Historique complet'],
-    'mes-taches': ['Mes tâches', 'Interventions à réaliser'],
-    'utilisateurs': ['Utilisateurs', 'Gestion des comptes'],
-    'categories': ['Catégories', 'Référentiel des catégories'],
-    'sites': ['Sites', 'Référentiel des sites'],
-    'logs': ['Journaux d\'activité', 'Traçabilité complète'],
-    'exports': ['Export & Purge', 'Données et maintenance'],
-  };
-
-  const [title, breadcrumb] = titles[page] || ['Page', ''];
-  document.getElementById('topbarTitle').textContent = title;
-  document.getElementById('topbarBreadcrumb').textContent = breadcrumb;
-
-  renderPage(page);
-}
-
-// ════════════════════════════════════════
-// PAGE RENDERER
-// ════════════════════════════════════════
-function renderPage(page) {
-  const el = document.getElementById('pageContent');
-  const actions = document.getElementById('topbarActions');
-  actions.innerHTML = '';
-
-  switch(page) {
-    case 'dashboard':      el.innerHTML = renderDashboard(); break;
-    case 'calendrier':     el.innerHTML = renderCalendrier(); buildCalendar(); break;
-    case 'mes-demandes':   el.innerHTML = renderMesDemandes(); actions.innerHTML = `<button class="btn btn-primary btn-sm" onclick="openModalDemande()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nouvelle demande</button>`; break;
-    case 'validations':    el.innerHTML = renderValidations(); break;
-    case 'toutes-demandes':el.innerHTML = renderToutesDemandes(); actions.innerHTML = `<button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Export CSV</button>`; break;
-    case 'mes-taches':     el.innerHTML = renderMesTaches(); break;
-    case 'utilisateurs':   el.innerHTML = renderUtilisateurs(); actions.innerHTML = `<button class="btn btn-primary btn-sm" onclick="openModalUser()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nouvel utilisateur</button>`; break;
-    case 'categories':     el.innerHTML = renderCategories(); actions.innerHTML = `<button class="btn btn-primary btn-sm" onclick="openModalRefItem('categories','Nouvelle catégorie')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Ajouter</button>`; break;
-    case 'sites':          el.innerHTML = renderSites(); actions.innerHTML = `<button class="btn btn-primary btn-sm" onclick="openModalRefItem('sites','Nouveau site')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Ajouter</button>`; break;
-    case 'logs':           el.innerHTML = renderLogs(); break;
-    case 'exports':        el.innerHTML = renderExports(); break;
-  }
-}
-
-// ════════════════════════════════════════
-// PAGES HTML
-// ════════════════════════════════════════
-
-function renderDashboard() {
-  const role = APP.user.role;
-  const all = APP.taches;
-  const attente   = all.filter(t => t.statut === 'attente').length;
-  const acceptees = all.filter(t => t.statut === 'acceptee').length;
-  const faites    = all.filter(t => t.statut === 'faite').length;
-  const refusees  = all.filter(t => t.statut === 'refusee').length;
-
-  let cards = `
-    <div class="stat-grid">
-      <div class="stat-card"><div class="sc-label">En attente</div><div class="sc-value" style="color:var(--yellow)">${attente}</div><div class="sc-delta">À valider</div></div>
-      <div class="stat-card"><div class="sc-label">Acceptées</div><div class="sc-value" style="color:var(--green)">${acceptees}</div><div class="sc-delta">À réaliser</div></div>
-      <div class="stat-card"><div class="sc-label">Réalisées</div><div class="sc-value">${faites}</div><div class="sc-delta">Terminées</div></div>
-      <div class="stat-card"><div class="sc-label">Refusées</div><div class="sc-value" style="color:var(--red)">${refusees}</div><div class="sc-delta">Ce mois</div></div>
-    </div>`;
-
-  const recent = [...all].sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 8);
-  cards += `<div class="sec-hd"><div><div class="sec-title">Demandes récentes</div></div></div>`;
-  cards += renderTachesList(recent, true);
-  return cards;
-}
-
-function renderMesDemandes() {
-  const mes = APP.taches.filter(t => t.agent_email === APP.user.email);
-  return `
-    <div class="sec-hd">
-      <div><div class="sec-title">Mes demandes (${mes.length})</div></div>
-    </div>
-    ${renderTachesList(mes, true)}`;
-}
-
-function renderValidations() {
-  const pending = APP.taches.filter(t => t.statut === 'attente');
-  return `
-    <div class="sec-hd">
-      <div><div class="sec-title">En attente de validation (${pending.length})</div></div>
-    </div>
-    ${renderTachesList(pending, false, true)}`;
-}
-
-function renderToutesDemandes() {
-  return `
-    <div style="margin-bottom:1rem;display:flex;gap:.5rem;flex-wrap:wrap">
-      ${['Tous','attente','acceptee','refusee','faite','non_faite'].map(s =>
-        `<button class="btn btn-ghost btn-xs" onclick="filterTaches('${s}')">${formatStatut(s)||'Tous'}</button>`
-      ).join('')}
-    </div>
-    <div id="tachesFiltered">
-      ${renderTachesList(APP.taches, true, APP.user.role === 'directeur')}
-    </div>`;
-}
-
-function renderMesTaches() {
-  const mes = APP.taches.filter(t => t.statut === 'acceptee');
-  return `
-    <div class="sec-hd"><div class="sec-title">Tâches à réaliser (${mes.length})</div></div>
-    ${renderTachesList(mes, false, false, true)}`;
-}
-
-function renderTachesList(taches, showAgent = false, showValidation = false, showExecution = false) {
-  if (!taches.length) return `<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">Aucune demande</div><div class="empty-desc">Les demandes apparaîtront ici.</div></div>`;
-
-  return `<div class="tbl-wrap"><table>
-    <thead><tr>
-      <th>Réf.</th>
-      ${showAgent ? '<th>Agent</th>' : ''}
-      <th>Catégorie</th>
-      <th>Site</th>
-      <th>Description</th>
-      <th>Date souhaitée</th>
-      <th>Statut</th>
-      <th>Actions</th>
-    </tr></thead>
-    <tbody>
-      ${taches.map(t => `<tr id="row-${t.id}">
-        <td><code style="font-size:.72rem;color:var(--text3)">#${String(t.id).slice(-6)}</code></td>
-        ${showAgent ? `<td><div style="display:flex;align-items:center;gap:.5rem"><div class="av" style="background:var(--green)">${(t.agent_nom||'?')[0]}</div><span>${t.agent_nom||'—'}</span></div></td>` : ''}
-        <td>${t.categorie||'—'}</td>
-        <td>${t.site||'—'}</td>
-        <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.description||'—'}</td>
-        <td style="color:var(--text3)">${formatDate(t.date_souhaitee)}</td>
-        <td>${badgeStatut(t.statut)}</td>
-        <td>
-          ${showValidation && t.statut === 'attente' ? `<button class="btn btn-primary btn-xs" onclick="openModalValidation('${t.id}')">Valider</button>` : ''}
-          ${showExecution && t.statut === 'acceptee' ? `<button class="btn btn-ghost btn-xs" onclick="openModalExecution('${t.id}')">Rapport</button>` : ''}
-          ${!showValidation && !showExecution ? `<button class="btn btn-ghost btn-xs" onclick="openModalValidation('${t.id}',true)">Voir</button>` : ''}
-        </td>
-      </tr>`).join('')}
-    </tbody>
-  </table></div>`;
-}
-
-function renderUtilisateurs() {
-  const users = APP.users;
-  return `
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>Utilisateur</th><th>Email</th><th>Rôle</th><th>Statut</th><th>Actions</th></tr></thead>
-      <tbody>
-        ${users.map(u => `<tr id="user-${u.id}">
-          <td><div style="display:flex;align-items:center;gap:.65rem">
-            <div class="av">${((u.prenom||'')[0]||'?')}${((u.nom||'')[0]||'?')}</div>
-            <div><div style="font-weight:600">${u.prenom} ${u.nom}</div></div>
-          </div></td>
-          <td style="color:var(--text2)">${u.email}</td>
-          <td><span class="role-chip role-${u.role}">${formatRole(u.role)}</span></td>
-          <td>${u.actif ? '<span class="badge badge-green"><span class="badge-dot"></span>Actif</span>' : '<span class="badge badge-gray"><span class="badge-dot"></span>Inactif</span>'}</td>
-          <td><div style="display:flex;gap:.4rem">
-            <button class="btn btn-ghost btn-xs" onclick="toggleUserActif('${u.id}','${u.actif}')">${u.actif ? 'Désactiver' : 'Activer'}</button>
-            <button class="btn btn-danger btn-xs" onclick="deleteUser('${u.id}')">Suppr.</button>
-          </div></td>
-        </tr>`).join('')}
-      </tbody>
-    </table></div>`;
-}
-
-function renderCategories() {
-  return renderRefList(APP.categories, 'Catégorie', 'categories');
-}
-function renderSites() {
-  return renderRefList(APP.sites, 'Site', 'sites');
-}
-function renderRefList(items, label, type) {
-  if (!items.length) return `<div class="empty"><div class="empty-icon">📂</div><div class="empty-title">Aucun élément</div></div>`;
-  return `<div class="tbl-wrap"><table>
-    <thead><tr><th>${label}</th><th>Description</th><th>Actions</th></tr></thead>
-    <tbody>
-      ${items.map(i => `<tr id="${type}-${i.id}">
-        <td style="font-weight:600">${i.nom}</td>
-        <td style="color:var(--text2)">${i.description||'—'}</td>
-        <td><button class="btn btn-danger btn-xs" onclick="deleteRefItem('${type}','${i.id}')">Supprimer</button></td>
-      </tr>`).join('')}
-    </tbody>
-  </table></div>`;
-}
-
-function renderLogs() {
-  const logs = APP.logs.slice(0, 50);
-  return `
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>Horodatage</th><th>Email</th><th>Action</th><th>IP</th></tr></thead>
-      <tbody>
-        ${logs.map(l => `<tr>
-          <td style="color:var(--text3);font-size:.78rem">${formatDateTime(l.timestamp)}</td>
-          <td>${l.email||'—'}</td>
-          <td><code style="font-size:.78rem;color:var(--text2)">${l.action||'—'}</code></td>
-          <td style="color:var(--text3);font-size:.78rem">${l.ip||'—'}</td>
-        </tr>`).join('')}
-      </tbody>
-    </table></div>`;
-}
-
-function renderExports() {
-  return `
-    <div class="grid2">
-      <div class="detail-card">
-        <div class="sec-title" style="margin-bottom:.5rem">Export CSV</div>
-        <p style="font-size:.83rem;color:var(--text2);margin-bottom:1rem">Téléchargez toutes les demandes au format CSV.</p>
-        <button class="btn btn-primary" onclick="exportCSV()">⬇ Télécharger CSV</button>
-      </div>
-      <div class="detail-card">
-        <div class="sec-title" style="margin-bottom:.5rem">Purge des logs</div>
-        <p style="font-size:.83rem;color:var(--text2);margin-bottom:1rem">Supprimer les journaux d'activité antérieurs à 90 jours.</p>
-        <button class="btn btn-danger" onclick="purgeLogs()">🗑 Purger les logs</button>
-      </div>
-      <div class="detail-card">
-        <div class="sec-title" style="margin-bottom:.5rem">Purge calendrier</div>
-        <p style="font-size:.83rem;color:var(--text2);margin-bottom:1rem">Archiver les demandes terminées de plus de 6 mois.</p>
-        <button class="btn btn-danger" onclick="purgeCalendrier()">🗑 Purger le calendrier</button>
-      </div>
-    </div>`;
-}
-
-// ════════════════════════════════════════
-// CALENDRIER
-// ════════════════════════════════════════
-function renderCalendrier() {
-  return `
-    <div class="cal-legend">
-      <div class="leg-item"><div class="leg-dot" style="background:var(--yellow)"></div>En attente</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Acceptée</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Refusée</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--gray)"></div>Faite</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--purple)"></div>Non faite</div>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1.5rem">
-      <div class="cal-header">
-        <div class="cal-nav-btn" onclick="calNav(-1)">‹</div>
-        <div class="cal-month-lbl" id="calMonthLabel"></div>
-        <div class="cal-nav-btn" onclick="calNav(1)">›</div>
-      </div>
-      <div class="cal-grid" id="calGrid">
-        <div class="cal-dh">Lun</div><div class="cal-dh">Mar</div><div class="cal-dh">Mer</div>
-        <div class="cal-dh">Jeu</div><div class="cal-dh">Ven</div><div class="cal-dh">Sam</div><div class="cal-dh">Dim</div>
-      </div>
-    </div>`;
-}
-
-function buildCalendar() {
-  const role  = APP.user.role;
-  const year  = APP.calYear;
-  const month = APP.calMonth;
-
-  const monthNames = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-  document.getElementById('calMonthLabel').textContent = `${monthNames[month]} ${year}`;
-
-  const grid = document.getElementById('calGrid');
-  // Remove day cells (keep headers)
-  while (grid.children.length > 7) grid.removeChild(grid.lastChild);
-
-  const firstDay = new Date(year, month, 1);
-  const lastDay  = new Date(year, month + 1, 0);
-  const startDow = (firstDay.getDay() + 6) % 7; // Monday-first
-
-  // Filter taches visible par rôle
-  let tachesCal = APP.taches.filter(t => {
-    const d = new Date(t.date_souhaitee);
-    return d.getFullYear() === year && d.getMonth() === month;
-  });
-  if (role === 'agent')    tachesCal = tachesCal.filter(t => t.agent_email === APP.user.email);
-  if (role === 'operateur') tachesCal = tachesCal.filter(t => t.statut === 'acceptee');
-
-  const statutClass = { attente:'ev-yellow', acceptee:'ev-green', refusee:'ev-red', faite:'ev-gray', non_faite:'ev-purple' };
-  const today = new Date();
-
-  for (let i = 0; i < startDow; i++) {
-    const ph = document.createElement('div');
-    ph.className = 'cal-day other';
-    grid.appendChild(ph);
-  }
-
-  for (let d = 1; d <= lastDay.getDate(); d++) {
-    const cell = document.createElement('div');
-    cell.className = 'cal-day';
-    if (d === today.getDate() && month === today.getMonth() && year === today.getFullYear()) cell.classList.add('today');
-
-    const dayTaches = tachesCal.filter(t => new Date(t.date_souhaitee).getDate() === d);
-    cell.innerHTML = `<div class="cal-day-n">${d}</div>`
-      + dayTaches.slice(0, 3).map(t =>
-          `<div class="cal-ev ${statutClass[t.statut]||'ev-gray'}" title="${t.categorie||''}: ${t.description||''}">${t.categorie||t.description||''}</div>`
-        ).join('')
-      + (dayTaches.length > 3 ? `<div style="font-size:.6rem;color:var(--text3)">+${dayTaches.length-3} autres</div>` : '');
-
-    grid.appendChild(cell);
-  }
-}
-
-function calNav(dir) {
-  APP.calMonth += dir;
-  if (APP.calMonth > 11) { APP.calMonth = 0; APP.calYear++; }
-  if (APP.calMonth < 0)  { APP.calMonth = 11; APP.calYear--; }
-  buildCalendar();
-}
-
-// ════════════════════════════════════════
-// MODALS
-// ════════════════════════════════════════
-function openModal(id)   { document.getElementById(id).classList.add('open'); }
-function closeModal(id)  { document.getElementById(id).classList.remove('open'); }
-
-// ── Demande ──
-function openModalDemande(id = null) {
-  APP.editingDemandeId = id;
-  document.getElementById('modalDemandeTitle').textContent = id ? 'Modifier la demande' : 'Nouvelle demande';
-  document.getElementById('photoPreview').style.display = 'none';
-
-  // Populate selects
-  const dCat  = document.getElementById('dCat');
-  const dSite = document.getElementById('dSite');
-  dCat.innerHTML  = APP.categories.map(c => `<option value="${c.nom}">${c.nom}</option>`).join('');
-  dSite.innerHTML = APP.sites.map(s => `<option value="${s.nom}">${s.nom}</option>`).join('');
-
-  if (id) {
-    const t = APP.taches.find(x => x.id === id);
-    if (t) {
-      dCat.value  = t.categorie;
-      dSite.value = t.site;
-      document.getElementById('dDesc').value    = t.description;
-      document.getElementById('dDate').value    = t.date_souhaitee;
-      document.getElementById('dMontant').value = t.montant_estime || '';
-    }
-  } else {
-    document.getElementById('dDesc').value = '';
-    document.getElementById('dDate').value = '';
-    document.getElementById('dMontant').value = '';
-  }
-  openModal('modalDemande');
-}
-
-function submitDemande() {
-  const cat    = document.getElementById('dCat').value;
-  const site   = document.getElementById('dSite').value;
-  const desc   = document.getElementById('dDesc').value.trim();
-  const date   = document.getElementById('dDate').value;
-  const montant = document.getElementById('dMontant').value;
-
-  if (!cat || !site || !desc || !date) { alert('Remplissez les champs obligatoires.'); return; }
-
-  const newItem = {
-    id: 'tmp-' + Date.now(),
-    categorie: cat, site, description: desc,
-    date_souhaitee: date, montant_estime: montant,
-    statut: 'attente',
-    agent_email: APP.user.email,
-    agent_nom: APP.user.prenom + ' ' + APP.user.nom,
-    created_at: new Date().toISOString()
-  };
-
-  closeModal('modalDemande');
-
-  if (APP.editingDemandeId) {
-    const idx = APP.taches.findIndex(t => t.id === APP.editingDemandeId);
-    const old = { ...APP.taches[idx] };
-    APP.taches[idx] = { ...APP.taches[idx], ...newItem, id: APP.editingDemandeId };
-    renderPage(APP.currentPage);
-    optimisticAction(
-      () => {},
-      () => gasPost('updateTache', { id: APP.editingDemandeId, categorie: cat, site, description: desc, date_souhaitee: date, montant_estime: montant }),
-      () => { APP.taches[idx] = old; renderPage(APP.currentPage); },
-      () => syncServerState(APP.currentPage)
-    );
-  } else {
-    APP.taches.unshift(newItem);
-    renderPage(APP.currentPage);
-    optimisticAction(
-      () => {},
-      () => gasPost('addTache', newItem),
-      () => { APP.taches = APP.taches.filter(t => t.id !== newItem.id); renderPage(APP.currentPage); },
-      (res) => {
-        if (res.id) newItem.id = res.id;
-        return syncServerState(APP.currentPage);
+  // Appel GAS master
+  try {
+    const res = await callGAS(GAS_MASTER_URL, 'authenticate', {email, password: pwd});
+    if (res.success) {
+      loginMatches = res.users;
+      if (loginMatches.length === 1) {
+        currentUser = loginMatches[0];
+        clientGAS = currentUser.webappUrl;
+        sessionStorage.setItem('intermaster_user', JSON.stringify(currentUser));
+        launchApp();
+      } else {
+        // Plusieurs profils → montrer select
+        profileSel.innerHTML = loginMatches.map((u,i) => {
+  const role = (u.role || u["rôle"] || "").toString().trim().toLowerCase();
+  return `<option value="${i}">${role} — ${u.entreprise}</option>`;
+}).join('');
+        document.getElementById('profileField').style.display = 'block';
       }
-    );
+    } else {
+      errEl.textContent = res.message || 'Identifiants incorrects.';
+    }
+  } catch(e) {
+    errEl.textContent = 'Erreur de connexion au serveur.';
+    console.error(e);
+  } finally {
+    loginPending = false;
+    loginCard.classList.remove('is-submitting');
+    loginBtn.classList.remove('is-loading');
   }
 }
 
-// ── Validation (directeur) ──
-let _validationTarget = null;
-function openModalValidation(id, readOnly = false) {
-  _validationTarget = id;
-  const t = APP.taches.find(x => x.id === id);
-  if (!t) return;
-  document.getElementById('mvTitle').textContent = readOnly ? 'Détail de la demande' : 'Valider la demande';
-  document.getElementById('mvBody').innerHTML = `
-    <div class="detail-card" style="margin-bottom:1rem">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;font-size:.84rem">
-        <div><div style="color:var(--text3);font-size:.7rem;margin-bottom:.2rem">CATÉGORIE</div>${t.categorie||'—'}</div>
-        <div><div style="color:var(--text3);font-size:.7rem;margin-bottom:.2rem">SITE</div>${t.site||'—'}</div>
-        <div><div style="color:var(--text3);font-size:.7rem;margin-bottom:.2rem">AGENT</div>${t.agent_nom||'—'}</div>
-        <div><div style="color:var(--text3);font-size:.7rem;margin-bottom:.2rem">DATE</div>${formatDate(t.date_souhaitee)}</div>
-        <div style="grid-column:1/-1"><div style="color:var(--text3);font-size:.7rem;margin-bottom:.2rem">DESCRIPTION</div>${t.description||'—'}</div>
-        <div><div style="color:var(--text3);font-size:.7rem;margin-bottom:.2rem">STATUT</div>${badgeStatut(t.statut)}</div>
+function logout() {
+  sessionStorage.removeItem('intermaster_user');
+  location.reload();
+}
+
+// ═══════════════════════════════════════════════════════
+//  APP LAUNCH
+// ═══════════════════════════════════════════════════════
+function launchApp() {
+  document.getElementById('loginPage').classList.remove('active');
+  document.getElementById('app').classList.add('active');
+
+  // Topbar
+  const role = getUserRole();
+  document.getElementById('topUserInfo').textContent = `${currentUser.nom} · ${currentUser.entreprise}`;
+  const badge = document.getElementById('topRoleBadge');
+  badge.textContent = role;
+  badge.className = `role-badge role-${role}`;
+
+  buildSidebar();
+  showPage('calendar');
+}
+
+// ═══════════════════════════════════════════════════════
+//  SIDEBAR
+// ═══════════════════════════════════════════════════════
+const MENUS = {
+  superadmin: [
+    { section:'Principal', items:[
+      {id:'calendar', label:'Calendrier', icon:calIcon()},
+    ]},
+    { section:'Administration', items:[
+      {id:'users', label:'Comptes', icon:usersIcon()},
+      {id:'categories', label:'Catégories', icon:tagIcon()},
+      {id:'sites', label:'Sites', icon:buildingIcon()},
+    ]},
+    { section:'Supervision', items:[
+      {id:'logs', label:'Journaux', icon:logIcon()},
+    ]},
+  ],
+  directeur: [
+    { section:'Principal', items:[
+      {id:'calendar', label:'Calendrier', icon:calIcon()},
+      {id:'requests', label:'Demandes', icon:inboxIcon()},
+    ]},
+  ],
+  agent: [
+    { section:'Principal', items:[
+      {id:'calendar', label:'Calendrier', icon:calIcon()},
+      {id:'newrequest', label:'Nouvelle demande', icon:plusIcon()},
+      {id:'myrequests', label:'Mes demandes', icon:listIcon()},
+    ]},
+  ],
+  operateur: [
+    { section:'Principal', items:[
+      {id:'calendar', label:'Calendrier', icon:calIcon()},
+      {id:'mytasks', label:'Mes tâches', icon:checkIcon()},
+    ]},
+  ],
+};
+
+function buildSidebar() {
+  const role = getUserRole();
+  const menus = MENUS[role] || [];
+  const sb = document.getElementById('sidebar');
+  sb.innerHTML = menus.map(section => `
+    <div class="nav-section">
+      <div class="nav-section-title">${section.section}</div>
+      ${section.items.map(item => `
+        <div class="nav-item" id="nav_${item.id}" onclick="showPage('${item.id}')">
+          ${item.icon}<span>${item.label}</span>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function setActiveNav(id) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById('nav_'+id);
+  if (el) el.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════
+//  ROUTER
+// ═══════════════════════════════════════════════════════
+function showPage(page) {
+  currentPage = page;
+  closeMobileMenu();
+  setActiveNav(page);
+  const c = document.getElementById('mainContent');
+  c.innerHTML = skeletonPage(page === 'calendar' ? 2 : 3);
+  const role = getUserRole();
+  const pages = {
+    calendar: renderCalendar,
+    users: renderUsers,
+    categories: renderCategories,
+    sites: renderSites,
+    logs: renderLogs,
+    requests: renderRequests,
+    newrequest: renderNewRequest,
+    myrequests: renderMyRequests,
+    mytasks: renderMyTasks,
+  };
+  if (pages[page]) pages[page]();
+}
+
+// ═══════════════════════════════════════════════════════
+//  GAS CALL HELPER
+// ═══════════════════════════════════════════════════════
+function callGAS(url, action, params = {}) {
+  return new Promise((resolve, reject) => {
+    const callbackName = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+
+    window[callbackName] = function (data) {
+      resolve(data);
+      delete window[callbackName];
+      script.remove();
+    };
+
+    const query = new URLSearchParams({
+      action,
+      ...params,
+      callback: callbackName
+    });
+
+    const script = document.createElement('script');
+    script.src = `${url}?${query.toString()}`;
+
+    script.onerror = () => {
+      reject(new Error('Erreur appel GAS : ' + action));
+      delete window[callbackName];
+      script.remove();
+    };
+
+    document.body.appendChild(script);
+  });
+}
+
+async function callClient(action, params={}) {
+  return callGAS(clientGAS, action, params);
+}
+
+// ═══════════════════════════════════════════════════════
+//  CALENDAR
+// ═══════════════════════════════════════════════════════
+async function renderCalendar() {
+  const forceLocal = arguments[0] === true;
+  const c = document.getElementById('mainContent');
+  c.innerHTML = `
+    <div class="page-header">
+      <h2>Calendrier des interventions</h2>
+      <p>Vue commune de toutes les tâches planifiées</p>
+    </div>
+    <div class="card">
+      <div class="cal-header">
+        <div class="cal-nav">
+          <button class="cal-btn" onclick="calPrev()">‹</button>
+          <div class="cal-month" id="calMonthLabel"></div>
+          <button class="cal-btn" onclick="calNext()">›</button>
+        </div>
+        <div style="display:flex;gap:8px">
+          ${
+  ['directeur', 'superadmin'].includes(getUserRole())
+    ? `<button class="btn-action secondary" onclick="exportTasksCSV()">Export CSV</button>
+       <button class="btn-action danger" onclick="purgeCalendar()">Purger</button>`
+    : ''
+}
+        </div>
       </div>
-    </div>`;
-  document.getElementById('mvJustifGroup').style.display = 'none';
-  document.getElementById('mvJustif').value = '';
-  document.getElementById('btnRefuser').style.display  = readOnly ? 'none' : 'block';
-  document.getElementById('btnAccepter').style.display = readOnly ? 'none' : 'block';
-  openModal('modalValidation');
+      <div id="calWrapper"></div>
+      <div class="cal-mobile-list" id="calMobileList"></div>
+      <div class="cal-legend">
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(251,191,36,.4)"></div>En attente</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(79,142,247,.4)"></div>Acceptée</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(52,211,153,.4)"></div>Effectuée</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(248,113,113,.3)"></div>Refusée</div>
+      </div>
+    </div>
+  `;
+  if (!forceLocal && !store.calendarTasks.length) await loadAndDrawCal();
+  else { allTasks = store.calendarTasks; drawCalendar(); }
 }
 
-document.addEventListener('click', e => {
-  if (e.target.id === 'btnRefuser') {
-    document.getElementById('mvJustifGroup').style.display = 'block';
-    document.getElementById('mvJustif').focus();
+async function loadAndDrawCal() {
+  try {
+    const res = await callClient('getTasks', {role: getUserRole(), email: currentUser.email});
+    store.calendarTasks = (res.tasks || []).map(ensureTaskFlags);
+    allTasks = store.calendarTasks;
+  } catch(e) { store.calendarTasks = []; allTasks = []; }
+  drawCalendar();
+}
+
+function drawCalendar() {
+  const label = document.getElementById('calMonthLabel');
+  if (!label) return;
+  const months = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  label.textContent = `${months[calendarDate.getMonth()]} ${calendarDate.getFullYear()}`;
+
+  const year = calendarDate.getFullYear(), month = calendarDate.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const today = new Date();
+  const offset = firstDay === 0 ? 6 : firstDay-1;
+
+  let html = '<div class="cal-grid">';
+  ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].forEach(d => html += `<div class="cal-day-name">${d}</div>`);
+
+  for (let i=0; i<offset; i++) {
+    const d = new Date(year, month, 1-offset+i);
+    html += `<div class="cal-day other-month"><div class="cal-day-num">${d.getDate()}</div></div>`;
   }
+  for (let d=1; d<=daysInMonth; d++) {
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = today.getDate()===d && today.getMonth()===month && today.getFullYear()===year;
+    const dayTasks = allTasks.filter(t => t.date === dateStr);
+    const evHtml = dayTasks.slice(0,3).map(t =>
+      `<div class="cal-event ${t.statut.toLowerCase()}" onclick="showTaskDetail('${t.id}')" title="${t.titre}">${t.titre}</div>`
+    ).join('');
+    const more = dayTasks.length>3 ? `<div class="cal-more" style="font-size:.65rem;color:var(--muted)">+${dayTasks.length-3}</div>` : '';
+    html += `<div class="cal-day${isToday?' today':''}" onclick="calDayClick('${dateStr}')">
+      <div class="cal-day-num">${d}</div>${evHtml}${more}</div>`;
+  }
+  const remain = (7 - (offset+daysInMonth)%7) % 7;
+  for (let i=1; i<=remain; i++) html += `<div class="cal-day other-month"><div class="cal-day-num">${i}</div></div>`;
+  html += '</div>';
+  document.getElementById('calWrapper').innerHTML = html;
+  drawCalendarMobileAgenda(year, month);
+}
+function drawCalendarMobileAgenda(year, month) {
+  const target = document.getElementById('calMobileList');
+  if (!target) return;
+  const monthTasks = (store.calendarTasks.length ? store.calendarTasks : allTasks)
+    .filter(t => {
+      const [y, m] = (t.date || '').split('-').map(Number);
+      return y === year && m === month + 1;
+    })
+    .sort((a,b) => (a.date || '').localeCompare(b.date || ''));
+  target.innerHTML = monthTasks.length
+    ? monthTasks.map(t => `
+      <div class="cal-mobile-event${t._optimistic ? ' optimistic-item' : ''}" onclick="showTaskDetail('${t.id}')">
+        <div class="cal-mobile-event-head">
+          <div class="cal-mobile-event-title">${t.titre}</div>
+          ${statusBadge(t)}
+        </div>
+        <div class="cal-mobile-event-meta">
+          <span>${t.date}</span>
+          <span>${t.site || '-'}</span>
+          <span>${t.categorie || '-'}</span>
+        </div>
+      </div>`).join('')
+    : `<div class="cal-mobile-event" style="color:var(--muted)">Aucune intervention sur ce mois.</div>`;
+}
+
+function calPrev() { calendarDate.setMonth(calendarDate.getMonth()-1); drawCalendar(); }
+function calNext() { calendarDate.setMonth(calendarDate.getMonth()+1); drawCalendar(); }
+function calDayClick(date) { /* Optionnel : filtrer sur ce jour */ }
+
+function showTaskDetail(id) {
+  const task = allTasks.find(t=>t.id===id);
+  if (!task) return;
+  const role = getUserRole();
+
+  let actions = '';
+  if (role==='directeur' && task.statut==='pending') {
+    actions = `
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="btn-action success" onclick="acceptTask('${id}')">✓ Accepter</button>
+        <button class="btn-action secondary" onclick="waitTask('${id}')">⏸ Attente</button>
+        <button class="btn-action danger" onclick="openRefuseModal('${id}')">✕ Refuser</button>
+      </div>`;
+  }
+  if (role==='operateur' && task.statut==='accepted') {
+    actions = `<div style="margin-top:16px"><button class="btn-action success" onclick="markDone('${id}')">✓ Marquer effectué</button></div>`;
+  }
+  if (role==='operateur' && task.statut==='done') {
+    actions = `<div style="margin-top:16px"><button class="btn-action secondary" onclick="markUndone('${id}')">↩ Annuler effectué</button></div>`;
+  }
+  openModal(`
+    <div class="modal-title">${task.titre}</div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <span class="badge badge-${task.statut==='pending'?'pending':task.statut==='accepted'?'accepted':task.statut==='done'?'done':'refused'}">${task.statut}</span>
+      <span class="badge" style="background:var(--surface2);color:var(--muted)">${task.categorie}</span>
+      <span class="badge" style="background:var(--surface2);color:var(--muted)">${task.site}</span>
+    </div>
+    <div style="font-size:.88rem;color:var(--muted);line-height:1.6;margin-bottom:12px">${task.description}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:.82rem">
+      <div><span style="color:var(--muted)">Date souhaitée :</span> ${task.date}</div>
+      <div><span style="color:var(--muted)">Budget estimatif :</span> ${task.budget}€</div>
+      <div><span style="color:var(--muted)">Demandé par :</span> ${task.agentNom}</div>
+      ${task.operateurNom?`<div><span style="color:var(--muted)">Réalisé par :</span> ${task.operateurNom}</div>`:''}
+      ${task.refusRaison?`<div style="grid-column:1/-1;color:var(--red)">Motif de refus : ${task.refusRaison}</div>`:''}
+    </div>
+    ${task.photoUrl?`<img src="${task.photoUrl}" style="margin-top:16px;max-width:100%;border-radius:10px">`:''}
+    ${actions}
+  `);
+}
+
+async function acceptTask(id) {
+  await callClient('updateTaskStatus', {
+    id,
+    statut: 'accepted',
+    role: getUserRole(),
+    nom: currentUser.nom
+  });
+  closeModal(); showToast('Tâche acceptée','success');
+  await loadAndDrawCal();
+}
+async function waitTask(id) {
+  await callClient('updateTaskStatus', {
+    id,
+    statut: 'waiting',
+    role: getUserRole(),
+    nom: currentUser.nom
+  });
+  closeModal(); showToast('Tâche mise en attente','info');
+  await loadAndDrawCal();
+}
+function openRefuseModal(id) {
+  openModal(`
+    <div class="modal-title">Motif de refus</div>
+    <div class="form-group" style="margin-top:16px">
+      <label>Expliquer le refus</label>
+      <textarea id="refusTxt" placeholder="Indiquez la raison du refus…"></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn-action secondary" onclick="closeModal()">Annuler</button>
+      <button class="btn-action danger" onclick="confirmRefuse('${id}')">Confirmer le refus</button>
+    </div>
+  `);
+}
+async function confirmRefuse(id) {
+  const raison = document.getElementById('refusTxt').value.trim();
+  if (!raison) { showToast('Veuillez indiquer un motif','error'); return; }
+  await callClient('updateTaskStatus', {
+  id,
+  statut: 'refused',
+  refusRaison: raison,
+  role: getUserRole(),
+  nom: currentUser.nom
 });
-
-function validerDemande(statut) {
-  if (statut === 'refusee') {
-    const justif = document.getElementById('mvJustif').value.trim();
-    if (!justif) { alert('La justification est obligatoire pour un refus.'); return; }
-  }
-  const id  = _validationTarget;
-  const idx = APP.taches.findIndex(t => t.id === id);
-  if (idx < 0) return;
-  const old    = { ...APP.taches[idx] };
-  const justif = document.getElementById('mvJustif').value.trim();
-  APP.taches[idx].statut = statut;
-  if (justif) APP.taches[idx].justification = justif;
-  closeModal('modalValidation');
-  renderPage(APP.currentPage);
-  optimisticAction(
-    () => {},
-    () => gasPost('validerTache', { id, statut, justification: justif }),
-    () => { APP.taches[idx] = old; renderPage(APP.currentPage); },
-    () => syncServerState(APP.currentPage)
-  );
+  closeModal(); showToast('Tâche refusée','info');
+  await loadAndDrawCal();
+}
+async function markDone(id) {
+  await callClient('markTaskDone', {id, operateurNom:currentUser.nom, operateurEmail:currentUser.email});
+  closeModal(); showToast('Tâche marquée effectuée !','success');
+  await loadAndDrawCal();
+}
+async function markUndone(id) {
+  await callClient('updateTaskStatus', {
+  id,
+  statut: 'accepted',
+  role: getUserRole(),
+  nom: currentUser.nom
+});
+  closeModal(); showToast('Tâche remise en cours','info');
+  await loadAndDrawCal();
 }
 
-// ── Exécution (opérateur) ──
-let _execTarget = null;
-function openModalExecution(id) {
-  _execTarget = id;
-  const t = APP.taches.find(x => x.id === id);
-  if (!t) return;
-  document.getElementById('meBody').innerHTML = `
-    <div class="detail-card" style="margin-bottom:1rem;font-size:.84rem">
-      <strong>${t.categorie}</strong> — ${t.site}<br>
-      <span style="color:var(--text3)">${t.description}</span>
+async function exportTasksCSV() {
+  const res = await callClient('exportTasksCSV');
+  if (res.csv) downloadCSV(res.csv, 'interventions.csv');
+}
+async function purgeCalendar() {
+  if (!confirm('Purger toutes les tâches effectuées ? Cette action est irréversible.')) return;
+  await callClient('purgeDoneTasks');
+  showToast('Calendrier purgé','success');
+  await loadAndDrawCal();
+}
+
+// ═══════════════════════════════════════════════════════
+//  SUPERADMIN — USERS
+// ═══════════════════════════════════════════════════════
+async function renderUsers() {
+  const res = await callClient('getUsers');
+  const users = res.users || [];
+  const c = document.getElementById('mainContent');
+  c.innerHTML = `
+    <div class="page-header"><h2>Gestion des comptes</h2><p>Créer et gérer les utilisateurs</p></div>
+    <div class="stats-row">
+      ${['superadmin','directeur','agent','operateur'].map(r=>`
+        <div class="stat-card">
+          <div class="stat-val" style="color:var(--${r})">${users.filter(u=>u.role===r).length}</div>
+          <div class="stat-label">${r.charAt(0).toUpperCase()+r.slice(1)}s</div>
+        </div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Utilisateurs</div>
+        <button class="btn-action primary" onclick="openAddUserModal()">+ Ajouter</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nom</th><th>Email</th><th>Rôle</th><th>Entreprise</th><th>Actions</th></tr></thead>
+          <tbody>
+            ${users.map(u=>`
+              <tr>
+                <td>${u.nom}</td>
+                <td style="color:var(--muted)">${u.email}</td>
+                <td><span class="badge" style="background:rgba(79,142,247,.1);color:var(--${u.role})">${u.role}</span></td>
+                <td>${u.entreprise||'-'}</td>
+                <td>
+                  <button class="btn-action secondary" style="padding:5px 10px;font-size:.78rem" onclick="openEditUserModal(${JSON.stringify(u).replace(/"/g,'&quot;')})">Modifier</button>
+                  ${u.email !== currentUser.email ? `
+  <button class="btn-action danger" style="padding:5px 10px;font-size:.78rem;margin-left:4px"
+    onclick="deleteUser('${u.email}','${u.role}')">
+    Supprimer
+  </button>
+` : `
+  <span style="font-size:.78rem;color:var(--muted);margin-left:4px">Votre compte</span>
+`}
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function userFormHtml(u={}) {
+  return `
+    <div class="form-grid">
+      <div class="form-group"><label>Nom</label><input id="uNom" value="${u.nom||''}"></div>
+      <div class="form-group"><label>Email</label><input id="uEmail" type="email" value="${u.email||''}" ${u.email?'readonly':''}></div>
+      <div class="form-group"><label>Mot de passe</label><input id="uMdp" type="password" placeholder="${u.email?'Laisser vide pour ne pas changer':''}"></div>
+      <div class="form-group"><label>Rôle</label>
+        <select id="uRole">
+          ${['superadmin','directeur','agent','operateur'].map(r=>`
+  <option value="${r}" ${u.role===r?'selected':''}>${r}</option>
+`).join('')}
+        </select>
+      </div>
+      <div class="form-group full"><label>Entreprise</label><input id="uEntreprise" value="${u.entreprise||''}"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-action secondary" onclick="closeModal()">Annuler</button>
+      <button class="btn-action primary" onclick="saveUser(${u.email?`'${u.email}'`:'null'})">Enregistrer</button>
     </div>`;
-  document.getElementById('meStatut').value = '';
-  document.getElementById('meJustifGroup').style.display = 'none';
-  document.getElementById('meJustif').value = '';
-  openModal('modalExecution');
 }
 
-function toggleJustifExec() {
-  const v = document.getElementById('meStatut').value;
-  document.getElementById('meJustifGroup').style.display = v === 'non_faite' ? 'block' : 'none';
+function openAddUserModal() { openModal('<div class="modal-title">Nouveau compte</div>'+userFormHtml()); }
+function openEditUserModal(u) { openModal('<div class="modal-title">Modifier le compte</div>'+userFormHtml(u)); }
+
+async function saveUser(existingEmail) {
+  const payload = {
+  nom: document.getElementById('uNom').value,
+  email: document.getElementById('uEmail').value,
+  mdp: document.getElementById('uMdp').value,
+  role: document.getElementById('uRole').value,
+
+  // auto héritage du superadmin connecté
+  entreprise: currentUser.entreprise,
+  webappUrl: currentUser.webappUrl,
+  adminNom: currentUser.nom,
+
+  existingEmail
+};
+  const res = await callClient('saveUser', payload);
+  closeModal();
+  showToast(res.message||'Sauvegardé','success');
+  renderUsers();
+}
+async function deleteUser(email, role) {
+  if (!confirm(`Supprimer ${email} ?`)) return;
+  const res = await callClient('deleteUser', {
+  email,
+  role,
+  currentUserEmail: currentUser.email
+});
+  showToast(res.message||'Supprimé','success');
+  renderUsers();
 }
 
-function submitExecution() {
-  const statut = document.getElementById('meStatut').value;
-  const justif = document.getElementById('meJustif').value.trim();
-  if (!statut) { alert('Choisissez un résultat.'); return; }
-  if (statut === 'non_faite' && !justif) { alert('La justification est obligatoire.'); return; }
-
-  const id  = _execTarget;
-  const idx = APP.taches.findIndex(t => t.id === id);
-  const old = { ...APP.taches[idx] };
-  APP.taches[idx].statut = statut;
-  if (justif) APP.taches[idx].justification = justif;
-  APP.taches[idx].operateur_nom  = APP.user.prenom + ' ' + APP.user.nom;
-  APP.taches[idx].date_execution = new Date().toISOString();
-
-  closeModal('modalExecution');
-  renderPage(APP.currentPage);
-  optimisticAction(
-    () => {},
-    () => gasPost('executerTache', { id, statut, justification: justif, operateur_nom: APP.taches[idx].operateur_nom, date_execution: APP.taches[idx].date_execution }),
-    () => { APP.taches[idx] = old; renderPage(APP.currentPage); },
-    () => syncServerState(APP.currentPage)
-  );
+// ═══════════════════════════════════════════════════════
+//  SUPERADMIN — CATEGORIES
+// ═══════════════════════════════════════════════════════
+async function renderCategories() {
+  const res = await callClient('getCategories');
+  const cats = res.categories || [];
+  const c = document.getElementById('mainContent');
+  c.innerHTML = `
+    <div class="page-header"><h2>Catégories d'intervention</h2></div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Catégories (${cats.length})</div>
+        <button class="btn-action primary" onclick="openAddCatModal()">+ Ajouter</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nom</th><th>Description</th><th>Actions</th></tr></thead>
+          <tbody>
+            ${cats.map(cat=>`
+              <tr>
+                <td><strong>${cat.nom}</strong></td>
+                <td style="color:var(--muted)">${cat.description||'-'}</td>
+                <td>
+                  <button class="btn-action secondary" style="padding:5px 10px;font-size:.78rem" onclick="openEditCatModal('${cat.nom}','${cat.description||''}')">Modifier</button>
+                  <button class="btn-action danger" style="padding:5px 10px;font-size:.78rem;margin-left:4px" onclick="deleteCat('${cat.nom}')">Supprimer</button>
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
 }
 
-// ── Utilisateurs ──
-function openModalUser() {
-  ['muPrenom','muNom','muEmail','muPass'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('muRole').value = 'agent';
-  openModal('modalUser');
+function catFormHtml(nom='',desc='') {
+  return `
+    <div class="form-group"><label>Nom de la catégorie</label><input id="catNom" value="${nom}" ${nom?'readonly':''}></div>
+    <div class="form-group" style="margin-top:12px"><label>Description</label><input id="catDesc" value="${desc}"></div>
+    <div class="form-actions">
+      <button class="btn-action secondary" onclick="closeModal()">Annuler</button>
+      <button class="btn-action primary" onclick="saveCat('${nom}')">Enregistrer</button>
+    </div>`;
+}
+function openAddCatModal() { openModal('<div class="modal-title">Nouvelle catégorie</div>'+catFormHtml()); }
+function openEditCatModal(nom,desc) { openModal('<div class="modal-title">Modifier catégorie</div>'+catFormHtml(nom,desc)); }
+async function saveCat(existing) {
+  const res = await callClient('saveCategory', {nom:document.getElementById('catNom').value, description:document.getElementById('catDesc').value, existing});
+  closeModal(); showToast(res.message||'Sauvegardé','success'); renderCategories();
+}
+async function deleteCat(nom) {
+  if (!confirm(`Supprimer "${nom}" ?`)) return;
+  await callClient('deleteCategory', {nom});
+  showToast('Supprimé','success'); renderCategories();
 }
 
-function submitUser() {
-  const prenom = document.getElementById('muPrenom').value.trim();
-  const nom    = document.getElementById('muNom').value.trim();
-  const email  = document.getElementById('muEmail').value.trim();
-  const pass   = document.getElementById('muPass').value;
-  const role   = document.getElementById('muRole').value;
-  if (!prenom || !nom || !email || !pass) { alert('Remplissez tous les champs.'); return; }
-
-  const newUser = { id: 'tmp-' + Date.now(), prenom, nom, email, role, actif: true, created_at: new Date().toISOString() };
-  APP.users.unshift(newUser);
-  closeModal('modalUser');
-  renderPage('utilisateurs');
-
-  optimisticAction(
-    () => {},
-    () => gasPost('addUser', { prenom, nom, email, mdp: pass, role, entreprise: APP.user.entreprise }),
-    () => { APP.users = APP.users.filter(u => u.id !== newUser.id); renderPage('utilisateurs'); },
-    (res) => {
-      if (res.id) newUser.id = res.id;
-      return syncServerState('utilisateurs');
-    }
-  );
+// ═══════════════════════════════════════════════════════
+//  SUPERADMIN — SITES
+// ═══════════════════════════════════════════════════════
+async function renderSites() {
+  const res = await callClient('getSites');
+  const sites = res.sites || [];
+  const c = document.getElementById('mainContent');
+  c.innerHTML = `
+    <div class="page-header"><h2>Sites / Bâtiments</h2></div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Sites (${sites.length})</div>
+        <button class="btn-action primary" onclick="openAddSiteModal()">+ Ajouter</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nom</th><th>Adresse</th><th>Actions</th></tr></thead>
+          <tbody>
+            ${sites.map(s=>`
+              <tr>
+                <td><strong>${s.nom}</strong></td>
+                <td style="color:var(--muted)">${s.adresse||'-'}</td>
+                <td>
+                  <button class="btn-action secondary" style="padding:5px 10px;font-size:.78rem" onclick="openEditSiteModal('${s.nom}','${s.adresse||''}')">Modifier</button>
+                  <button class="btn-action danger" style="padding:5px 10px;font-size:.78rem;margin-left:4px" onclick="deleteSite('${s.nom}')">Supprimer</button>
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+function siteFormHtml(nom='',adresse='') {
+  return `
+    <div class="form-group"><label>Nom du site</label><input id="siteNom" value="${nom}" ${nom?'readonly':''}></div>
+    <div class="form-group" style="margin-top:12px"><label>Adresse</label><input id="siteAdresse" value="${adresse}"></div>
+    <div class="form-actions">
+      <button class="btn-action secondary" onclick="closeModal()">Annuler</button>
+      <button class="btn-action primary" onclick="saveSite('${nom}')">Enregistrer</button>
+    </div>`;
+}
+function openAddSiteModal() { openModal('<div class="modal-title">Nouveau site</div>'+siteFormHtml()); }
+function openEditSiteModal(nom,adresse) { openModal('<div class="modal-title">Modifier site</div>'+siteFormHtml(nom,adresse)); }
+async function saveSite(existing) {
+  await callClient('saveSite', {nom:document.getElementById('siteNom').value, adresse:document.getElementById('siteAdresse').value, existing});
+  closeModal(); showToast('Sauvegardé','success'); renderSites();
+}
+async function deleteSite(nom) {
+  if (!confirm(`Supprimer "${nom}" ?`)) return;
+  await callClient('deleteSite', {nom});
+  showToast('Supprimé','success'); renderSites();
 }
 
-function toggleUserActif(id, actif) {
-  const idx = APP.users.findIndex(u => u.id === id);
-  if (idx < 0) return;
-  const old = { ...APP.users[idx] };
-  APP.users[idx].actif = !APP.users[idx].actif;
-  renderPage('utilisateurs');
-  optimisticAction(
-    () => {},
-    () => gasPost('toggleUser', { id, actif: APP.users[idx].actif }),
-    () => { APP.users[idx] = old; renderPage('utilisateurs'); },
-    () => syncServerState('utilisateurs')
-  );
+// ═══════════════════════════════════════════════════════
+//  SUPERADMIN — LOGS
+// ═══════════════════════════════════════════════════════
+async function renderLogs() {
+  const res = await callClient('getLogs');
+  const logs = res.logs || [];
+  const c = document.getElementById('mainContent');
+  c.innerHTML = `
+    <div class="page-header"><h2>Journaux d'activité</h2></div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Logs (${logs.length})</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-action secondary" onclick="exportLogs()">Export CSV</button>
+          <button class="btn-action danger" onclick="purgeLogs()">Purger</button>
+        </div>
+      </div>
+      ${logs.length===0?'<div style="color:var(--muted);text-align:center;padding:24px">Aucun log</div>':
+        logs.slice().reverse().map(l=>`
+        <div class="log-entry">
+          <span class="log-time">${l.date} ${l.heure}</span>
+          <span style="color:var(--accent)">[${l.role}]</span>
+          <span>${l.nom}</span>
+          <span style="color:var(--muted)">→ ${l.action}</span>
+        </div>`).join('')}
+    </div>
+  `;
+}
+async function exportLogs() {
+  const res = await callClient('exportLogsCSV');
+  if (res.csv) downloadCSV(res.csv, 'logs.csv');
+}
+async function purgeLogs() {
+  if (!confirm('Purger tous les logs ?')) return;
+  await callClient('purgeLogs');
+  showToast('Logs purgés','success'); renderLogs();
 }
 
-function deleteUser(id) {
-  if (!confirm('Supprimer cet utilisateur ?')) return;
-  const old = [...APP.users];
-  APP.users = APP.users.filter(u => u.id !== id);
-  renderPage('utilisateurs');
-  optimisticAction(
-    () => {},
-    () => gasPost('deleteUser', { id }),
-    () => { APP.users = old; renderPage('utilisateurs'); },
-    () => syncServerState('utilisateurs')
-  );
+// ═══════════════════════════════════════════════════════
+//  DIRECTEUR — DEMANDES
+// ═══════════════════════════════════════════════════════
+async function renderRequests() {
+  const res = await callClient('getTasks', {role:'directeur', email:currentUser.email});
+  const tasks = (res.tasks||[]).filter(t=>t.statut==='pending'||t.statut==='waiting');
+  const c = document.getElementById('mainContent');
+  c.innerHTML = `
+    <div class="page-header"><h2>Demandes en attente</h2><p>${tasks.length} demande(s) à traiter</p></div>
+    ${tasks.length===0?`<div class="card" style="text-align:center;color:var(--muted);padding:40px">Aucune demande en attente ✓</div>`:
+      tasks.map(t=>`
+        <div class="request-card fade-in">
+          <div class="request-meta">
+            <span class="badge badge-pending">${t.statut==='waiting'?'En attente':'Nouveau'}</span>
+            <span class="badge" style="background:var(--surface);color:var(--muted)">${t.categorie}</span>
+            <span class="badge" style="background:var(--surface);color:var(--muted)">${t.site}</span>
+            <span style="font-size:.78rem;color:var(--muted);margin-left:auto">📅 ${t.date}</span>
+          </div>
+          <div class="request-title">${t.titre}</div>
+          <div class="request-desc">${t.description}</div>
+          <div style="margin-top:8px;font-size:.8rem;color:var(--muted)">💰 Budget estimatif : <strong style="color:var(--text)">${t.budget}€</strong> · Par : ${t.agentNom}</div>
+          ${t.photoUrl?`<div style="margin-top:8px"><a href="${t.photoUrl}" target="_blank" style="color:var(--accent);font-size:.82rem">📷 Voir la photo</a></div>`:''}
+          <div class="request-actions" style="margin-top:14px">
+            <button class="btn-action success" onclick="acceptTask('${t.id}')">✓ Accepter</button>
+            <button class="btn-action secondary" onclick="waitTask('${t.id}')">⏸ Attente</button>
+            <button class="btn-action danger" onclick="openRefuseModal('${t.id}')">✕ Refuser</button>
+          </div>
+        </div>`).join('')}
+  `;
+  allTasks = res.tasks || [];
 }
 
-// ── Référentiels ──
-function openModalRefItem(type, title) {
-  APP.editingRefType = type;
-  APP.editingRefId   = null;
-  document.getElementById('mriTitle').textContent = title;
-  document.getElementById('mriNom').value  = '';
-  document.getElementById('mriDesc').value = '';
-  openModal('modalRefItem');
-}
-
-function submitRefItem() {
-  const nom  = document.getElementById('mriNom').value.trim();
-  const desc = document.getElementById('mriDesc').value.trim();
-  if (!nom) { alert('Le nom est obligatoire.'); return; }
-
-  const type = APP.editingRefType;
-  const newItem = { id: 'tmp-' + Date.now(), nom, description: desc };
-  const list = type === 'categories' ? APP.categories : APP.sites;
-  list.push(newItem);
-  closeModal('modalRefItem');
-  renderPage(type);
-  optimisticAction(
-    () => {},
-    () => gasPost(`add${type === 'categories' ? 'Categorie' : 'Site'}`, { nom, description: desc }),
-    () => {
-      if (type === 'categories') APP.categories = APP.categories.filter(i => i.id !== newItem.id);
-      else APP.sites = APP.sites.filter(i => i.id !== newItem.id);
-      renderPage(type);
-    },
-    (res) => {
-      if (res.id) newItem.id = res.id;
-      return syncServerState(type);
-    }
-  );
-}
-
-function deleteRefItem(type, id) {
-  if (!confirm('Supprimer cet élément ?')) return;
-  if (type === 'categories') {
-    const old = [...APP.categories];
-    APP.categories = APP.categories.filter(i => i.id !== id);
-    renderPage('categories');
-    optimisticAction(() => {}, () => gasPost('deleteCategorie', { id }), () => { APP.categories = old; renderPage('categories'); }, () => syncServerState('categories'));
-  } else {
-    const old = [...APP.sites];
-    APP.sites = APP.sites.filter(i => i.id !== id);
-    renderPage('sites');
-    optimisticAction(() => {}, () => gasPost('deleteSite', { id }), () => { APP.sites = old; renderPage('sites'); }, () => syncServerState('sites'));
-  }
-}
-
-// ════════════════════════════════════════
-// UTILS
-// ════════════════════════════════════════
-function filterTaches(statut) {
-  const filtered = statut === 'Tous' ? APP.taches : APP.taches.filter(t => t.statut === statut);
-  document.getElementById('tachesFiltered').innerHTML = renderTachesList(filtered, true, APP.user.role === 'directeur');
-}
-
-function exportCSV() {
-  const headers = ['ID','Catégorie','Site','Description','Date souhaitée','Statut','Agent','Opérateur','Date exécution'];
-  const rows = APP.taches.map(t => [
-    t.id, t.categorie, t.site, `"${(t.description||'').replace(/"/g,'""')}"`,
-    t.date_souhaitee, t.statut, t.agent_nom||'', t.operateur_nom||'', t.date_execution||''
-  ]);
-  const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
-  a.download = `intervenia_export_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
-}
-
-function purgeLogs() {
-  if (!confirm('Purger les logs de plus de 90 jours ?')) return;
-  gasPost('purgeLogs').then(r => showSync(r.success ? 'success' : 'error', r.success ? 'Logs purgés' : 'Erreur'));
-}
-
-function purgeCalendrier() {
-  if (!confirm('Archiver les demandes terminées de plus de 6 mois ?')) return;
-  gasPost('purgeCalendrier').then(r => showSync(r.success ? 'success' : 'error'));
+// ═══════════════════════════════════════════════════════
+//  AGENT — NOUVELLE DEMANDE
+// ═══════════════════════════════════════════════════════
+async function renderNewRequest() {
+  const [catsRes, sitesRes] = await Promise.all([callClient('getCategories'), callClient('getSites')]);
+  const cats = catsRes.categories||[];
+  const sites = sitesRes.sites||[];
+  const c = document.getElementById('mainContent');
+  c.innerHTML = `
+    <div class="page-header"><h2>Nouvelle demande d'intervention</h2></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="form-group full"><label>Titre de l'intervention</label><input id="rqTitre" placeholder="Ex: Fuite robinet salle 12…"></div>
+        <div class="form-group"><label>Site / Bâtiment</label>
+          <select id="rqSite"><option value="">-- Choisir --</option>${sites.map(s=>`<option>${s.nom}</option>`).join('')}</select>
+        </div>
+        <div class="form-group"><label>Catégorie</label>
+          <select id="rqCat"><option value="">-- Choisir --</option>${cats.map(cat=>`<option>${cat.nom}</option>`).join('')}</select>
+        </div>
+        <div class="form-group full"><label>Description détaillée</label><textarea id="rqDesc" placeholder="Décrivez le problème ou l'intervention nécessaire…"></textarea></div>
+        <div class="form-group"><label>Budget estimatif (€)</label><input id="rqBudget" type="number" placeholder="0"></div>
+        <div class="form-group"><label>Date souhaitée</label><input id="rqDate" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
+        <div class="form-group full">
+          <label>Photo (optionnel)</label>
+          <div class="photo-drop" id="photoDrop" onclick="document.getElementById('photoInput').click()">
+            📷 Cliquer pour ajouter une photo
+            <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="previewPhoto(this)">
+            <div id="photoPreview"></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-action secondary" onclick="showPage('myrequests')">Annuler</button>
+        <button class="btn-action primary" onclick="submitRequest()">Envoyer la demande</button>
+      </div>
+    </div>
+  `;
 }
 
 function previewPhoto(input) {
@@ -2083,148 +1235,531 @@ function previewPhoto(input) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
-    const img = document.getElementById('photoPreview');
-    img.src = e.target.result;
-    img.style.display = 'block';
+    document.getElementById('photoPreview').innerHTML = `<img src="${e.target.result}">`;
+    document.getElementById('photoDrop').dataset.photoData = e.target.result;
   };
   reader.readAsDataURL(file);
 }
 
-function badgeStatut(s) {
-  const map = {
-    attente:   'badge-yellow', acceptee: 'badge-green',
-    refusee:   'badge-red',    faite:    'badge-gray',
-    non_faite: 'badge-purple'
-  };
-  return `<span class="badge ${map[s]||'badge-gray'}"><span class="badge-dot"></span>${formatStatut(s)}</span>`;
-}
-function formatStatut(s) {
-  return { attente:'En attente', acceptee:'Acceptée', refusee:'Refusée', faite:'Faite', non_faite:'Non faite', Tous:'Tous' }[s] || s;
-}
-function formatRole(r) {
-  return { superadmin:'Super Admin', directeur:'Directeur', agent:'Agent', operateur:'Opérateur' }[r] || r;
-}
-function formatDate(d) {
-  if (!d) return '—';
-  try { return new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' }); } catch { return d; }
-}
-function formatDateTime(d) {
-  if (!d) return '—';
-  try { return new Date(d).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }); } catch { return d; }
-}
+async function submitRequest() {
+  const titre = document.getElementById('rqTitre').value.trim();
+  const site = document.getElementById('rqSite').value;
+  const categorie = document.getElementById('rqCat').value;
+  const description = document.getElementById('rqDesc').value.trim();
+  const budget = document.getElementById('rqBudget').value;
+  const date = document.getElementById('rqDate').value;
+  const photoData = document.getElementById('photoDrop').dataset.photoData||'';
 
-function iconSvg(name) {
-  const icons = {
-    dashboard: `<svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`,
-    calendar:  `<svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
-    list:      `<svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/></svg>`,
-    check:     `<svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg>`,
-    bolt:      `<svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 3L4 14h7l-1 7 9-11h-7l1-7z"/></svg>`,
-    users:     `<svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-    tag:       `<svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`,
-    location:  `<svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
-    log:       `<svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
-    export:    `<svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
-  };
-  return icons[name] || '';
-}
+  if (!titre||!site||!categorie||!description||!date) { showToast('Veuillez remplir tous les champs obligatoires','error'); return; }
 
-function doLogout() {
-  sessionStorage.removeItem('iv_session');
-  APP.user  = null;
-  APP.token = null;
-  APP.taches = APP.categories = APP.sites = APP.users = APP.logs = [];
-  document.getElementById('btnLogin').disabled = false;
-  document.getElementById('btnLogin').classList.remove('loading');
-  document.getElementById('loginEmail').value = '';
-  document.getElementById('loginPass').value = '';
-  showView('viewLogin');
-}
-
-// ════════════════════════════════════════
-// BOOT — check existing session
-// ════════════════════════════════════════
-(async function boot() {
-
-  if (window.location.protocol === 'file:') {
-    showView('viewLogin');
-    showLoginError("Ouvrez l'application via http://localhost:5500/intervenia1.html avec start-local.bat, pas en file:///");
-    return;
-  }
-
-  // ── 1. Session existante (rechargement page) ──
-  const saved = sessionStorage.getItem('iv_session');
-  if (saved) {
-    try {
-      const { user, token, gas_url } = JSON.parse(saved);
-      APP.user  = { ...user, role: normalizeClientRole(user.role) };
-      APP.token = token;
-      GAS_URL   = gas_url || user.gasUrl || user.webapp_url || ''; // restaurer l'URL client
-      if (!GAS_URL) throw new Error('gas_url manquant');
-      showView('viewSkeleton');
-      await preloadData();
-      initApp();
-      showView('viewApp');
-      return;
-    } catch (e) {
-      console.error('Boot session restore failed', e);
-      sessionStorage.removeItem('iv_session');
-      APP.user = null;
-      APP.token = null;
-      GAS_URL = '';
-    }
-  }
-
-  // ── 2. Arrivée via token URL (redirection depuis un autre portail Master) ──
-  const params   = new URLSearchParams(window.location.search);
-  const urlToken = params.get('token');
-  const urlGas   = params.get('gas');   // webapp_url encodée en param optionnel
-
-  if (urlToken) {
-    // Si gas_url fourni en paramètre URL, l'utiliser directement
-    if (urlGas) GAS_URL = decodeURIComponent(urlGas);
-
-    showView('viewSkeleton');
-    try {
-      // Vérification du token via le Master
-      const res  = await fetch(`${MASTER_GAS_URL}?action=verifyToken&token=${encodeURIComponent(urlToken)}`);
-      const data = await res.json();
-      if (data.success) {
-        GAS_URL = GAS_URL || data.user.webapp_url || '';
-        if (!GAS_URL) throw new Error('Aucune URL client transmise via token.');
-        APP.user  = { ...data.user, role: normalizeClientRole(data.user.role), gasUrl: GAS_URL, webapp_url: GAS_URL };
-        APP.token = urlToken;
-        sessionStorage.setItem('iv_session', JSON.stringify({
-          user: APP.user, token: APP.token, gas_url: GAS_URL
-        }));
-        await preloadData();
-        initApp();
-        showView('viewApp');
-        window.history.replaceState({}, '', window.location.pathname);
-        return;
-      }
-    } catch (e) {
-      console.error('Boot token flow failed', e);
-    }
-  }
-
-  // ── 3. Afficher le login ──
-  showView('viewLogin');
-})();
-
-// Enter key on login
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && document.getElementById('viewLogin').classList.contains('active')) {
-    doLogin();
-  }
-});
-
-// Close modal on backdrop click
-document.querySelectorAll('.modal-bg').forEach(bg => {
-  bg.addEventListener('click', e => {
-    if (e.target === bg) bg.classList.remove('open');
+  const res = await callClient('createTask', {
+    titre, site, categorie, description, budget, date, photoData,
+    agentNom: currentUser.nom, agentEmail: currentUser.email
   });
+  showToast('Demande envoyée avec succès !','success');
+  showPage('myrequests');
+}
+
+// ═══════════════════════════════════════════════════════
+//  AGENT — MES DEMANDES
+// ═══════════════════════════════════════════════════════
+async function renderMyRequests() {
+  const res = await callClient('getMyTasks', {email: currentUser.email});
+  const tasks = res.tasks || [];
+  allTasks = tasks;
+
+  const c = document.getElementById('mainContent');
+  c.innerHTML = `
+    <div class="page-header">
+      <h2>Mes demandes</h2>
+      <p>${tasks.length} demande(s)</p>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <button class="btn-action primary" onclick="showPage('newrequest')">
+        + Nouvelle demande
+      </button>
+    </div>
+
+    ${tasks.length===0
+      ? `<div class="card" style="text-align:center;color:var(--muted);padding:40px">Aucune demande pour l'instant</div>`
+      : tasks.map(t=>`
+        <div class="request-card fade-in">
+          <div class="request-meta">
+            <span class="badge badge-${t.statut==='pending'||t.statut==='waiting'?'pending':t.statut==='accepted'?'accepted':t.statut==='done'?'done':'refused'}">${t.statut}</span>
+            <span class="badge" style="background:var(--surface);color:var(--muted)">${t.categorie}</span>
+            <span class="badge" style="background:var(--surface);color:var(--muted)">${t.site}</span>
+            <span style="font-size:.78rem;color:var(--muted);margin-left:auto">📅 ${t.date}</span>
+          </div>
+
+          <div class="request-title">${t.titre}</div>
+          <div class="request-desc">${t.description}</div>
+
+          ${t.refusRaison ? `<div style="margin-top:8px;font-size:.82rem;color:var(--red)">Motif de refus : ${t.refusRaison}</div>` : ''}
+          ${t.operateurNom ? `<div style="margin-top:8px;font-size:.82rem;color:var(--green)">✓ Réalisé par ${t.operateurNom}</div>` : ''}
+
+          ${(t.statut === 'pending' || t.statut === 'waiting') ? `
+            <div class="request-actions" style="margin-top:14px">
+              <button class="btn-action secondary" onclick="openEditRequestModal('${t.id}')">✏ Modifier</button>
+              <button class="btn-action danger" onclick="deleteMyRequest('${t.id}')">🗑 Supprimer</button>
+            </div>
+          ` : ''}
+        </div>
+      `).join('')
+    }
+  `;
+}
+// ═══════════════════════════════════════════════════════
+//  OPERATEUR — MES TACHES
+// ═══════════════════════════════════════════════════════
+async function renderMyTasks() {
+  const res = await callClient('getTasks', {role:'operateur', email:currentUser.email});
+  const tasks = (res.tasks||[]).filter(t=>t.statut==='accepted'||t.statut==='done');
+  const c = document.getElementById('mainContent');
+  c.innerHTML = `
+    <div class="page-header"><h2>Mes tâches</h2><p>Tâches validées par le directeur</p></div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-val" style="color:var(--accent)">${tasks.filter(t=>t.statut==='accepted').length}</div><div class="stat-label">À effectuer</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:var(--green)">${tasks.filter(t=>t.statut==='done').length}</div><div class="stat-label">Effectuées</div></div>
+    </div>
+    ${tasks.length===0?`<div class="card" style="text-align:center;color:var(--muted);padding:40px">Aucune tâche assignée</div>`:
+      tasks.map(t=>`
+        <div class="request-card fade-in">
+          <div class="request-meta">
+            <span class="badge badge-${t.statut==='done'?'done':'accepted'}">${t.statut==='done'?'Effectuée':'À faire'}</span>
+            <span class="badge" style="background:var(--surface);color:var(--muted)">${t.categorie}</span>
+            <span class="badge" style="background:var(--surface);color:var(--muted)">${t.site}</span>
+            <span style="font-size:.78rem;color:var(--muted);margin-left:auto">📅 ${t.date}</span>
+          </div>
+          <div class="request-title">${t.titre}</div>
+          <div class="request-desc">${t.description}</div>
+          <div style="margin-top:14px">
+            ${t.statut==='accepted'?`<button class="btn-action success" onclick="markDoneFromList('${t.id}')">✓ Marquer effectué</button>`:
+              `<div style="font-size:.82rem;color:var(--green)">✓ Réalisé par vous</div>
+               <button class="btn-action secondary" style="margin-top:8px;padding:6px 12px;font-size:.78rem" onclick="markUndoneFromList('${t.id}')">↩ Annuler</button>`}
+          </div>
+        </div>`).join('')}
+  `;
+  allTasks = tasks;
+}
+
+async function markDoneFromList(id) {
+  await callClient('markTaskDone', {id, operateurNom:currentUser.nom, operateurEmail:currentUser.email});
+  showToast('Tâche effectuée !','success'); renderMyTasks();
+}
+async function markUndoneFromList(id) {
+  await callClient('updateTaskStatus', {
+  id,
+  statut: 'accepted',
+  role: getUserRole(),
+  nom: currentUser.nom
 });
+  showToast('Remis en cours','info'); renderMyTasks();
+}
+
+// ═══════════════════════════════════════════════════════
+//  MODAL / TOAST HELPERS
+// ═══════════════════════════════════════════════════════
+function openModal(html) {
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+let toastTimer;
+function showToast(msg, type='info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function downloadCSV(csv, filename) {
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+// ═══════════════════════════════════════════════════════
+function openEditRequestModal(id) {
+  const task = allTasks.find(t => t.id === id);
+  if (!task) return;
+
+  openModal(`
+    <div class="modal-title">Modifier la demande</div>
+
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Titre</label>
+        <input id="editTitre" value="${task.titre}">
+      </div>
+
+      <div class="form-group full">
+        <label>Description</label>
+        <textarea id="editDesc">${task.description}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Budget</label>
+        <input id="editBudget" type="number" value="${task.budget}">
+      </div>
+
+      <div class="form-group">
+        <label>Date</label>
+        <input id="editDate" type="date" value="${task.date}">
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-action secondary" onclick="closeModal()">Annuler</button>
+      <button class="btn-action primary" onclick="saveEditedRequest('${id}')">Enregistrer</button>
+    </div>
+  `);
+}
+
+async function saveEditedRequest(id) {
+  const res = await callClient('updateMyTask', {
+    id,
+    titre: document.getElementById('editTitre').value,
+    description: document.getElementById('editDesc').value,
+    budget: document.getElementById('editBudget').value,
+    date: document.getElementById('editDate').value
+  });
+
+  closeModal();
+  showToast(res.message || 'Demande modifiée', 'success');
+  renderMyRequests();
+}
+
+async function deleteMyRequest(id) {
+  if (!confirm('Supprimer cette demande ?')) return;
+
+  const res = await callClient('deleteMyTask', { id });
+
+  showToast(res.message || 'Demande supprimée', 'success');
+  renderMyRequests();
+}
+// Optimistic UX overrides
+async function acceptTask(id) {
+  closeModal();
+  await runOptimisticMutation({
+    snapshotKeys: ['calendarTasks','requestTasks','myRequests','myTasks'],
+    apply: () => updateTaskCollections(id, task => ({...task, statut:'accepted', _optimistic:true})),
+    request: () => callClient('updateTaskStatus', {id, statut:'accepted', role:getUserRole(), nom:currentUser.nom}),
+    successMessage: 'Tache acceptee',
+    errorMessage: 'Impossible d accepter cette tache.'
+  });
+}
+async function waitTask(id) {
+  closeModal();
+  await runOptimisticMutation({
+    snapshotKeys: ['calendarTasks','requestTasks','myRequests','myTasks'],
+    apply: () => updateTaskCollections(id, task => ({...task, statut:'waiting', _optimistic:true})),
+    request: () => callClient('updateTaskStatus', {id, statut:'waiting', role:getUserRole(), nom:currentUser.nom}),
+    successMessage: 'Tache mise en attente',
+    errorMessage: 'Impossible de mettre cette tache en attente.'
+  });
+}
+async function confirmRefuse(id) {
+  const raison = document.getElementById('refusTxt').value.trim();
+  if (!raison) { showToast('Veuillez indiquer un motif','error'); return; }
+  closeModal();
+  await runOptimisticMutation({
+    snapshotKeys: ['calendarTasks','requestTasks','myRequests','myTasks'],
+    apply: () => updateTaskCollections(id, task => ({...task, statut:'refused', refusRaison:raison, _optimistic:true})),
+    request: () => callClient('updateTaskStatus', {id, statut:'refused', refusRaison:raison, role:getUserRole(), nom:currentUser.nom}),
+    successMessage: 'Tache refusee',
+    errorMessage: 'Impossible de refuser cette tache.'
+  });
+}
+async function markDone(id) {
+  closeModal();
+  await runOptimisticMutation({
+    snapshotKeys: ['calendarTasks','requestTasks','myRequests','myTasks'],
+    apply: () => updateTaskCollections(id, task => ({...task, statut:'done', operateurNom:currentUser.nom, operateurEmail:currentUser.email, _optimistic:true})),
+    request: () => callClient('markTaskDone', {id, operateurNom:currentUser.nom, operateurEmail:currentUser.email}),
+    successMessage: 'Tache marquee effectuee',
+    errorMessage: 'Impossible de marquer cette tache comme effectuee.'
+  });
+}
+async function markUndone(id) {
+  closeModal();
+  await runOptimisticMutation({
+    snapshotKeys: ['calendarTasks','requestTasks','myRequests','myTasks'],
+    apply: () => updateTaskCollections(id, task => ({...task, statut:'accepted', _optimistic:true})),
+    request: () => callClient('updateTaskStatus', {id, statut:'accepted', role:getUserRole(), nom:currentUser.nom}),
+    successMessage: 'Tache remise en cours',
+    errorMessage: 'Impossible de remettre cette tache en cours.'
+  });
+}
+async function purgeCalendar() {
+  if (!confirm('Purger toutes les taches effectuees ? Cette action est irreversible.')) return;
+  await runOptimisticMutation({
+    snapshotKeys: ['calendarTasks','requestTasks','myRequests','myTasks'],
+    apply: () => {
+      ['calendarTasks','requestTasks','myRequests','myTasks'].forEach(key => {
+        store[key] = store[key].filter(task => task.statut !== 'done');
+      });
+    },
+    request: () => callClient('purgeDoneTasks'),
+    successMessage: 'Calendrier purge',
+    errorMessage: 'Impossible de purger le calendrier.'
+  });
+}
+async function renderUsers(forceLocal=false) {
+  if (!forceLocal) {
+    const res = await callClient('getUsers');
+    store.users = res.users || [];
+  }
+  const users = store.users;
+  const c = document.getElementById('mainContent');
+  c.innerHTML = `
+    <div class="page-header"><h2>Gestion des comptes</h2><p>Creer et gerer les utilisateurs</p></div>
+    <div class="stats-row">
+      ${['superadmin','directeur','agent','operateur'].map(r=>`<div class="stat-card"><div class="stat-val" style="color:var(--${r})">${users.filter(u=>u.role===r).length}</div><div class="stat-label">${r.charAt(0).toUpperCase()+r.slice(1)}s</div></div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Utilisateurs</div><button class="btn-action primary" onclick="openAddUserModal()">+ Ajouter</button></div>
+      <div class="table-wrap"><table><thead><tr><th>Nom</th><th>Email</th><th>Role</th><th>Entreprise</th><th>Actions</th></tr></thead><tbody>
+        ${users.map(u=>`<tr>
+          ${tableCell('Nom', `${u.nom}${u._optimistic ? ' <span class="badge badge-saving">Sync...</span>' : ''}`)}
+          ${tableCell('Email', `<span style="color:var(--muted)">${u.email}</span>`)}
+          ${tableCell('Role', `<span class="badge" style="background:rgba(79,142,247,.1);color:var(--${u.role})">${u.role}</span>`)}
+          ${tableCell('Entreprise', u.entreprise||'-')}
+          ${tableCell('Actions', `<button class="btn-action secondary" style="padding:5px 10px;font-size:.78rem" onclick="openEditUserModal(${JSON.stringify(u).replace(/"/g,'&quot;')})">Modifier</button>${u.email !== currentUser.email ? `<button class="btn-action danger" style="padding:5px 10px;font-size:.78rem;margin-left:4px" onclick="deleteUser('${u.email}','${u.role}')">Supprimer</button>` : `<span style="font-size:.78rem;color:var(--muted);margin-left:4px">Votre compte</span>`}`)}
+        </tr>`).join('')}
+      </tbody></table></div>
+    </div>`;
+}
+async function saveUser(existingEmail) {
+  const payload = {nom: document.getElementById('uNom').value, email: document.getElementById('uEmail').value, mdp: document.getElementById('uMdp').value, role: document.getElementById('uRole').value, entreprise: currentUser.entreprise, webappUrl: currentUser.webappUrl, adminNom: currentUser.nom, existingEmail};
+  closeModal();
+  await runOptimisticMutation({
+    snapshotKeys: ['users'],
+    apply: () => {
+      const next = {nom:payload.nom, email:payload.email, role:payload.role, entreprise:payload.entreprise, webappUrl:payload.webappUrl, _optimistic:true};
+      const idx = store.users.findIndex(u => u.email === (existingEmail || payload.email));
+      if (idx >= 0) store.users[idx] = next; else store.users.unshift(next);
+    },
+    request: () => callClient('saveUser', payload),
+    successMessage: existingEmail ? 'Compte mis a jour' : 'Compte cree',
+    errorMessage: 'Impossible de sauvegarder ce compte.'
+  });
+}
+async function deleteUser(email, role) {
+  if (!confirm(`Supprimer ${email} ?`)) return;
+  await runOptimisticMutation({
+    snapshotKeys: ['users'],
+    apply: () => { store.users = store.users.filter(u => u.email !== email); },
+    request: () => callClient('deleteUser', {email, role, currentUserEmail: currentUser.email}),
+    successMessage: 'Compte supprime',
+    errorMessage: 'Impossible de supprimer ce compte.'
+  });
+}
+async function renderCategories(forceLocal=false) {
+  if (!forceLocal) {
+    const res = await callClient('getCategories');
+    store.categories = res.categories || [];
+  }
+  const cats = store.categories;
+  const c = document.getElementById('mainContent');
+  c.innerHTML = `<div class="page-header"><h2>Categories d'intervention</h2></div><div class="card"><div class="card-header"><div class="card-title">Categories (${cats.length})</div><button class="btn-action primary" onclick="openAddCatModal()">+ Ajouter</button></div><div class="table-wrap"><table><thead><tr><th>Nom</th><th>Description</th><th>Actions</th></tr></thead><tbody>${cats.map(cat=>`<tr>${tableCell('Nom', `<strong>${cat.nom}</strong>${cat._optimistic ? ' <span class="badge badge-saving">Sync...</span>' : ''}`)}${tableCell('Description', `<span style="color:var(--muted)">${cat.description||'-'}</span>`)}${tableCell('Actions', `<button class="btn-action secondary" style="padding:5px 10px;font-size:.78rem" onclick="openEditCatModal('${cat.nom}','${cat.description||''}')">Modifier</button><button class="btn-action danger" style="padding:5px 10px;font-size:.78rem;margin-left:4px" onclick="deleteCat('${cat.nom}')">Supprimer</button>`)}</tr>`).join('')}</tbody></table></div></div>`;
+}
+async function saveCat(existing) {
+  const nom = document.getElementById('catNom').value;
+  const description = document.getElementById('catDesc').value;
+  closeModal();
+  await runOptimisticMutation({
+    snapshotKeys: ['categories'],
+    apply: () => {
+      const next = {nom, description, _optimistic:true};
+      const idx = store.categories.findIndex(cat => cat.nom === (existing || nom));
+      if (idx >= 0) store.categories[idx] = next; else store.categories.unshift(next);
+    },
+    request: () => callClient('saveCategory', {nom, description, existing}),
+    successMessage: 'Categorie enregistree',
+    errorMessage: 'Impossible d enregistrer cette categorie.'
+  });
+}
+async function deleteCat(nom) {
+  if (!confirm(`Supprimer "${nom}" ?`)) return;
+  await runOptimisticMutation({
+    snapshotKeys: ['categories'],
+    apply: () => { store.categories = store.categories.filter(cat => cat.nom !== nom); },
+    request: () => callClient('deleteCategory', {nom}),
+    successMessage: 'Categorie supprimee',
+    errorMessage: 'Impossible de supprimer cette categorie.'
+  });
+}
+async function renderSites(forceLocal=false) {
+  if (!forceLocal) {
+    const res = await callClient('getSites');
+    store.sites = res.sites || [];
+  }
+  const sites = store.sites;
+  const c = document.getElementById('mainContent');
+  c.innerHTML = `<div class="page-header"><h2>Sites / Batiments</h2></div><div class="card"><div class="card-header"><div class="card-title">Sites (${sites.length})</div><button class="btn-action primary" onclick="openAddSiteModal()">+ Ajouter</button></div><div class="table-wrap"><table><thead><tr><th>Nom</th><th>Adresse</th><th>Actions</th></tr></thead><tbody>${sites.map(s=>`<tr>${tableCell('Nom', `<strong>${s.nom}</strong>${s._optimistic ? ' <span class="badge badge-saving">Sync...</span>' : ''}`)}${tableCell('Adresse', `<span style="color:var(--muted)">${s.adresse||'-'}</span>`)}${tableCell('Actions', `<button class="btn-action secondary" style="padding:5px 10px;font-size:.78rem" onclick="openEditSiteModal('${s.nom}','${s.adresse||''}')">Modifier</button><button class="btn-action danger" style="padding:5px 10px;font-size:.78rem;margin-left:4px" onclick="deleteSite('${s.nom}')">Supprimer</button>`)}</tr>`).join('')}</tbody></table></div></div>`;
+}
+async function saveSite(existing) {
+  const nom = document.getElementById('siteNom').value;
+  const adresse = document.getElementById('siteAdresse').value;
+  closeModal();
+  await runOptimisticMutation({
+    snapshotKeys: ['sites'],
+    apply: () => {
+      const next = {nom, adresse, _optimistic:true};
+      const idx = store.sites.findIndex(site => site.nom === (existing || nom));
+      if (idx >= 0) store.sites[idx] = next; else store.sites.unshift(next);
+    },
+    request: () => callClient('saveSite', {nom, adresse, existing}),
+    successMessage: 'Site enregistre',
+    errorMessage: 'Impossible d enregistrer ce site.'
+  });
+}
+async function deleteSite(nom) {
+  if (!confirm(`Supprimer "${nom}" ?`)) return;
+  await runOptimisticMutation({
+    snapshotKeys: ['sites'],
+    apply: () => { store.sites = store.sites.filter(site => site.nom !== nom); },
+    request: () => callClient('deleteSite', {nom}),
+    successMessage: 'Site supprime',
+    errorMessage: 'Impossible de supprimer ce site.'
+  });
+}
+async function renderLogs(forceLocal=false) {
+  if (!forceLocal) {
+    const res = await callClient('getLogs');
+    store.logs = res.logs || [];
+  }
+  const logs = store.logs;
+  const c = document.getElementById('mainContent');
+  c.innerHTML = `<div class="page-header"><h2>Journaux d'activite</h2></div><div class="card"><div class="card-header"><div class="card-title">Logs (${logs.length})</div><div style="display:flex;gap:8px"><button class="btn-action secondary" onclick="exportLogs()">Export CSV</button><button class="btn-action danger" onclick="purgeLogs()">Purger</button></div></div>${logs.length===0?'<div style="color:var(--muted);text-align:center;padding:24px">Aucun log</div>':logs.slice().reverse().map(l=>`<div class="log-entry"><span class="log-time">${l.date} ${l.heure}</span><span style="color:var(--accent)">[${l.role}]</span><span>${l.nom}</span><span style="color:var(--muted)">-> ${l.action}</span></div>`).join('')}</div>`;
+}
+async function purgeLogs() {
+  if (!confirm('Purger tous les logs ?')) return;
+  await runOptimisticMutation({
+    snapshotKeys: ['logs'],
+    apply: () => { store.logs = []; },
+    request: () => callClient('purgeLogs'),
+    successMessage: 'Logs purges',
+    errorMessage: 'Impossible de purger les logs.'
+  });
+}
+async function renderRequests(forceLocal=false) {
+  if (!forceLocal) {
+    const res = await callClient('getTasks', {role:'directeur', email:currentUser.email});
+    store.requestTasks = (res.tasks || []).map(ensureTaskFlags);
+  }
+  const tasks = store.requestTasks.filter(t=>t.statut==='pending'||t.statut==='waiting');
+  allTasks = store.requestTasks;
+  const c = document.getElementById('mainContent');
+  c.innerHTML = `<div class="page-header"><h2>Demandes en attente</h2><p>${tasks.length} demande(s) a traiter</p></div>${tasks.length===0?`<div class="card" style="text-align:center;color:var(--muted);padding:40px">Aucune demande en attente</div>`:tasks.map(t=>`<div class="${requestCardClass(t)}"><div class="request-meta">${statusBadge(t)}<span class="badge" style="background:var(--surface);color:var(--muted)">${t.categorie}</span><span class="badge" style="background:var(--surface);color:var(--muted)">${t.site}</span><span style="font-size:.78rem;color:var(--muted);margin-left:auto">${t.date}</span></div><div class="request-title">${t.titre}</div><div class="request-desc">${t.description}</div><div style="margin-top:8px;font-size:.8rem;color:var(--muted)">Budget: <strong style="color:var(--text)">${t.budget} EUR</strong> · Par : ${t.agentNom}</div>${t.photoUrl?`<div style="margin-top:8px"><a href="${t.photoUrl}" target="_blank" style="color:var(--accent);font-size:.82rem">Voir la photo</a></div>`:''}<div class="request-actions" style="margin-top:14px"><button class="btn-action success" onclick="acceptTask('${t.id}')">Accepter</button><button class="btn-action secondary" onclick="waitTask('${t.id}')">Attente</button><button class="btn-action danger" onclick="openRefuseModal('${t.id}')">Refuser</button></div></div>`).join('')}`;
+}
+async function submitRequest() {
+  const titre = document.getElementById('rqTitre').value.trim();
+  const site = document.getElementById('rqSite').value;
+  const categorie = document.getElementById('rqCat').value;
+  const description = document.getElementById('rqDesc').value.trim();
+  const budget = document.getElementById('rqBudget').value;
+  const date = document.getElementById('rqDate').value;
+  const photoData = document.getElementById('photoDrop').dataset.photoData||'';
+  if (!titre||!site||!categorie||!description||!date) { showToast('Veuillez remplir tous les champs obligatoires','error'); return; }
+  const optimisticId = 'tmp_' + Date.now();
+  const optimisticTask = ensureTaskFlags({id:optimisticId, titre, site, categorie, description, budget, date, photoUrl:photoData, agentNom:currentUser.nom, agentEmail:currentUser.email, statut:'pending', _optimistic:true});
+  await runOptimisticMutation({
+    snapshotKeys: ['myRequests','calendarTasks','requestTasks'],
+    apply: () => {
+      store.myRequests.unshift(optimisticTask);
+      store.calendarTasks.unshift(optimisticTask);
+      store.requestTasks.unshift(optimisticTask);
+      currentPage = 'myrequests';
+    },
+    request: () => callClient('createTask', {titre, site, categorie, description, budget, date, photoData, agentNom: currentUser.nom, agentEmail: currentUser.email}),
+    successMessage: 'Demande envoyee',
+    errorMessage: 'Impossible d envoyer la demande.',
+    onSuccess: (res) => {
+      const realId = res.id || (res.task && res.task.id);
+      if (realId) ['myRequests','calendarTasks','requestTasks'].forEach(key => { store[key] = store[key].map(task => task.id === optimisticId ? {...task, ...(res.task || {}), id: realId, _optimistic:false} : task); });
+      showPage('myrequests');
+    }
+  });
+}
+async function renderMyRequests(forceLocal=false) {
+  if (!forceLocal) {
+    const res = await callClient('getMyTasks', {email: currentUser.email});
+    store.myRequests = (res.tasks || []).map(ensureTaskFlags);
+  }
+  const tasks = store.myRequests;
+  allTasks = tasks;
+  const c = document.getElementById('mainContent');
+  c.innerHTML = `<div class="page-header"><h2>Mes demandes</h2><p>${tasks.length} demande(s)</p></div><div style="margin-bottom:16px"><button class="btn-action primary" onclick="showPage('newrequest')">+ Nouvelle demande</button></div>${tasks.length===0?`<div class="card" style="text-align:center;color:var(--muted);padding:40px">Aucune demande pour l'instant</div>`:tasks.map(t=>`<div class="${requestCardClass(t)}"><div class="request-meta">${statusBadge(t)}<span class="badge" style="background:var(--surface);color:var(--muted)">${t.categorie}</span><span class="badge" style="background:var(--surface);color:var(--muted)">${t.site}</span><span style="font-size:.78rem;color:var(--muted);margin-left:auto">${t.date}</span></div><div class="request-title">${t.titre}</div><div class="request-desc">${t.description}</div>${t.refusRaison ? `<div style="margin-top:8px;font-size:.82rem;color:var(--red)">Motif de refus : ${t.refusRaison}</div>` : ''}${t.operateurNom ? `<div style="margin-top:8px;font-size:.82rem;color:var(--green)">Effectue par ${t.operateurNom}</div>` : ''}${(t.statut === 'pending' || t.statut === 'waiting') ? `<div class="request-actions" style="margin-top:14px"><button class="btn-action secondary" onclick="openEditRequestModal('${t.id}')">Modifier</button><button class="btn-action danger" onclick="deleteMyRequest('${t.id}')">Supprimer</button></div>` : ''}</div>`).join('')}`;
+}
+async function renderMyTasks(forceLocal=false) {
+  if (!forceLocal) {
+    const res = await callClient('getTasks', {role:'operateur', email:currentUser.email});
+    store.myTasks = (res.tasks || []).map(ensureTaskFlags);
+  }
+  const tasks = store.myTasks.filter(t=>t.statut==='accepted'||t.statut==='done');
+  allTasks = tasks;
+  const c = document.getElementById('mainContent');
+  c.innerHTML = `<div class="page-header"><h2>Mes taches</h2><p>Taches validees par le directeur</p></div><div class="stats-row"><div class="stat-card"><div class="stat-val" style="color:var(--accent)">${tasks.filter(t=>t.statut==='accepted').length}</div><div class="stat-label">A effectuer</div></div><div class="stat-card"><div class="stat-val" style="color:var(--green)">${tasks.filter(t=>t.statut==='done').length}</div><div class="stat-label">Effectuees</div></div></div>${tasks.length===0?`<div class="card" style="text-align:center;color:var(--muted);padding:40px">Aucune tache assignee</div>`:tasks.map(t=>`<div class="${requestCardClass(t)}"><div class="request-meta">${statusBadge(t)}<span class="badge" style="background:var(--surface);color:var(--muted)">${t.categorie}</span><span class="badge" style="background:var(--surface);color:var(--muted)">${t.site}</span><span style="font-size:.78rem;color:var(--muted);margin-left:auto">${t.date}</span></div><div class="request-title">${t.titre}</div><div class="request-desc">${t.description}</div><div style="margin-top:14px">${t.statut==='accepted'?`<button class="btn-action success" onclick="markDoneFromList('${t.id}')">Marquer effectue</button>`:`<div style="font-size:.82rem;color:var(--green)">Realisee par vous</div><button class="btn-action secondary" style="margin-top:8px;padding:6px 12px;font-size:.78rem" onclick="markUndoneFromList('${t.id}')">Annuler</button>`}</div></div>`).join('')}`;
+}
+async function markDoneFromList(id) {
+  await runOptimisticMutation({
+    snapshotKeys: ['myTasks','calendarTasks','myRequests','requestTasks'],
+    apply: () => updateTaskCollections(id, task => ({...task, statut:'done', operateurNom:currentUser.nom, operateurEmail:currentUser.email, _optimistic:true})),
+    request: () => callClient('markTaskDone', {id, operateurNom:currentUser.nom, operateurEmail:currentUser.email}),
+    successMessage: 'Tache effectuee',
+    errorMessage: 'Impossible de marquer cette tache comme effectuee.'
+  });
+}
+async function markUndoneFromList(id) {
+  await runOptimisticMutation({
+    snapshotKeys: ['myTasks','calendarTasks','myRequests','requestTasks'],
+    apply: () => updateTaskCollections(id, task => ({...task, statut:'accepted', _optimistic:true})),
+    request: () => callClient('updateTaskStatus', {id, statut:'accepted', role:getUserRole(), nom:currentUser.nom}),
+    successMessage: 'Tache remise en cours',
+    errorMessage: 'Impossible de remettre cette tache en cours.'
+  });
+}
+async function saveEditedRequest(id) {
+  const updates = {id, titre: document.getElementById('editTitre').value, description: document.getElementById('editDesc').value, budget: document.getElementById('editBudget').value, date: document.getElementById('editDate').value};
+  closeModal();
+  await runOptimisticMutation({
+    snapshotKeys: ['myRequests','calendarTasks','requestTasks'],
+    apply: () => updateTaskCollections(id, task => ({...task, ...updates, _optimistic:true})),
+    request: () => callClient('updateMyTask', updates),
+    successMessage: 'Demande modifiee',
+    errorMessage: 'Impossible de modifier cette demande.'
+  });
+}
+async function deleteMyRequest(id) {
+  if (!confirm('Supprimer cette demande ?')) return;
+  await runOptimisticMutation({
+    snapshotKeys: ['myRequests','calendarTasks','requestTasks'],
+    apply: () => { ['myRequests','calendarTasks','requestTasks'].forEach(key => { store[key] = store[key].filter(task => task.id !== id); }); },
+    request: () => callClient('deleteMyTask', { id }),
+    successMessage: 'Demande supprimee',
+    errorMessage: 'Impossible de supprimer cette demande.'
+  });
+}
+//  SVG ICONS
+// ═══════════════════════════════════════════════════════
+function calIcon(){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`}
+function usersIcon(){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`}
+function tagIcon(){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`}
+function buildingIcon(){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>`}
+function logIcon(){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>`}
+function inboxIcon(){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>`}
+function plusIcon(){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`}
+function listIcon(){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`}
+function checkIcon(){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`}
 </script>
 </body>
 </html>
