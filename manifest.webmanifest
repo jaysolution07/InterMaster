@@ -1,0 +1,18 @@
+{
+  "name": "InterMaster",
+  "short_name": "InterMaster",
+  "start_url": "./1InterMaster.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0d0f14",
+  "theme_color": "#0d0f14",
+  "description": "Application InterMaster de gestion des interventions CFA.",
+  "icons": [
+    {
+      "src": "./intermaster-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
