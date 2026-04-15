@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>InterMaster — CFA</title>
+<meta name="theme-color" content="#0d0f14">
+<link rel="manifest" href="../manifest.json">
+<link rel="apple-touch-icon" id="appleTouchIcon" href="">
+<link rel="icon" id="dynamicFavicon" href="">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -200,6 +204,16 @@ tr:hover td{background:var(--surface2)}
 .toast.info{border-color:var(--accent);color:var(--accent)}
 
 .sep{border:none;border-top:1px solid var(--border);margin:20px 0}
+.install-banner{position:fixed;left:16px;right:16px;bottom:16px;z-index:120;display:none;align-items:flex-start;gap:14px;padding:16px 18px;border-radius:18px;border:1px solid rgba(79,142,247,.28);background:linear-gradient(135deg,rgba(22,24,32,.96),rgba(30,32,40,.96));box-shadow:0 18px 40px rgba(0,0,0,.32);backdrop-filter:blur(10px)}
+.install-banner.show{display:flex}
+.install-banner-icon{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(79,142,247,.14);color:var(--accent);flex-shrink:0}
+.install-banner-icon svg{width:22px;height:22px}
+.install-banner-content{flex:1}
+.install-banner-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:4px}
+.install-banner-text{font-size:.86rem;color:var(--muted);line-height:1.45}
+.install-banner-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.install-banner-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;line-height:1;padding:4px 0 0}
+.install-banner-close:hover{color:var(--text)}
 .btn.is-loading,.btn-action.is-loading,.btn-sm.is-loading,.cal-btn.is-loading{pointer-events:none;opacity:.85}
 .btn.is-loading{color:transparent;position:relative;overflow:hidden}
 .btn.is-loading::before,.skeleton-block{background:linear-gradient(90deg,rgba(255,255,255,.05) 20%,rgba(255,255,255,.16) 50%,rgba(255,255,255,.05) 80%);background-size:220% 100%;animation:shimmer 1.15s linear infinite}
@@ -220,6 +234,26 @@ tr:hover td{background:var(--surface2)}
 .cal-mobile-event-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:6px}
 .cal-mobile-event-title{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700}
 .cal-mobile-event-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:.78rem;color:var(--muted)}
+.cal-day-markers{display:none}
+.cal-dot-row{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:6px;flex-wrap:wrap}
+.cal-dot{width:7px;height:7px;border-radius:999px}
+.cal-dot.pending{background:var(--yellow)}
+.cal-dot.accepted{background:var(--accent)}
+.cal-dot.done{background:var(--green)}
+.cal-dot.refused{background:var(--red)}
+.cal-count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:rgba(79,142,247,.14);color:var(--accent);font-size:.68rem;font-weight:700;margin-top:6px}
+.cal-day.has-events{border-color:rgba(79,142,247,.28)}
+.cal-day.selected{outline:2px solid rgba(79,142,247,.45);border-color:var(--accent)}
+.cal-day-panel{display:none;margin-top:16px;padding:16px;border-radius:14px;background:var(--surface2);border:1px solid var(--border)}
+.cal-day-panel.open{display:block}
+.cal-day-panel-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.cal-day-panel-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700}
+.perf-list{display:grid;gap:10px}
+.perf-row{display:grid;grid-template-columns:140px 1fr auto;gap:12px;align-items:center}
+.perf-label{font-size:.85rem;color:var(--text)}
+.perf-bar{height:10px;border-radius:999px;background:var(--surface2);overflow:hidden;border:1px solid var(--border)}
+.perf-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:999px}
+.perf-value{font-family:'Syne',sans-serif;font-weight:700}
 .page-skeleton{display:grid;gap:14px}
 .skeleton-card{height:108px;border-radius:14px;border:1px solid var(--border);background:var(--surface);padding:18px}
 @media(max-width:1024px){.topbar{padding:0 16px}.content{padding:20px}}
@@ -247,7 +281,9 @@ tr:hover td{background:var(--surface2)}
   .cal-day{min-height:62px;padding:8px 4px}
   .cal-day-num{text-align:center;margin-bottom:0}
   .cal-event,.cal-more{display:none}
-  .cal-mobile-list{display:block}
+  .cal-day-markers,.cal-day-panel{display:block}
+  .cal-mobile-list{display:none}
+  .perf-row{grid-template-columns:1fr;gap:6px}
   .modal{padding:24px 18px}
 }
 @media(max-width:560px){
@@ -255,6 +291,7 @@ tr:hover td{background:var(--surface2)}
   .stats-row{grid-template-columns:1fr}
   .request-actions,.form-actions{flex-direction:column}
   .request-actions .btn-action,.form-actions .btn-action{width:100%}
+  .install-banner{left:10px;right:10px;bottom:10px;padding:14px}
 }
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 @keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(79,142,247,.55)}70%{box-shadow:0 0 0 8px rgba(79,142,247,0)}100%{box-shadow:0 0 0 0 rgba(79,142,247,0)}}
@@ -331,6 +368,17 @@ tr:hover td{background:var(--surface2)}
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
+<div class="install-banner" id="installBanner">
+  <div class="install-banner-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M5 21h14"/></svg>
+  </div>
+  <div class="install-banner-content">
+    <div class="install-banner-title" id="installBannerTitle">Installer InterMaster</div>
+    <div class="install-banner-text" id="installBannerText"></div>
+    <div class="install-banner-actions" id="installBannerActions"></div>
+  </div>
+  <button class="install-banner-close" onclick="dismissInstallBanner()" aria-label="Fermer">✕</button>
+</div>
 
 <script>
 // ═══════════════════════════════════════════════════════
@@ -344,10 +392,12 @@ const GAS_MASTER_URL = 'https://script.google.com/macros/s/AKfycbwGH16K8WztuHWRp
 let currentUser = null; // {nom, email, role, webappUrl, entreprise}
 let clientGAS = null;   // URL du GAS client
 let calendarDate = new Date();
+let selectedCalendarDate = '';
 let allTasks = [];
 let allRequests = [];
 let currentPage = 'calendar';
 let loginPending = false;
+let deferredInstallPrompt = null;
 const store = {
   users: [],
   categories: [],
@@ -369,6 +419,7 @@ function getUserRole() {
 //  INIT
 // ═══════════════════════════════════════════════════════
 window.addEventListener('load', () => {
+  registerPwaHelpers();
   setTimeout(() => {
     document.getElementById('loader').style.display = 'none';
     const saved = sessionStorage.getItem('intermaster_user');
@@ -479,6 +530,86 @@ function toggleMobileMenu() {
 function closeMobileMenu() {
   document.body.classList.remove('menu-open');
 }
+function getRoleAccent(role='') {
+  const colors = {
+    superadmin: '#a78bfa',
+    directeur: '#4f8ef7',
+    agent: '#34d399',
+    operateur: '#fbbf24'
+  };
+  return colors[role] || '#4f8ef7';
+}
+function buildInterMasterIcon(color='#4f8ef7', label='IM') {
+  const safeLabel = (label || 'IM').slice(0,2).toUpperCase();
+  return `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="${color}"/><stop offset="1" stop-color="#0d0f14"/></linearGradient></defs><rect width="64" height="64" rx="18" fill="#11141c"/><rect x="5" y="5" width="54" height="54" rx="15" fill="url(#g)" opacity=".22"/><path d="M18 20h8v24h-8zM30 20h6l10 13V20h8v24h-6L38 31v13h-8z" fill="${color}"/><text x="46" y="53" font-family="Arial, sans-serif" font-size="9" font-weight="700" text-anchor="middle" fill="#f3f4f6">${safeLabel}</text></svg>`)}`;
+}
+function applyContextBranding() {
+  const role = getUserRole();
+  const roleCode = ({superadmin:'SA',directeur:'DI',agent:'AG',operateur:'OP'})[role] || 'IM';
+  const icon = buildInterMasterIcon(getRoleAccent(role), roleCode);
+  const favicon = document.getElementById('dynamicFavicon');
+  const appleIcon = document.getElementById('appleTouchIcon');
+  if (favicon) favicon.href = icon;
+  if (appleIcon) appleIcon.href = icon;
+}
+function isIosDevice() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+function isStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function dismissInstallBanner() {
+  localStorage.setItem('intermaster_install_banner_dismissed', '1');
+  const banner = document.getElementById('installBanner');
+  if (banner) banner.classList.remove('show');
+}
+function buildInstallBanner(text, actionsHtml='') {
+  document.getElementById('installBannerText').textContent = text;
+  document.getElementById('installBannerActions').innerHTML = actionsHtml;
+  document.getElementById('installBanner').classList.add('show');
+}
+async function handleInstallApp() {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  dismissInstallBanner();
+}
+function maybeShowInstallBanner() {
+  if (localStorage.getItem('intermaster_install_banner_dismissed') === '1' || isStandalone()) return;
+  if (deferredInstallPrompt) {
+    buildInstallBanner(
+      'Installez InterMaster pour l ouvrir plus vite, garder l app en plein ecran et l utiliser comme une vraie application.',
+      `<button class="btn-action primary" onclick="handleInstallApp()">Installer</button><button class="btn-action secondary" onclick="dismissInstallBanner()">Plus tard</button>`
+    );
+    return;
+  }
+  if (isIosDevice()) {
+    buildInstallBanner(
+      'Sur iPhone, ouvrez le menu Partager de Safari puis choisissez "Sur l ecran d accueil" pour installer InterMaster.',
+      `<button class="btn-action secondary" onclick="dismissInstallBanner()">Compris</button>`
+    );
+  }
+}
+function initInstallPrompt() {
+  window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    maybeShowInstallBanner();
+  });
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    dismissInstallBanner();
+  });
+}
+function registerPwaHelpers() {
+  applyContextBranding();
+  initInstallPrompt();
+  maybeShowInstallBanner();
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('../sw.js').catch(() => {});
+  }
+}
 
 async function handleLogin() {
   if (loginPending) return;
@@ -555,9 +686,11 @@ function launchApp() {
   const badge = document.getElementById('topRoleBadge');
   badge.textContent = role;
   badge.className = `role-badge role-${role}`;
+  applyContextBranding();
+  maybeShowInstallBanner();
 
   buildSidebar();
-  showPage('calendar');
+  showPage(role === 'directeur' ? 'dashboard' : 'calendar');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -579,6 +712,7 @@ const MENUS = {
   ],
   directeur: [
     { section:'Principal', items:[
+      {id:'dashboard', label:'Dashboard', icon:chartIcon()},
       {id:'calendar', label:'Calendrier', icon:calIcon()},
       {id:'requests', label:'Demandes', icon:inboxIcon()},
     ]},
@@ -631,6 +765,7 @@ function showPage(page) {
   c.innerHTML = skeletonPage(page === 'calendar' ? 2 : 3);
   const role = getUserRole();
   const pages = {
+    dashboard: renderDirectorDashboard,
     calendar: renderCalendar,
     users: renderUsers,
     categories: renderCategories,
@@ -708,6 +843,7 @@ async function renderCalendar() {
         </div>
       </div>
       <div id="calWrapper"></div>
+      <div class="cal-day-panel" id="calDayPanel"></div>
       <div class="cal-mobile-list" id="calMobileList"></div>
       <div class="cal-legend">
         <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(251,191,36,.4)"></div>En attente</div>
@@ -741,6 +877,10 @@ function drawCalendar() {
   const daysInMonth = new Date(year, month+1, 0).getDate();
   const today = new Date();
   const offset = firstDay === 0 ? 6 : firstDay-1;
+  if (!selectedCalendarDate) {
+    const firstTask = allTasks.find(t => (t.date || '').startsWith(`${year}-${String(month+1).padStart(2,'0')}-`));
+    if (firstTask) selectedCalendarDate = firstTask.date;
+  }
 
   let html = '<div class="cal-grid">';
   ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].forEach(d => html += `<div class="cal-day-name">${d}</div>`);
@@ -753,18 +893,61 @@ function drawCalendar() {
     const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const isToday = today.getDate()===d && today.getMonth()===month && today.getFullYear()===year;
     const dayTasks = allTasks.filter(t => t.date === dateStr);
+    const dotHtml = dayTasks.length ? `
+      <div class="cal-day-markers">
+        <div class="cal-dot-row">
+          ${dayTasks.slice(0,3).map(t => `<span class="cal-dot ${t.statut.toLowerCase()==='waiting'?'pending':t.statut.toLowerCase()}"></span>`).join('')}
+        </div>
+        <div class="cal-dot-row">${dayTasks.length ? `<span class="cal-count">${dayTasks.length}</span>` : ''}</div>
+      </div>` : '';
     const evHtml = dayTasks.slice(0,3).map(t =>
       `<div class="cal-event ${t.statut.toLowerCase()}" onclick="showTaskDetail('${t.id}')" title="${t.titre}">${t.titre}</div>`
     ).join('');
     const more = dayTasks.length>3 ? `<div class="cal-more" style="font-size:.65rem;color:var(--muted)">+${dayTasks.length-3}</div>` : '';
-    html += `<div class="cal-day${isToday?' today':''}" onclick="calDayClick('${dateStr}')">
-      <div class="cal-day-num">${d}</div>${evHtml}${more}</div>`;
+    const selected = selectedCalendarDate===dateStr ? ' selected' : '';
+    const hasEvents = dayTasks.length ? ' has-events' : '';
+    html += `<div class="cal-day${isToday?' today':''}${selected}${hasEvents}" onclick="calDayClick('${dateStr}')">
+      <div class="cal-day-num">${d}</div>${dotHtml}${evHtml}${more}</div>`;
   }
   const remain = (7 - (offset+daysInMonth)%7) % 7;
   for (let i=1; i<=remain; i++) html += `<div class="cal-day other-month"><div class="cal-day-num">${i}</div></div>`;
   html += '</div>';
   document.getElementById('calWrapper').innerHTML = html;
+  drawCalendarDayPanel(selectedCalendarDate || `${year}-${String(month+1).padStart(2,'0')}-01`);
   drawCalendarMobileAgenda(year, month);
+}
+function getTasksForDate(dateStr) {
+  return allTasks.filter(t => t.date === dateStr);
+}
+function formatDateLabel(dateStr) {
+  if (!dateStr) return '';
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const dt = new Date(y, (m || 1) - 1, d || 1);
+  return dt.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'});
+}
+function drawCalendarDayPanel(dateStr) {
+  const panel = document.getElementById('calDayPanel');
+  if (!panel) return;
+  const tasks = getTasksForDate(dateStr);
+  panel.classList.add('open');
+  panel.innerHTML = `
+    <div class="cal-day-panel-header">
+      <div class="cal-day-panel-title">${formatDateLabel(dateStr)}</div>
+      <span class="badge" style="background:var(--surface);color:var(--muted)">${tasks.length} tache(s)</span>
+    </div>
+    ${tasks.length ? tasks.map(t => `
+      <div class="cal-mobile-event${t._optimistic ? ' optimistic-item' : ''}" onclick="showTaskDetail('${t.id}')">
+        <div class="cal-mobile-event-head">
+          <div class="cal-mobile-event-title">${t.titre}</div>
+          ${statusBadge(t)}
+        </div>
+        <div class="cal-mobile-event-meta">
+          <span>${t.site || '-'}</span>
+          <span>${t.categorie || '-'}</span>
+          <span>${t.agentNom || ''}</span>
+        </div>
+      </div>`).join('') : `<div style="color:var(--muted)">Aucune intervention ce jour.</div>`}
+  `;
 }
 function drawCalendarMobileAgenda(year, month) {
   const target = document.getElementById('calMobileList');
@@ -791,9 +974,9 @@ function drawCalendarMobileAgenda(year, month) {
     : `<div class="cal-mobile-event" style="color:var(--muted)">Aucune intervention sur ce mois.</div>`;
 }
 
-function calPrev() { calendarDate.setMonth(calendarDate.getMonth()-1); drawCalendar(); }
-function calNext() { calendarDate.setMonth(calendarDate.getMonth()+1); drawCalendar(); }
-function calDayClick(date) { /* Optionnel : filtrer sur ce jour */ }
+function calPrev() { selectedCalendarDate = ''; calendarDate.setMonth(calendarDate.getMonth()-1); drawCalendar(); }
+function calNext() { selectedCalendarDate = ''; calendarDate.setMonth(calendarDate.getMonth()+1); drawCalendar(); }
+function calDayClick(date) { selectedCalendarDate = date; drawCalendar(); }
 
 function showTaskDetail(id) {
   const task = allTasks.find(t=>t.id===id);
@@ -1651,6 +1834,69 @@ async function purgeLogs() {
     errorMessage: 'Impossible de purger les logs.'
   });
 }
+async function renderDirectorDashboard(forceLocal=false) {
+  if (!forceLocal) {
+    const res = await callClient('getTasks', {role:'directeur', email:currentUser.email});
+    store.requestTasks = (res.tasks || []).map(ensureTaskFlags);
+  }
+  const tasks = store.requestTasks || [];
+  allTasks = tasks;
+  const counts = {
+    pending: tasks.filter(t => t.statut === 'pending').length,
+    waiting: tasks.filter(t => t.statut === 'waiting').length,
+    accepted: tasks.filter(t => t.statut === 'accepted').length,
+    refused: tasks.filter(t => t.statut === 'refused').length,
+    done: tasks.filter(t => t.statut === 'done').length
+  };
+  const unprocessed = counts.pending + counts.waiting;
+  const operators = tasks
+    .filter(t => t.statut === 'done' && t.operateurNom)
+    .reduce((acc, task) => {
+      acc[task.operateurNom] = (acc[task.operateurNom] || 0) + 1;
+      return acc;
+    }, {});
+  const rankedOperators = Object.entries(operators).sort((a,b) => b[1]-a[1]);
+  const maxOps = rankedOperators[0]?.[1] || 1;
+  const recentRefused = tasks.filter(t => t.statut === 'refused').slice(-3).reverse();
+  const c = document.getElementById('mainContent');
+  c.innerHTML = `
+    <div class="page-header"><h2>Dashboard directeur</h2><p>Vision globale des demandes, traitements et operateurs.</p></div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-val" style="color:var(--yellow)">${unprocessed}</div><div class="stat-label">Pas encore traitées</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:var(--accent)">${counts.accepted}</div><div class="stat-label">Acceptées</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:var(--red)">${counts.refused}</div><div class="stat-label">Refusées</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:var(--green)">${counts.done}</div><div class="stat-label">Réalisées</div></div>
+    </div>
+    <div class="stats-row">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Pipeline</div></div>
+        <div class="perf-list">
+          <div class="perf-row"><div class="perf-label">Nouvelles</div><div class="perf-bar"><div class="perf-bar-fill" style="width:${tasks.length ? (counts.pending / tasks.length) * 100 : 0}%"></div></div><div class="perf-value">${counts.pending}</div></div>
+          <div class="perf-row"><div class="perf-label">En attente</div><div class="perf-bar"><div class="perf-bar-fill" style="width:${tasks.length ? (counts.waiting / tasks.length) * 100 : 0}%"></div></div><div class="perf-value">${counts.waiting}</div></div>
+          <div class="perf-row"><div class="perf-label">Acceptées</div><div class="perf-bar"><div class="perf-bar-fill" style="width:${tasks.length ? (counts.accepted / tasks.length) * 100 : 0}%"></div></div><div class="perf-value">${counts.accepted}</div></div>
+          <div class="perf-row"><div class="perf-label">Refusées</div><div class="perf-bar"><div class="perf-bar-fill" style="width:${tasks.length ? (counts.refused / tasks.length) * 100 : 0}%"></div></div><div class="perf-value">${counts.refused}</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Top opérateurs</div></div>
+        ${rankedOperators.length ? `<div class="perf-list">${rankedOperators.slice(0,5).map(([name, value]) => `<div class="perf-row"><div class="perf-label">${name}</div><div class="perf-bar"><div class="perf-bar-fill" style="width:${(value / maxOps) * 100}%"></div></div><div class="perf-value">${value}</div></div>`).join('')}</div>` : `<div style="color:var(--muted)">Aucune tache réalisée pour le moment.</div>`}
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Derniers refus</div></div>
+        ${recentRefused.length ? recentRefused.map(t => `<div class="request-card"><div class="request-title">${t.titre}</div><div class="request-desc">${t.refusRaison || 'Sans motif renseigné.'}</div><div style="margin-top:8px;font-size:.8rem;color:var(--muted)">${t.date} · ${t.site || '-'} · ${t.agentNom || ''}</div></div>`).join('') : `<div style="color:var(--muted)">Aucun refus récent.</div>`}
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Vue rapide</div></div>
+        <div class="perf-list">
+          <div class="perf-row"><div class="perf-label">Total demandes</div><div class="perf-bar"><div class="perf-bar-fill" style="width:100%"></div></div><div class="perf-value">${tasks.length}</div></div>
+          <div class="perf-row"><div class="perf-label">Taches finalisées</div><div class="perf-bar"><div class="perf-bar-fill" style="width:${tasks.length ? (counts.done / tasks.length) * 100 : 0}%"></div></div><div class="perf-value">${counts.done}</div></div>
+          <div class="perf-row"><div class="perf-label">A arbitrer</div><div class="perf-bar"><div class="perf-bar-fill" style="width:${tasks.length ? (unprocessed / tasks.length) * 100 : 0}%"></div></div><div class="perf-value">${unprocessed}</div></div>
+        </div>
+      </div>
+    </div>`;
+}
 async function renderRequests(forceLocal=false) {
   if (!forceLocal) {
     const res = await callClient('getTasks', {role:'directeur', email:currentUser.email});
@@ -1752,6 +1998,7 @@ async function deleteMyRequest(id) {
 //  SVG ICONS
 // ═══════════════════════════════════════════════════════
 function calIcon(){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`}
+function chartIcon(){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="20" x2="20" y2="20"/><rect x="6" y="10" width="3" height="8" rx="1"/><rect x="11" y="6" width="3" height="12" rx="1"/><rect x="16" y="3" width="3" height="15" rx="1"/></svg>`}
 function usersIcon(){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`}
 function tagIcon(){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`}
 function buildingIcon(){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>`}
