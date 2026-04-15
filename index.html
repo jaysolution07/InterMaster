@@ -5,8 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>InterMaster — CFA</title>
 <meta name="theme-color" content="#0d0f14">
-<link rel="manifest" href="../manifest.json">
-<link rel="apple-touch-icon" id="appleTouchIcon" href="">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="InterMaster">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" id="appleTouchIcon" href="./intermaster-icon.svg">
 <link rel="icon" id="dynamicFavicon" href="">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -607,7 +610,7 @@ function registerPwaHelpers() {
   initInstallPrompt();
   maybeShowInstallBanner();
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('../sw.js').catch(() => {});
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
 }
 
