@@ -582,7 +582,7 @@ function maybeShowInstallBanner() {
   if (localStorage.getItem('intermaster_install_banner_dismissed') === '1' || isStandalone()) return;
   if (deferredInstallPrompt) {
     buildInstallBanner(
-      'Installez InterMaster pour l ouvrir plus vite, garder l app en plein ecran et l utiliser comme une vraie application.',
+      'Installez InterMaster.',
       `<button class="btn-action primary" onclick="handleInstallApp()">Installer</button><button class="btn-action secondary" onclick="dismissInstallBanner()">Plus tard</button>`
     );
     return;
