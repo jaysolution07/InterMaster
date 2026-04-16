@@ -458,6 +458,42 @@ function ensureTaskFlags(task) {
   if (!task) return task;
   return {...task, _optimistic: !!task._optimistic, _pendingDelete: !!task._pendingDelete};
 }
+function mergeServerTasksWithLocal(serverTasks = [], localTasks = []) {
+  const localMap = new Map(localTasks.map(t => [t.id, t]));
+
+  const merged = serverTasks
+    .filter(serverTask => {
+      const local = localMap.get(serverTask.id);
+
+      // empêche le retour visuel d’une suppression en attente
+      if (local?._pendingDelete) {
+        return false;
+      }
+
+      return true;
+    })
+    .map(serverTask => {
+      const local = localMap.get(serverTask.id);
+
+      // garde la version locale tant que sync pas terminée
+      if (local?._optimistic) {
+        return local;
+      }
+
+      return ensureTaskFlags(serverTask);
+    });
+
+  // conserve les créations locales pas encore sync
+  localTasks.forEach(local => {
+    const exists = merged.some(t => t.id === local.id);
+
+    if (!exists && local._optimistic && !local._pendingDelete) {
+      merged.push(local);
+    }
+  });
+
+  return merged;
+}
 function updateTaskCollections(id, updater) {
   ['calendarTasks','requestTasks','myRequests','myTasks'].forEach(key => {
     store[key] = store[key].map(task => task.id === id ? ensureTaskFlags(updater({...task})) : task).filter(Boolean);
@@ -560,23 +596,53 @@ function getCurrentPageSignature(page = currentPage) {
 }
 async function refreshPageStore(page = currentPage) {
   if (page === 'dashboard' || page === 'requests') {
-    const res = await callClient('getTasks', {role:'directeur', email:currentUser.email});
-    store.requestTasks = (res.tasks || []).map(ensureTaskFlags);
+    const res = await callClient('getTasks', {
+      role: 'directeur',
+      email: currentUser.email
+    });
+
+    store.requestTasks = mergeServerTasksWithLocal(
+      res.tasks || [],
+      store.requestTasks
+    );
     return;
   }
+
   if (page === 'calendar') {
-    const res = await callClient('getTasks', {role: getUserRole(), email: currentUser.email});
-    store.calendarTasks = (res.tasks || []).map(ensureTaskFlags);
+    const res = await callClient('getTasks', {
+      role: getUserRole(),
+      email: currentUser.email
+    });
+
+    store.calendarTasks = mergeServerTasksWithLocal(
+      res.tasks || [],
+      store.calendarTasks
+    );
     return;
   }
+
   if (page === 'myrequests') {
-    const res = await callClient('getMyTasks', {email: currentUser.email});
-    store.myRequests = (res.tasks || []).map(ensureTaskFlags);
+    const res = await callClient('getMyTasks', {
+      email: currentUser.email
+    });
+
+    store.myRequests = mergeServerTasksWithLocal(
+      res.tasks || [],
+      store.myRequests
+    );
     return;
   }
+
   if (page === 'mytasks') {
-    const res = await callClient('getTasks', {role:'operateur', email:currentUser.email});
-    store.myTasks = (res.tasks || []).map(ensureTaskFlags);
+    const res = await callClient('getTasks', {
+      role: 'operateur',
+      email: currentUser.email
+    });
+
+    store.myTasks = mergeServerTasksWithLocal(
+      res.tasks || [],
+      store.myTasks
+    );
   }
 }
 function tableCell(label, content) {
@@ -1125,7 +1191,10 @@ async function renderCalendar() {
 async function loadAndDrawCal() {
   try {
     const res = await callClient('getTasks', {role: getUserRole(), email: currentUser.email});
-    store.calendarTasks = (res.tasks || []).map(ensureTaskFlags);
+    store.calendarTasks = mergeServerTasksWithLocal(
+  res.tasks || [],
+  store.calendarTasks
+);
     allTasks = store.calendarTasks;
   } catch(e) { store.calendarTasks = []; allTasks = []; }
   drawCalendar();
@@ -1278,7 +1347,19 @@ function showTaskDetail(id) {
       ${task.operateurNom?`<div><span style="color:var(--muted)">Réalisé par :</span> ${task.operateurNom}</div>`:''}
       ${task.refusRaison?`<div style="grid-column:1/-1;color:var(--red)">Motif de refus : ${task.refusRaison}</div>`:''}
     </div>
-    ${task.photoUrl?`<img src="${task.photoUrl}" style="margin-top:16px;max-width:100%;border-radius:10px">`:''}
+    ${task.photoUrl ? `
+  <div style="margin-top:16px">
+    <img 
+      src="${task.photoUrl}" 
+      style="max-width:100%;max-height:220px;border-radius:10px;display:block;margin-bottom:10px"
+      onerror="this.style.display='none'"
+    >
+    <a href="${task.photoUrl}" target="_blank"
+       style="color:var(--accent);text-decoration:underline;font-size:.85rem">
+       Voir la photo
+    </a>
+  </div>
+` : ''}
     ${actions}
   `);
 }
@@ -2107,7 +2188,10 @@ async function purgeLogs() {
 async function renderDirectorDashboard(forceLocal=false) {
   if (!forceLocal) {
     const res = await callClient('getTasks', {role:'directeur', email:currentUser.email});
-    store.requestTasks = (res.tasks || []).map(ensureTaskFlags);
+    store.requestTasks = mergeServerTasksWithLocal(
+  res.tasks || [],
+  store.requestTasks
+);
   }
   const tasks = store.requestTasks || [];
   allTasks = tasks;
@@ -2119,14 +2203,31 @@ async function renderDirectorDashboard(forceLocal=false) {
     done: tasks.filter(t => t.statut === 'done').length
   };
   const unprocessed = counts.pending + counts.waiting;
-  const operators = tasks
-    .filter(t => t.statut === 'done' && t.operateurNom)
-    .reduce((acc, task) => {
-      acc[task.operateurNom] = (acc[task.operateurNom] || 0) + 1;
-      return acc;
-    }, {});
-  const rankedOperators = Object.entries(operators).sort((a,b) => b[1]-a[1]);
-  const maxOps = rankedOperators[0]?.[1] || 1;
+  const operatorStats = {};
+
+tasks.forEach(task => {
+  if (!task.operateurNom) return;
+
+  const name = task.operateurNom;
+
+  if (!operatorStats[name]) {
+    operatorStats[name] = {
+      done: 0,
+      total: 0
+    };
+  }
+
+  if (task.statut === 'accepted' || task.statut === 'done') {
+    operatorStats[name].total++;
+  }
+
+  if (task.statut === 'done') {
+    operatorStats[name].done++;
+  }
+});
+
+const rankedOperators = Object.entries(operatorStats)
+  .sort((a, b) => b[1].done - a[1].done);;
   const recentRefused = tasks.filter(t => t.statut === 'refused').slice(-3).reverse();
   const c = document.getElementById('mainContent');
   c.innerHTML = `
@@ -2149,7 +2250,25 @@ async function renderDirectorDashboard(forceLocal=false) {
       </div>
       <div class="card">
         <div class="card-header"><div class="card-title">Top opérateurs</div></div>
-        ${rankedOperators.length ? `<div class="perf-list">${rankedOperators.slice(0,5).map(([name, value]) => `<div class="perf-row"><div class="perf-label">${name}</div><div class="perf-bar"><div class="perf-bar-fill" style="width:${(value / maxOps) * 100}%"></div></div><div class="perf-value">${value}</div></div>`).join('')}</div>` : `<div style="color:var(--muted)">Aucune tache réalisée pour le moment.</div>`}
+        ${rankedOperators.length ? `
+  <div class="perf-list">
+    ${rankedOperators.slice(0,5).map(([name, stats]) => {
+      const percent = stats.total
+        ? Math.round((stats.done / stats.total) * 100)
+        : 0;
+
+      return `
+        <div class="perf-row">
+          <div class="perf-label">${name}</div>
+          <div class="perf-bar">
+            <div class="perf-bar-fill" style="width:${percent}%"></div>
+          </div>
+          <div class="perf-value">${stats.done}/${stats.total} • ${percent}%</div>
+        </div>
+      `;
+    }).join('')}
+  </div>
+` : `<div style="color:var(--muted)">Aucune tâche réalisée pour le moment.</div>`}
       </div>
     </div>
     <div class="stats-row">
@@ -2170,7 +2289,10 @@ async function renderDirectorDashboard(forceLocal=false) {
 async function renderRequests(forceLocal=false) {
   if (!forceLocal) {
     const res = await callClient('getTasks', {role:'directeur', email:currentUser.email});
-    store.requestTasks = (res.tasks || []).map(ensureTaskFlags);
+    store.requestTasks = mergeServerTasksWithLocal(
+  res.tasks || [],
+  store.requestTasks
+);
   }
   const tasks = store.requestTasks.filter(t=>t.statut==='pending'||t.statut==='waiting');
   allTasks = store.requestTasks;
@@ -2209,7 +2331,10 @@ async function submitRequest() {
 async function renderMyRequests(forceLocal=false) {
   if (!forceLocal) {
     const res = await callClient('getMyTasks', {email: currentUser.email});
-    store.myRequests = (res.tasks || []).map(ensureTaskFlags);
+    store.myRequests = mergeServerTasksWithLocal(
+  res.tasks || [],
+  store.myRequests
+);
   }
   const tasks = store.myRequests;
   allTasks = tasks;
@@ -2219,7 +2344,10 @@ async function renderMyRequests(forceLocal=false) {
 async function renderMyTasks(forceLocal=false) {
   if (!forceLocal) {
     const res = await callClient('getTasks', {role:'operateur', email:currentUser.email});
-    store.myTasks = (res.tasks || []).map(ensureTaskFlags);
+    store.myTasks = mergeServerTasksWithLocal(
+  res.tasks || [],
+  store.myTasks
+);
   }
   const tasks = store.myTasks.filter(t=>t.statut==='accepted'||t.statut==='done');
   allTasks = tasks;
@@ -2257,11 +2385,19 @@ async function saveEditedRequest(id) {
 }
 async function deleteMyRequest(id) {
   if (!confirm('Supprimer cette demande ?')) return;
+
   await runOptimisticMutation({
-    snapshotKeys: ['myRequests','calendarTasks','requestTasks'],
-    apply: () => { ['myRequests','calendarTasks','requestTasks'].forEach(key => { store[key] = store[key].filter(task => task.id !== id); }); },
+    snapshotKeys: ['myRequests', 'calendarTasks', 'requestTasks'],
+
+    apply: () => updateTaskCollections(id, task => ({
+      ...task,
+      _pendingDelete: true,
+      _optimistic: true
+    })),
+
     request: () => callClient('deleteMyTask', { id }),
-    successMessage: 'Demande supprimee',
+
+    successMessage: 'Demande supprimée',
     errorMessage: 'Impossible de supprimer cette demande.'
   });
 }
