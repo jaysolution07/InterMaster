@@ -674,7 +674,7 @@ function isStandalone() {
   return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 }
 function dismissInstallBanner() {
-  localStorage.setItem('intermaster_install_banner_dismissed', '1');
+  sessionStorage.setItem('intermaster_install_banner_dismissed', '1');
   const banner = document.getElementById('installBanner');
   if (banner) banner.classList.remove('show');
 }
@@ -691,7 +691,7 @@ async function handleInstallApp() {
   dismissInstallBanner();
 }
 function maybeShowInstallBanner() {
-  if (localStorage.getItem('intermaster_install_banner_dismissed') === '1' || isStandalone()) return;
+  if (sessionStorage.getItem('intermaster_install_banner_dismissed') === '1' || isStandalone()) return;
   if (deferredInstallPrompt) {
     buildInstallBanner(
       'Installez InterMaster pour l ouvrir plus vite, garder l app en plein ecran et l utiliser comme une vraie application.',
@@ -1019,8 +1019,51 @@ async function compressImage(file, maxWidth = 1200, quality = 0.7) {
     reader.readAsDataURL(file);
   });
 }
-async function callClient(action, params={}) {
-  return callGAS(clientGAS, action, params);
+async function callClient(action, params = {}) {
+  // ✅ POST pour createTask (photo)
+  if (action === 'createTask') {
+    const formData = new URLSearchParams();
+    formData.append('action', action);
+
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value ?? '');
+    });
+
+    const response = await fetch(clientGAS, {
+      method: 'POST',
+      body: formData
+    });
+
+    return await response.json();
+  }
+
+  // ✅ JSONP pour le reste
+  return new Promise((resolve, reject) => {
+    const callbackName = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+
+    const query = new URLSearchParams({
+      action,
+      callback: callbackName,
+      ...params
+    });
+
+    const script = document.createElement('script');
+
+    window[callbackName] = (data) => {
+      resolve(data);
+      delete window[callbackName];
+      script.remove();
+    };
+
+    script.onerror = () => {
+      reject(new Error('Erreur appel GAS : ' + action));
+      delete window[callbackName];
+      script.remove();
+    };
+
+    script.src = `${clientGAS}?${query.toString()}`;
+    document.body.appendChild(script);
+  });
 }
 
 // ═══════════════════════════════════════════════════════
