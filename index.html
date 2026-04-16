@@ -401,6 +401,12 @@ let allRequests = [];
 let currentPage = 'calendar';
 let loginPending = false;
 let deferredInstallPrompt = null;
+let autoSyncTimer = null;
+let syncInFlight = false;
+const AUTO_SYNC_VISIBLE_MS = 5000;
+const AUTO_SYNC_HIDDEN_MS = 20000;
+const LIVE_SYNC_PAGES = new Set(['dashboard', 'calendar', 'requests', 'myrequests', 'mytasks']);
+const SYNC_TASK_FIELDS = ['id', 'titre', 'site', 'categorie', 'description', 'budget', 'date', 'photoUrl', 'agentNom', 'agentEmail', 'statut', 'refusRaison', 'operateurNom', 'operateurEmail'];
 const store = {
   users: [],
   categories: [],
@@ -466,6 +472,112 @@ function replaceSnapshot(snapshot) {
     store[key] = clone(snapshot[key]);
   });
   refreshAllTasks();
+}
+function buildTaskSignature(tasks = []) {
+  return JSON.stringify(
+    tasks.map(task => {
+      const normalized = {};
+      SYNC_TASK_FIELDS.forEach(field => normalized[field] = task?.[field] ?? '');
+      return normalized;
+    })
+  );
+}
+function pad2(value) {
+  return String(value).padStart(2, '0');
+}
+function isLikelyIsoDate(value='') {
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(value).trim());
+}
+function parseLooseDate(value) {
+  if (value == null || value === '') return null;
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+  if (typeof value === 'number') {
+    const numericDate = new Date(value);
+    return Number.isNaN(numericDate.getTime()) ? null : numericDate;
+  }
+  const raw = String(value).trim();
+  if (!raw) return null;
+  if (isLikelyIsoDate(raw)) {
+    const [year, month, day] = raw.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }
+  const frMatch = raw.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+  if (frMatch) {
+    const [, day, month, year] = frMatch.map(Number);
+    return new Date(year, month - 1, day);
+  }
+  const parsed = new Date(raw);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+function normalizeLogDateTime(dateValue, timeValue) {
+  const parsedDate = parseLooseDate(dateValue);
+  const timeRaw = timeValue == null ? '' : String(timeValue).trim();
+  let parsedTime = null;
+  if (timeValue instanceof Date && !Number.isNaN(timeValue.getTime())) {
+    parsedTime = timeValue;
+  } else if (timeRaw && !/^\d{1,2}:\d{2}(:\d{2})?$/.test(timeRaw)) {
+    const maybeDateTime = parseLooseDate(timeRaw);
+    if (maybeDateTime) parsedTime = maybeDateTime;
+  }
+
+  const baseDate = parsedTime || parsedDate;
+  let dateLabel = dateValue == null ? '' : String(dateValue).trim();
+  let timeLabel = timeRaw;
+
+  if (parsedDate) {
+    dateLabel = parsedDate.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  } else if (parsedTime) {
+    dateLabel = parsedTime.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  }
+
+  if (parsedTime) {
+    timeLabel = `${pad2(parsedTime.getHours())}:${pad2(parsedTime.getMinutes())}:${pad2(parsedTime.getSeconds())}`;
+  } else if (baseDate && !timeRaw) {
+    timeLabel = `${pad2(baseDate.getHours())}:${pad2(baseDate.getMinutes())}:${pad2(baseDate.getSeconds())}`;
+  } else if (/^\d{1,2}:\d{2}$/.test(timeRaw)) {
+    const [hours, minutes] = timeRaw.split(':');
+    timeLabel = `${pad2(hours)}:${pad2(minutes)}:00`;
+  } else if (!/^\d{1,2}:\d{2}:\d{2}$/.test(timeRaw)) {
+    timeLabel = '';
+  }
+
+  return [dateLabel, timeLabel].filter(Boolean).join(' ').trim();
+}
+function getCurrentPageSignature(page = currentPage) {
+  if (page === 'dashboard' || page === 'requests') return buildTaskSignature(store.requestTasks);
+  if (page === 'calendar') return buildTaskSignature(store.calendarTasks);
+  if (page === 'myrequests') return buildTaskSignature(store.myRequests);
+  if (page === 'mytasks') return buildTaskSignature(store.myTasks);
+  return '';
+}
+async function refreshPageStore(page = currentPage) {
+  if (page === 'dashboard' || page === 'requests') {
+    const res = await callClient('getTasks', {role:'directeur', email:currentUser.email});
+    store.requestTasks = (res.tasks || []).map(ensureTaskFlags);
+    return;
+  }
+  if (page === 'calendar') {
+    const res = await callClient('getTasks', {role: getUserRole(), email: currentUser.email});
+    store.calendarTasks = (res.tasks || []).map(ensureTaskFlags);
+    return;
+  }
+  if (page === 'myrequests') {
+    const res = await callClient('getMyTasks', {email: currentUser.email});
+    store.myRequests = (res.tasks || []).map(ensureTaskFlags);
+    return;
+  }
+  if (page === 'mytasks') {
+    const res = await callClient('getTasks', {role:'operateur', email:currentUser.email});
+    store.myTasks = (res.tasks || []).map(ensureTaskFlags);
+  }
 }
 function tableCell(label, content) {
   return `<td data-label="${label}">${content}</td>`;
@@ -582,7 +694,7 @@ function maybeShowInstallBanner() {
   if (localStorage.getItem('intermaster_install_banner_dismissed') === '1' || isStandalone()) return;
   if (deferredInstallPrompt) {
     buildInstallBanner(
-      'Installez InterMaster.',
+      'Installez InterMaster pour l ouvrir plus vite, garder l app en plein ecran et l utiliser comme une vraie application.',
       `<button class="btn-action primary" onclick="handleInstallApp()">Installer</button><button class="btn-action secondary" onclick="dismissInstallBanner()">Plus tard</button>`
     );
     return;
@@ -672,6 +784,7 @@ async function handleLogin() {
 }
 
 function logout() {
+  stopAutoSync();
   sessionStorage.removeItem('intermaster_user');
   location.reload();
 }
@@ -693,6 +806,7 @@ function launchApp() {
   maybeShowInstallBanner();
 
   buildSidebar();
+  startAutoSync();
   showPage(role === 'directeur' ? 'dashboard' : 'calendar');
 }
 
@@ -780,6 +894,70 @@ function showPage(page) {
     mytasks: renderMyTasks,
   };
   if (pages[page]) pages[page]();
+}
+
+function stopAutoSync() {
+  if (autoSyncTimer) {
+    clearTimeout(autoSyncTimer);
+    autoSyncTimer = null;
+  }
+}
+
+function scheduleAutoSync(delay = document.hidden ? AUTO_SYNC_HIDDEN_MS : AUTO_SYNC_VISIBLE_MS) {
+  stopAutoSync();
+  autoSyncTimer = setTimeout(() => {
+    syncCurrentPage({ silent: true }).finally(() => scheduleAutoSync());
+  }, delay);
+}
+
+async function syncCurrentPage({ silent = true, force = false } = {}) {
+  if (!currentUser || syncInFlight) return;
+  if (!force && !LIVE_SYNC_PAGES.has(currentPage)) return;
+  if (document.getElementById('loginPage')?.classList.contains('active')) return;
+  if (document.getElementById('modalOverlay')?.classList.contains('open')) return;
+  if (!LIVE_SYNC_PAGES.has(currentPage)) return;
+  syncInFlight = true;
+  try {
+    const before = getCurrentPageSignature(currentPage);
+    await refreshPageStore(currentPage);
+    refreshAllTasks();
+    const after = getCurrentPageSignature(currentPage);
+    if (before !== after) {
+      rerenderCurrentPage();
+      if (!silent) showToast('Mise a jour en direct', 'info');
+    }
+  } catch (error) {
+    console.error('Auto sync failed', error);
+  } finally {
+    syncInFlight = false;
+  }
+}
+
+function startAutoSync() {
+  stopAutoSync();
+  document.removeEventListener('visibilitychange', handleVisibilitySync);
+  window.removeEventListener('focus', handleFocusSync);
+  window.removeEventListener('online', handleOnlineSync);
+  document.addEventListener('visibilitychange', handleVisibilitySync);
+  window.addEventListener('focus', handleFocusSync);
+  window.addEventListener('online', handleOnlineSync);
+  scheduleAutoSync();
+}
+
+function handleVisibilitySync() {
+  if (document.hidden) {
+    scheduleAutoSync(AUTO_SYNC_HIDDEN_MS);
+    return;
+  }
+  syncCurrentPage({ force: true }).finally(() => scheduleAutoSync(AUTO_SYNC_VISIBLE_MS));
+}
+
+function handleFocusSync() {
+  syncCurrentPage({ force: true }).finally(() => scheduleAutoSync());
+}
+
+function handleOnlineSync() {
+  syncCurrentPage({ force: true, silent: false }).finally(() => scheduleAutoSync());
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1825,7 +2003,7 @@ async function renderLogs(forceLocal=false) {
   }
   const logs = store.logs;
   const c = document.getElementById('mainContent');
-  c.innerHTML = `<div class="page-header"><h2>Journaux d'activite</h2></div><div class="card"><div class="card-header"><div class="card-title">Logs (${logs.length})</div><div style="display:flex;gap:8px"><button class="btn-action secondary" onclick="exportLogs()">Export CSV</button><button class="btn-action danger" onclick="purgeLogs()">Purger</button></div></div>${logs.length===0?'<div style="color:var(--muted);text-align:center;padding:24px">Aucun log</div>':logs.slice().reverse().map(l=>`<div class="log-entry"><span class="log-time">${l.date} ${l.heure}</span><span style="color:var(--accent)">[${l.role}]</span><span>${l.nom}</span><span style="color:var(--muted)">-> ${l.action}</span></div>`).join('')}</div>`;
+  c.innerHTML = `<div class="page-header"><h2>Journaux d'activite</h2></div><div class="card"><div class="card-header"><div class="card-title">Logs (${logs.length})</div><div style="display:flex;gap:8px"><button class="btn-action secondary" onclick="exportLogs()">Export CSV</button><button class="btn-action danger" onclick="purgeLogs()">Purger</button></div></div>${logs.length===0?'<div style="color:var(--muted);text-align:center;padding:24px">Aucun log</div>':logs.slice().reverse().map(l=>`<div class="log-entry"><span class="log-time">${normalizeLogDateTime(l.date, l.heure)}</span><span style="color:var(--accent)">[${l.role}]</span><span>${l.nom}</span><span style="color:var(--muted)">-> ${l.action}</span></div>`).join('')}</div>`;
 }
 async function purgeLogs() {
   if (!confirm('Purger tous les logs ?')) return;
