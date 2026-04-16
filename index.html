@@ -1019,24 +1019,8 @@ async function compressImage(file, maxWidth = 1200, quality = 0.7) {
     reader.readAsDataURL(file);
   });
 }
-async function callClient(action, params = {}) {
+function callClientJSONP(action, params = {}) {
   // ✅ POST pour createTask (photo)
-  if (action === 'createTask') {
-    const formData = new URLSearchParams();
-    formData.append('action', action);
-
-    Object.entries(params).forEach(([key, value]) => {
-      formData.append(key, value ?? '');
-    });
-
-    const response = await fetch(clientGAS, {
-      method: 'POST',
-      body: formData
-    });
-
-    return await response.json();
-  }
-
   // ✅ JSONP pour le reste
   return new Promise((resolve, reject) => {
     const callbackName = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
@@ -1064,6 +1048,36 @@ async function callClient(action, params = {}) {
     script.src = `${clientGAS}?${query.toString()}`;
     document.body.appendChild(script);
   });
+}
+
+async function callClientPostOpaque(action, params = {}) {
+  const formData = new URLSearchParams();
+  formData.append('action', action);
+
+  Object.entries(params).forEach(([key, value]) => {
+    formData.append(key, value ?? '');
+  });
+
+  await fetch(clientGAS, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: formData
+  });
+
+  return {success:true, opaque:true};
+}
+
+async function callClient(action, params = {}) {
+  const hasPhotoPayload = action === 'createTask' && params.photoData;
+  const res = hasPhotoPayload
+    ? await callClientPostOpaque(action, params)
+    : await callClientJSONP(action, params);
+
+  if (res && res.success === false) {
+    throw new Error(res.message || 'Erreur backend');
+  }
+
+  return res;
 }
 
 // ═══════════════════════════════════════════════════════
