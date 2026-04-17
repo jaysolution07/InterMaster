@@ -1329,6 +1329,54 @@ function calPrev() { selectedCalendarDate = ''; calendarDate.setMonth(calendarDa
 function calNext() { selectedCalendarDate = ''; calendarDate.setMonth(calendarDate.getMonth()+1); drawCalendar(); }
 function calDayClick(date) { selectedCalendarDate = date; drawCalendar(); }
 
+function isDrivePhotoUrl(url = '') {
+  return /(^|\/\/)(drive|docs)\.google\.com\//i.test(String(url));
+}
+
+function photoHtml(url) {
+  if (!url) return '';
+  const isDrive = isDrivePhotoUrl(url);
+  const src = isDrive ? '' : `src="${url}"`;
+
+  return `
+    <div style="margin-top:16px">
+      <img
+        ${src}
+        data-photo-url="${url}"
+        data-photo-loaded="${isDrive ? '0' : '1'}"
+        style="max-width:100%;max-height:220px;border-radius:10px;display:${isDrive ? 'none' : 'block'};margin-bottom:10px"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='block'"
+      >
+      <div style="display:${isDrive ? 'block' : 'none'};color:var(--muted);font-size:.84rem;margin-bottom:10px">Chargement de la photo...</div>
+      <a href="${url}" target="_blank"
+         style="color:var(--accent);text-decoration:underline;font-size:.85rem">
+         Voir la photo
+      </a>
+    </div>
+  `;
+}
+
+async function loadProtectedPhotos() {
+  const images = document.querySelectorAll('#modalBody img[data-photo-loaded="0"]');
+
+  for (const img of images) {
+    const url = img.dataset.photoUrl;
+    const status = img.nextElementSibling;
+
+    try {
+      const res = await callClient('getPhotoData', {photoUrl: url});
+      if (!res.dataUrl) throw new Error(res.message || 'Photo inaccessible');
+
+      img.src = res.dataUrl;
+      img.dataset.photoLoaded = '1';
+      img.style.display = 'block';
+      if (status) status.style.display = 'none';
+    } catch (error) {
+      if (status) status.textContent = 'Photo inaccessible. Ouvrez le lien ou verifiez le partage Drive.';
+    }
+  }
+}
+
 function showTaskDetail(id) {
   const task = allTasks.find(t=>t.id===id);
   if (!task) return;
@@ -1364,21 +1412,10 @@ function showTaskDetail(id) {
       ${task.operateurNom?`<div><span style="color:var(--muted)">Réalisé par :</span> ${task.operateurNom}</div>`:''}
       ${task.refusRaison?`<div style="grid-column:1/-1;color:var(--red)">Motif de refus : ${task.refusRaison}</div>`:''}
     </div>
-    ${task.photoUrl ? `
-  <div style="margin-top:16px">
-    <img 
-      src="${task.photoUrl}" 
-      style="max-width:100%;max-height:220px;border-radius:10px;display:block;margin-bottom:10px"
-      onerror="this.style.display='none'"
-    >
-    <a href="${task.photoUrl}" target="_blank"
-       style="color:var(--accent);text-decoration:underline;font-size:.85rem">
-       Voir la photo
-    </a>
-  </div>
-` : ''}
+    ${photoHtml(task.photoUrl)}
     ${actions}
   `);
+  loadProtectedPhotos();
 }
 
 async function acceptTask(id) {
