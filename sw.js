@@ -1,12 +1,13 @@
-const CACHE_NAME = 'intermaster-v1';
+const CACHE_NAME = 'intermaster-v2';
 
 const APP_SHELL = [
   './',
-  './1InterMaster.html',
+  './index.html',
   './manifest.webmanifest',
   './intermaster-icon.svg'
 ];
 
+// INSTALL
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL))
@@ -14,6 +15,7 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
+// ACTIVATE
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -27,10 +29,22 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
+// FETCH (🔥 FIX 404 PWA)
 self.addEventListener('fetch', event => {
+
+  // 👉 IMPORTANT : gérer ouverture app (évite 404 GitHub)
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      caches.match('./index.html')
+        .then(res => res || fetch('./index.html'))
+    );
+    return;
+  }
+
+  // 👉 cache classique
   event.respondWith(
-    caches.match(event.request).then(response =>
-      response || fetch(event.request)
-    )
+    caches.match(event.request)
+      .then(res => res || fetch(event.request))
   );
+
 });
