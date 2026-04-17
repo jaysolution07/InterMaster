@@ -16,35 +16,35 @@ self.addEventListener('install', event => {
 });
 
 // ACTIVATE
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys
-          .filter(key => key !== CACHE_NAME)
-          .map(key => caches.delete(key))
-      )
-    )
-  );
-  self.clients.claim();
-});
-
-// FETCH (🔥 FIX 404 PWA)
 self.addEventListener('fetch', event => {
 
-  // 👉 IMPORTANT : gérer ouverture app (évite 404 GitHub)
+  // 👉 NAVIGATION (page principale) = TOUJOURS DERNIÈRE VERSION
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      caches.match('./index.html')
-        .then(res => res || fetch('./index.html'))
+      fetch('./index.html')
+        .then(response => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put('./index.html', copy));
+          return response;
+        })
+        .catch(() => caches.match('./index.html'))
     );
     return;
   }
 
-  // 👉 cache classique
+  // 👉 AUTRES FICHIERS = stale-while-revalidate
   event.respondWith(
-    caches.match(event.request)
-      .then(res => res || fetch(event.request))
+    caches.match(event.request).then(cached => {
+
+      const fetchPromise = fetch(event.request).then(networkResponse => {
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, networkResponse.clone());
+        });
+        return networkResponse;
+      }).catch(() => cached);
+
+      return cached || fetchPromise;
+    })
   );
 
 });
