@@ -1,7 +1,8 @@
-const CACHE_NAME = 'intermaster-v3';
+const CACHE_NAME = 'intermaster-v4';
+const APP_PAGE = './1InterMaster.html';
 
 const APP_SHELL = [
-  './1InterMaster.html',
+  APP_PAGE,
   './manifest.webmanifest',
   './intermaster-icon.svg'
 ];
@@ -9,7 +10,7 @@ const APP_SHELL = [
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_SHELL))
+      .then(cache => Promise.all(APP_SHELL.map(url => cache.add(url).catch(() => null))))
       .catch(() => {})
   );
   self.skipWaiting();
@@ -37,11 +38,24 @@ function canCache(request, response) {
     && response.type === 'basic';
 }
 
+function offlineResponse() {
+  return new Response(
+    '<!doctype html><html lang="fr"><meta charset="utf-8"><title>InterMaster</title><body><h1>InterMaster est hors ligne</h1><p>Rechargez la page quand la connexion revient.</p></body></html>',
+    {
+      status: 503,
+      headers: { 'Content-Type': 'text/html; charset=utf-8' }
+    }
+  );
+}
+
+function cachedAppPage() {
+  return caches.match(APP_PAGE).then(response => response || offlineResponse());
+}
+
 self.addEventListener('fetch', event => {
   const { request } = event;
 
   if (request.method !== 'GET') {
-    event.respondWith(fetch(request));
     return;
   }
 
@@ -53,13 +67,13 @@ self.addEventListener('fetch', event => {
             const copy = response.clone();
             event.waitUntil(
               caches.open(CACHE_NAME)
-                .then(cache => cache.put('./1InterMaster.html', copy))
+                .then(cache => cache.put(APP_PAGE, copy))
                 .catch(() => {})
             );
           }
           return response;
         })
-        .catch(() => caches.match('./1InterMaster.html'))
+        .catch(() => cachedAppPage())
     );
     return;
   }
@@ -78,7 +92,7 @@ self.addEventListener('fetch', event => {
           }
           return response;
         })
-        .catch(() => cached);
+        .catch(() => cached || new Response('', { status: 504 }));
 
       return cached || fetchPromise;
     })
