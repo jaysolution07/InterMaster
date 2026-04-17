@@ -1,7 +1,7 @@
 {
   "name": "InterMaster",
   "short_name": "InterMaster",
-  "start_url": "./1InterMaster.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0d0f14",
