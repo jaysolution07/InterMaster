@@ -392,7 +392,7 @@ const GAS_MASTER_URL = 'https://script.google.com/macros/s/AKfycbwGH16K8WztuHWRp
 // ═══════════════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════════════
-let currentUser = null; // {nom, email, role, webappUrl, entreprise}
+let currentUser = null; // {nom, email, role, webappUrl, entreprise, cleDossier, weekend}
 let clientGAS = null;   // URL du GAS client
 let calendarDate = new Date();
 let selectedCalendarDate = '';
@@ -403,8 +403,10 @@ let loginPending = false;
 let deferredInstallPrompt = null;
 let autoSyncTimer = null;
 let syncInFlight = false;
+let autoSyncPausedUntil = 0;
 const AUTO_SYNC_VISIBLE_MS = 5000;
 const AUTO_SYNC_HIDDEN_MS = 20000;
+const MUTATION_SYNC_PAUSE_MS = 1800;
 const LIVE_SYNC_PAGES = new Set(['dashboard', 'calendar', 'requests', 'myrequests', 'mytasks']);
 const SYNC_TASK_FIELDS = ['id', 'titre', 'site', 'categorie', 'description', 'budget', 'date', 'photoUrl', 'agentNom', 'agentEmail', 'statut', 'refusRaison', 'operateurNom', 'operateurEmail'];
 const store = {
@@ -427,6 +429,54 @@ function getUserRole() {
 // ═══════════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════════
+function roleLabel(role = '') {
+  return ({
+    superadmin: 'Superadmin',
+    directeur: 'RST',
+    agent: 'Collaborateur',
+    operateur: 'AST'
+  })[role] || role;
+}
+function roleShortCode(role = '') {
+  return ({
+    superadmin: 'SA',
+    directeur: 'RST',
+    agent: 'CO',
+    operateur: 'AST'
+  })[role] || 'IM';
+}
+function rolePluralLabel(role = '') {
+  return ({
+    superadmin: 'Superadmins',
+    directeur: 'RST',
+    agent: 'Collaborateurs',
+    operateur: 'AST'
+  })[role] || role;
+}
+function isWeekendEnabled() {
+  return String(currentUser?.weekend || 'oui').toLowerCase().trim() === 'oui';
+}
+function pauseAutoSync(ms = MUTATION_SYNC_PAUSE_MS) {
+  autoSyncPausedUntil = Date.now() + ms;
+}
+function isHiddenWeekendDate(dateStr) {
+  if (isWeekendEnabled() || !dateStr) return false;
+  const dt = new Date(`${dateStr}T00:00:00`);
+  const day = dt.getDay();
+  return day === 0 || day === 6;
+}
+function getUserRole() {
+  const rawRole = (
+    currentUser?.role ||
+    currentUser?.["rôle"] ||
+    currentUser?.["rÃ´le"] ||
+    ''
+  ).toString().toLowerCase().trim();
+  if (rawRole === 'rst') return 'directeur';
+  if (rawRole === 'ast') return 'operateur';
+  if (rawRole === 'collaborateur') return 'agent';
+  return rawRole;
+}
 window.addEventListener('load', () => {
   registerPwaHelpers();
   setTimeout(() => {
@@ -439,6 +489,8 @@ window.addEventListener('load', () => {
 if (!currentUser.role && currentUser["rôle"]) {
   currentUser.role = currentUser["rôle"];
 }
+      if (!currentUser.weekend) currentUser.weekend = 'oui';
+      if (!currentUser.cleDossier) currentUser.cleDossier = '';
       clientGAS = currentUser.webappUrl;
       launchApp();
     } else {
@@ -682,6 +734,7 @@ function rerenderCurrentPage() {
   if (fn) fn(true);
 }
 async function runOptimisticMutation({snapshotKeys, apply, request, successMessage, errorMessage, onSuccess}) {
+  pauseAutoSync();
   const snapshot = {};
   snapshotKeys.forEach(key => snapshot[key] = clone(store[key]));
   apply();
@@ -694,6 +747,7 @@ async function runOptimisticMutation({snapshotKeys, apply, request, successMessa
       store[key] = store[key].map(item => item && item._optimistic ? {...item, _optimistic:false, _pendingDelete:false} : item).filter(Boolean);
     });
     if (onSuccess) await onSuccess(res);
+    pauseAutoSync();
     refreshAllTasks();
     rerenderCurrentPage();
     return res;
@@ -726,7 +780,7 @@ function buildInterMasterIcon(color='#4f8ef7', label='IM') {
 }
 function applyContextBranding() {
   const role = getUserRole();
-  const roleCode = ({superadmin:'SA',directeur:'DI',agent:'AG',operateur:'OP'})[role] || 'IM';
+  const roleCode = roleShortCode(role);
   const icon = buildInterMasterIcon(getRoleAccent(role), roleCode);
   const favicon = document.getElementById('dynamicFavicon');
   const appleIcon = document.getElementById('appleTouchIcon');
@@ -848,8 +902,8 @@ async function handleLogin() {
       } else {
         // Plusieurs profils → montrer select
         profileSel.innerHTML = loginMatches.map((u,i) => {
-  const role = (u.role || u["rôle"] || "").toString().trim().toLowerCase();
-  return `<option value="${i}">${role} — ${u.entreprise}</option>`;
+  const rawRole = (u.role || u["rôle"] || u["rÃ´le"] || "").toString().trim().toLowerCase();
+  return `<option value="${i}">${roleLabel(rawRole)} — ${u.entreprise}</option>`;
 }).join('');
         document.getElementById('profileField').style.display = 'block';
       }
@@ -876,6 +930,8 @@ function logout() {
 //  APP LAUNCH
 // ═══════════════════════════════════════════════════════
 function launchApp() {
+  if (!currentUser.weekend) currentUser.weekend = 'oui';
+  if (!currentUser.cleDossier) currentUser.cleDossier = '';
   document.getElementById('loginPage').classList.remove('active');
   document.getElementById('app').classList.add('active');
 
@@ -883,7 +939,7 @@ function launchApp() {
   const role = getUserRole();
   document.getElementById('topUserInfo').textContent = `${currentUser.nom} · ${currentUser.entreprise}`;
   const badge = document.getElementById('topRoleBadge');
-  badge.textContent = role;
+  badge.textContent = roleLabel(role);
   badge.className = `role-badge role-${role}`;
   applyContextBranding();
   maybeShowInstallBanner();
@@ -995,6 +1051,7 @@ function scheduleAutoSync(delay = document.hidden ? AUTO_SYNC_HIDDEN_MS : AUTO_S
 
 async function syncCurrentPage({ silent = true, force = false } = {}) {
   if (!currentUser || syncInFlight) return;
+  if (!force && Date.now() < autoSyncPausedUntil) return;
   if (!force && !LIVE_SYNC_PAGES.has(currentPage)) return;
   if (document.getElementById('loginPage')?.classList.contains('active')) return;
   if (document.getElementById('modalOverlay')?.classList.contains('open')) return;
@@ -1220,6 +1277,7 @@ async function loadAndDrawCal() {
 function drawCalendar() {
   const label = document.getElementById('calMonthLabel');
   if (!label) return;
+  const showWeekend = isWeekendEnabled();
   const months = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
   label.textContent = `${months[calendarDate.getMonth()]} ${calendarDate.getFullYear()}`;
 
@@ -1228,21 +1286,24 @@ function drawCalendar() {
   const daysInMonth = new Date(year, month+1, 0).getDate();
   const today = new Date();
   const offset = firstDay === 0 ? 6 : firstDay-1;
+  if (isHiddenWeekendDate(selectedCalendarDate)) selectedCalendarDate = '';
   if (!selectedCalendarDate) {
-    const firstTask = allTasks.find(t => (t.date || '').startsWith(`${year}-${String(month+1).padStart(2,'0')}-`));
+    const firstTask = allTasks.find(t => (t.date || '').startsWith(`${year}-${String(month+1).padStart(2,'0')}-`) && !isHiddenWeekendDate(t.date));
     if (firstTask) selectedCalendarDate = firstTask.date;
   }
 
-  let html = '<div class="cal-grid">';
-  ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].forEach(d => html += `<div class="cal-day-name">${d}</div>`);
+  let html = `<div class="cal-grid" style="grid-template-columns:repeat(${showWeekend ? 7 : 5},1fr)">`;
+  (showWeekend ? ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'] : ['Lun','Mar','Mer','Jeu','Ven']).forEach(d => html += `<div class="cal-day-name">${d}</div>`);
 
-  for (let i=0; i<offset; i++) {
-    const d = new Date(year, month, 1-offset+i);
-    html += `<div class="cal-day other-month"><div class="cal-day-num">${d.getDate()}</div></div>`;
-  }
-  for (let d=1; d<=daysInMonth; d++) {
-    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isToday = today.getDate()===d && today.getMonth()===month && today.getFullYear()===year;
+  const remain = (7 - (offset+daysInMonth)%7) % 7;
+  for (let index = 1 - offset; index <= daysInMonth + remain; index++) {
+    const currentDate = new Date(year, month, index);
+    const dayOfWeek = currentDate.getDay();
+    if (!showWeekend && (dayOfWeek === 0 || dayOfWeek === 6)) continue;
+    const isCurrentMonth = currentDate.getMonth() === month;
+    const dayNumber = currentDate.getDate();
+    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth()+1).padStart(2,'0')}-${String(dayNumber).padStart(2,'0')}`;
+    const isToday = today.getDate()===dayNumber && today.getMonth()===currentDate.getMonth() && today.getFullYear()===currentDate.getFullYear();
     const dayTasks = allTasks.filter(t => t.date === dateStr);
     const dotHtml = dayTasks.length ? `
       <div class="cal-day-markers">
@@ -1257,17 +1318,16 @@ function drawCalendar() {
     const more = dayTasks.length>3 ? `<div class="cal-more" style="font-size:.65rem;color:var(--muted)">+${dayTasks.length-3}</div>` : '';
     const selected = selectedCalendarDate===dateStr ? ' selected' : '';
     const hasEvents = dayTasks.length ? ' has-events' : '';
-    html += `<div class="cal-day${isToday?' today':''}${selected}${hasEvents}" onclick="calDayClick('${dateStr}')">
-      <div class="cal-day-num">${d}</div>${dotHtml}${evHtml}${more}</div>`;
+    html += `<div class="cal-day${isCurrentMonth ? '' : ' other-month'}${isToday?' today':''}${selected}${hasEvents}" onclick="calDayClick('${dateStr}')">
+      <div class="cal-day-num">${dayNumber}</div>${dotHtml}${evHtml}${more}</div>`;
   }
-  const remain = (7 - (offset+daysInMonth)%7) % 7;
-  for (let i=1; i<=remain; i++) html += `<div class="cal-day other-month"><div class="cal-day-num">${i}</div></div>`;
   html += '</div>';
   document.getElementById('calWrapper').innerHTML = html;
   drawCalendarDayPanel(selectedCalendarDate || `${year}-${String(month+1).padStart(2,'0')}-01`);
   drawCalendarMobileAgenda(year, month);
 }
 function getTasksForDate(dateStr) {
+  if (isHiddenWeekendDate(dateStr)) return [];
   return allTasks.filter(t => t.date === dateStr);
 }
 function formatDateLabel(dateStr) {
@@ -1305,6 +1365,7 @@ function drawCalendarMobileAgenda(year, month) {
   if (!target) return;
   const monthTasks = (store.calendarTasks.length ? store.calendarTasks : allTasks)
     .filter(t => {
+      if (isHiddenWeekendDate(t.date)) return false;
       const [y, m] = (t.date || '').split('-').map(Number);
       return y === year && m === month + 1;
     })
@@ -1383,8 +1444,11 @@ function showTaskDetail(id) {
   const role = getUserRole();
 
   let actions = '';
+  if (role==='directeur' || role==='superadmin') {
+    actions += `<div style="margin-top:16px"><button class="btn-action secondary" onclick="openManageTaskModal('${id}')">Modifier l intervention</button></div>`;
+  }
   if (role==='directeur' && task.statut==='pending') {
-    actions = `
+    actions += `
       <div style="display:flex;gap:8px;margin-top:16px">
         <button class="btn-action success" onclick="acceptTask('${id}')">✓ Accepter</button>
         <button class="btn-action secondary" onclick="waitTask('${id}')">⏸ Attente</button>
@@ -1407,7 +1471,6 @@ function showTaskDetail(id) {
     <div style="font-size:.88rem;color:var(--muted);line-height:1.6;margin-bottom:12px">${task.description}</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:.82rem">
       <div><span style="color:var(--muted)">Date souhaitée :</span> ${task.date}</div>
-      <div><span style="color:var(--muted)">Budget estimatif :</span> ${task.budget}€</div>
       <div><span style="color:var(--muted)">Demandé par :</span> ${task.agentNom}</div>
       ${task.operateurNom?`<div><span style="color:var(--muted)">Réalisé par :</span> ${task.operateurNom}</div>`:''}
       ${task.refusRaison?`<div style="grid-column:1/-1;color:var(--red)">Motif de refus : ${task.refusRaison}</div>`:''}
@@ -1550,7 +1613,7 @@ function userFormHtml(u={}) {
       <div class="form-group"><label>Rôle</label>
         <select id="uRole">
           ${['superadmin','directeur','agent','operateur'].map(r=>`
-  <option value="${r}" ${u.role===r?'selected':''}>${r}</option>
+  <option value="${r}" ${u.role===r?'selected':''}>${roleLabel(r)}</option>
 `).join('')}
         </select>
       </div>
@@ -1762,7 +1825,7 @@ async function renderRequests() {
           </div>
           <div class="request-title">${t.titre}</div>
           <div class="request-desc">${t.description}</div>
-          <div style="margin-top:8px;font-size:.8rem;color:var(--muted)">💰 Budget estimatif : <strong style="color:var(--text)">${t.budget}€</strong> · Par : ${t.agentNom}</div>
+        <div style="margin-top:8px;font-size:.8rem;color:var(--muted)">Par : ${t.agentNom}</div>
           ${t.photoUrl?`<div style="margin-top:8px"><a href="${t.photoUrl}" target="_blank" style="color:var(--accent);font-size:.82rem">📷 Voir la photo</a></div>`:''}
           <div class="request-actions" style="margin-top:14px">
             <button class="btn-action success" onclick="acceptTask('${t.id}')">✓ Accepter</button>
@@ -1794,7 +1857,6 @@ async function renderNewRequest() {
           <select id="rqCat"><option value="">-- Choisir --</option>${cats.map(cat=>`<option>${cat.nom}</option>`).join('')}</select>
         </div>
         <div class="form-group full"><label>Description détaillée</label><textarea id="rqDesc" placeholder="Décrivez le problème ou l'intervention nécessaire…"></textarea></div>
-        <div class="form-group"><label>Budget estimatif (€)</label><input id="rqBudget" type="number" placeholder="0"></div>
         <div class="form-group"><label>Date souhaitée</label><input id="rqDate" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
         <div class="form-group full">
           <label>Photo (optionnel)</label>
@@ -1830,7 +1892,6 @@ async function submitRequest() {
   const site = document.getElementById('rqSite').value;
   const categorie = document.getElementById('rqCat').value;
   const description = document.getElementById('rqDesc').value.trim();
-  const budget = document.getElementById('rqBudget').value;
   const date = document.getElementById('rqDate').value;
   const photoData = document.getElementById('photoDrop').dataset.photoData||'';
 
@@ -1994,11 +2055,6 @@ function openEditRequestModal(id) {
       </div>
 
       <div class="form-group">
-        <label>Budget</label>
-        <input id="editBudget" type="number" value="${task.budget}">
-      </div>
-
-      <div class="form-group">
         <label>Date</label>
         <input id="editDate" type="date" value="${task.date}">
       </div>
@@ -2011,12 +2067,61 @@ function openEditRequestModal(id) {
   `);
 }
 
+function openManageTaskModal(id) {
+  const task = allTasks.find(t => t.id === id);
+  if (!task) return;
+
+  openModal(`
+    <div class="modal-title">Modifier l intervention</div>
+
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Titre</label>
+        <input id="manageTitre" value="${task.titre}">
+      </div>
+
+      <div class="form-group full">
+        <label>Description</label>
+        <textarea id="manageDesc">${task.description}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Date</label>
+        <input id="manageDate" type="date" value="${task.date}">
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-action secondary" onclick="closeModal()">Annuler</button>
+      <button class="btn-action primary" onclick="saveManagedTask('${id}')">Enregistrer</button>
+    </div>
+  `);
+}
+
+async function saveManagedTask(id) {
+  const updates = {
+    id,
+    titre: document.getElementById('manageTitre').value,
+    description: document.getElementById('manageDesc').value,
+    date: document.getElementById('manageDate').value,
+    editorRole: getUserRole(),
+    editorNom: currentUser.nom
+  };
+  closeModal();
+  await runOptimisticMutation({
+    snapshotKeys: ['calendarTasks','requestTasks','myRequests','myTasks'],
+    apply: () => updateTaskCollections(id, task => ({...task, ...updates, _optimistic:true})),
+    request: () => callClient('updateManagedTask', updates),
+    successMessage: 'Intervention modifiee',
+    errorMessage: 'Impossible de modifier cette intervention.'
+  });
+}
+
 async function saveEditedRequest(id) {
   const res = await callClient('updateMyTask', {
     id,
     titre: document.getElementById('editTitre').value,
     description: document.getElementById('editDesc').value,
-    budget: document.getElementById('editBudget').value,
     date: document.getElementById('editDate').value
   });
 
@@ -2110,7 +2215,7 @@ async function renderUsers(forceLocal=false) {
   c.innerHTML = `
     <div class="page-header"><h2>Gestion des comptes</h2><p>Creer et gerer les utilisateurs</p></div>
     <div class="stats-row">
-      ${['superadmin','directeur','agent','operateur'].map(r=>`<div class="stat-card"><div class="stat-val" style="color:var(--${r})">${users.filter(u=>u.role===r).length}</div><div class="stat-label">${r.charAt(0).toUpperCase()+r.slice(1)}s</div></div>`).join('')}
+      ${['superadmin','directeur','agent','operateur'].map(r=>`<div class="stat-card"><div class="stat-val" style="color:var(--${r})">${users.filter(u=>u.role===r).length}</div><div class="stat-label">${rolePluralLabel(r)}</div></div>`).join('')}
     </div>
     <div class="card">
       <div class="card-header"><div class="card-title">Utilisateurs</div><button class="btn-action primary" onclick="openAddUserModal()">+ Ajouter</button></div>
@@ -2118,7 +2223,7 @@ async function renderUsers(forceLocal=false) {
         ${users.map(u=>`<tr>
           ${tableCell('Nom', `${u.nom}${u._optimistic ? ' <span class="badge badge-saving">Sync...</span>' : ''}`)}
           ${tableCell('Email', `<span style="color:var(--muted)">${u.email}</span>`)}
-          ${tableCell('Role', `<span class="badge" style="background:rgba(79,142,247,.1);color:var(--${u.role})">${u.role}</span>`)}
+          ${tableCell('Role', `<span class="badge" style="background:rgba(79,142,247,.1);color:var(--${u.role})">${roleLabel(u.role)}</span>`)}
           ${tableCell('Entreprise', u.entreprise||'-')}
           ${tableCell('Actions', `<button class="btn-action secondary" style="padding:5px 10px;font-size:.78rem" onclick="openEditUserModal(${JSON.stringify(u).replace(/"/g,'&quot;')})">Modifier</button>${u.email !== currentUser.email ? `<button class="btn-action danger" style="padding:5px 10px;font-size:.78rem;margin-left:4px" onclick="deleteUser('${u.email}','${u.role}')">Supprimer</button>` : `<span style="font-size:.78rem;color:var(--muted);margin-left:4px">Votre compte</span>`}`)}
         </tr>`).join('')}
@@ -2126,12 +2231,12 @@ async function renderUsers(forceLocal=false) {
     </div>`;
 }
 async function saveUser(existingEmail) {
-  const payload = {nom: document.getElementById('uNom').value, email: document.getElementById('uEmail').value, mdp: document.getElementById('uMdp').value, role: document.getElementById('uRole').value, entreprise: currentUser.entreprise, webappUrl: currentUser.webappUrl, adminNom: currentUser.nom, existingEmail};
+  const payload = {nom: document.getElementById('uNom').value, email: document.getElementById('uEmail').value, mdp: document.getElementById('uMdp').value, role: document.getElementById('uRole').value, entreprise: currentUser.entreprise, webappUrl: currentUser.webappUrl, cleDossier: currentUser.cleDossier || '', weekend: currentUser.weekend || 'oui', adminNom: currentUser.nom, existingEmail};
   closeModal();
   await runOptimisticMutation({
     snapshotKeys: ['users'],
     apply: () => {
-      const next = {nom:payload.nom, email:payload.email, role:payload.role, entreprise:payload.entreprise, webappUrl:payload.webappUrl, _optimistic:true};
+      const next = {nom:payload.nom, email:payload.email, role:payload.role, entreprise:payload.entreprise, webappUrl:payload.webappUrl, cleDossier:payload.cleDossier, weekend:payload.weekend, _optimistic:true};
       const idx = store.users.findIndex(u => u.email === (existingEmail || payload.email));
       if (idx >= 0) store.users[idx] = next; else store.users.unshift(next);
     },
@@ -2285,7 +2390,7 @@ const rankedOperators = Object.entries(operatorStats)
   const recentRefused = tasks.filter(t => t.statut === 'refused').slice(-3).reverse();
   const c = document.getElementById('mainContent');
   c.innerHTML = `
-    <div class="page-header"><h2>Dashboard directeur</h2><p>Vision globale des demandes, traitements et operateurs.</p></div>
+    <div class="page-header"><h2>Dashboard RST</h2><p>Vision globale des demandes, traitements et AST.</p></div>
     <div class="stats-row">
       <div class="stat-card"><div class="stat-val" style="color:var(--yellow)">${unprocessed}</div><div class="stat-label">Pas encore traitées</div></div>
       <div class="stat-card"><div class="stat-val" style="color:var(--accent)">${counts.accepted}</div><div class="stat-label">Acceptées</div></div>
@@ -2303,7 +2408,7 @@ const rankedOperators = Object.entries(operatorStats)
         </div>
       </div>
       <div class="card">
-        <div class="card-header"><div class="card-title">Top opérateurs</div></div>
+        <div class="card-header"><div class="card-title">Top AST</div></div>
         ${rankedOperators.length ? `
   <div class="perf-list">
     ${rankedOperators.slice(0,5).map(([name, stats]) => {
@@ -2351,19 +2456,18 @@ async function renderRequests(forceLocal=false) {
   const tasks = store.requestTasks.filter(t=>t.statut==='pending'||t.statut==='waiting');
   allTasks = store.requestTasks;
   const c = document.getElementById('mainContent');
-  c.innerHTML = `<div class="page-header"><h2>Demandes en attente</h2><p>${tasks.length} demande(s) a traiter</p></div>${tasks.length===0?`<div class="card" style="text-align:center;color:var(--muted);padding:40px">Aucune demande en attente</div>`:tasks.map(t=>`<div class="${requestCardClass(t)}"><div class="request-meta">${statusBadge(t)}<span class="badge" style="background:var(--surface);color:var(--muted)">${t.categorie}</span><span class="badge" style="background:var(--surface);color:var(--muted)">${t.site}</span><span style="font-size:.78rem;color:var(--muted);margin-left:auto">${t.date}</span></div><div class="request-title">${t.titre}</div><div class="request-desc">${t.description}</div><div style="margin-top:8px;font-size:.8rem;color:var(--muted)">Budget: <strong style="color:var(--text)">${t.budget} EUR</strong> · Par : ${t.agentNom}</div>${t.photoUrl?`<div style="margin-top:8px"><a href="${t.photoUrl}" target="_blank" style="color:var(--accent);font-size:.82rem">Voir la photo</a></div>`:''}<div class="request-actions" style="margin-top:14px"><button class="btn-action success" onclick="acceptTask('${t.id}')">Accepter</button><button class="btn-action secondary" onclick="waitTask('${t.id}')">Attente</button><button class="btn-action danger" onclick="openRefuseModal('${t.id}')">Refuser</button></div></div>`).join('')}`;
+  c.innerHTML = `<div class="page-header"><h2>Demandes en attente</h2><p>${tasks.length} demande(s) a traiter</p></div>${tasks.length===0?`<div class="card" style="text-align:center;color:var(--muted);padding:40px">Aucune demande en attente</div>`:tasks.map(t=>`<div class="${requestCardClass(t)}"><div class="request-meta">${statusBadge(t)}<span class="badge" style="background:var(--surface);color:var(--muted)">${t.categorie}</span><span class="badge" style="background:var(--surface);color:var(--muted)">${t.site}</span><span style="font-size:.78rem;color:var(--muted);margin-left:auto">${t.date}</span></div><div class="request-title">${t.titre}</div><div class="request-desc">${t.description}</div><div style="margin-top:8px;font-size:.8rem;color:var(--muted)">Par : ${t.agentNom}</div>${t.photoUrl?`<div style="margin-top:8px"><a href="${t.photoUrl}" target="_blank" style="color:var(--accent);font-size:.82rem">Voir la photo</a></div>`:''}<div class="request-actions" style="margin-top:14px"><button class="btn-action success" onclick="acceptTask('${t.id}')">Accepter</button><button class="btn-action secondary" onclick="waitTask('${t.id}')">Attente</button><button class="btn-action danger" onclick="openRefuseModal('${t.id}')">Refuser</button></div></div>`).join('')}`;
 }
 async function submitRequest() {
   const titre = document.getElementById('rqTitre').value.trim();
   const site = document.getElementById('rqSite').value;
   const categorie = document.getElementById('rqCat').value;
   const description = document.getElementById('rqDesc').value.trim();
-  const budget = document.getElementById('rqBudget').value;
   const date = document.getElementById('rqDate').value;
   const photoData = document.getElementById('photoDrop').dataset.photoData||'';
   if (!titre||!site||!categorie||!description||!date) { showToast('Veuillez remplir tous les champs obligatoires','error'); return; }
   const optimisticId = 'tmp_' + Date.now();
-  const optimisticTask = ensureTaskFlags({id:optimisticId, titre, site, categorie, description, budget, date, photoUrl:photoData, agentNom:currentUser.nom, agentEmail:currentUser.email, statut:'pending', _optimistic:true});
+  const optimisticTask = ensureTaskFlags({id:optimisticId, titre, site, categorie, description, budget:'', date, photoUrl:photoData, agentNom:currentUser.nom, agentEmail:currentUser.email, statut:'pending', _optimistic:true});
   await runOptimisticMutation({
     snapshotKeys: ['myRequests','calendarTasks','requestTasks'],
     apply: () => {
@@ -2372,7 +2476,7 @@ async function submitRequest() {
       store.requestTasks.unshift(optimisticTask);
       currentPage = 'myrequests';
     },
-    request: () => callClient('createTask', {titre, site, categorie, description, budget, date, photoData, agentNom: currentUser.nom, agentEmail: currentUser.email}),
+    request: () => callClient('createTask', {titre, site, categorie, description, budget:'', date, photoData, agentNom: currentUser.nom, agentEmail: currentUser.email, cleDossier: currentUser.cleDossier || '', webappUrl: currentUser.webappUrl || ''}),
     successMessage: 'Demande envoyee',
     errorMessage: 'Impossible d envoyer la demande.',
     onSuccess: (res) => {
@@ -2406,7 +2510,7 @@ async function renderMyTasks(forceLocal=false) {
   const tasks = store.myTasks.filter(t=>t.statut==='accepted'||t.statut==='done');
   allTasks = tasks;
   const c = document.getElementById('mainContent');
-  c.innerHTML = `<div class="page-header"><h2>Mes taches</h2><p>Taches validees par le directeur</p></div><div class="stats-row"><div class="stat-card"><div class="stat-val" style="color:var(--accent)">${tasks.filter(t=>t.statut==='accepted').length}</div><div class="stat-label">A effectuer</div></div><div class="stat-card"><div class="stat-val" style="color:var(--green)">${tasks.filter(t=>t.statut==='done').length}</div><div class="stat-label">Effectuees</div></div></div>${tasks.length===0?`<div class="card" style="text-align:center;color:var(--muted);padding:40px">Aucune tache assignee</div>`:tasks.map(t=>`<div class="${requestCardClass(t)}"><div class="request-meta">${statusBadge(t)}<span class="badge" style="background:var(--surface);color:var(--muted)">${t.categorie}</span><span class="badge" style="background:var(--surface);color:var(--muted)">${t.site}</span><span style="font-size:.78rem;color:var(--muted);margin-left:auto">${t.date}</span></div><div class="request-title">${t.titre}</div><div class="request-desc">${t.description}</div><div style="margin-top:14px">${t.statut==='accepted'?`<button class="btn-action success" onclick="markDoneFromList('${t.id}')">Marquer effectue</button>`:`<div style="font-size:.82rem;color:var(--green)">Realisee par vous</div><button class="btn-action secondary" style="margin-top:8px;padding:6px 12px;font-size:.78rem" onclick="markUndoneFromList('${t.id}')">Annuler</button>`}</div></div>`).join('')}`;
+  c.innerHTML = `<div class="page-header"><h2>Mes taches</h2><p>Taches validees par le RST</p></div><div class="stats-row"><div class="stat-card"><div class="stat-val" style="color:var(--accent)">${tasks.filter(t=>t.statut==='accepted').length}</div><div class="stat-label">A effectuer</div></div><div class="stat-card"><div class="stat-val" style="color:var(--green)">${tasks.filter(t=>t.statut==='done').length}</div><div class="stat-label">Effectuees</div></div></div>${tasks.length===0?`<div class="card" style="text-align:center;color:var(--muted);padding:40px">Aucune tache assignee</div>`:tasks.map(t=>`<div class="${requestCardClass(t)}"><div class="request-meta">${statusBadge(t)}<span class="badge" style="background:var(--surface);color:var(--muted)">${t.categorie}</span><span class="badge" style="background:var(--surface);color:var(--muted)">${t.site}</span><span style="font-size:.78rem;color:var(--muted);margin-left:auto">${t.date}</span></div><div class="request-title">${t.titre}</div><div class="request-desc">${t.description}</div><div style="margin-top:14px">${t.statut==='accepted'?`<button class="btn-action success" onclick="markDoneFromList('${t.id}')">Marquer effectue</button>`:`<div style="font-size:.82rem;color:var(--green)">Realisee par vous</div><button class="btn-action secondary" style="margin-top:8px;padding:6px 12px;font-size:.78rem" onclick="markUndoneFromList('${t.id}')">Annuler</button>`}</div></div>`).join('')}`;
 }
 async function markDoneFromList(id) {
   await runOptimisticMutation({
@@ -2427,7 +2531,7 @@ async function markUndoneFromList(id) {
   });
 }
 async function saveEditedRequest(id) {
-  const updates = {id, titre: document.getElementById('editTitre').value, description: document.getElementById('editDesc').value, budget: document.getElementById('editBudget').value, date: document.getElementById('editDate').value};
+  const updates = {id, titre: document.getElementById('editTitre').value, description: document.getElementById('editDesc').value, date: document.getElementById('editDate').value};
   closeModal();
   await runOptimisticMutation({
     snapshotKeys: ['myRequests','calendarTasks','requestTasks'],
